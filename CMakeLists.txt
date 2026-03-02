@@ -8,4 +8,8 @@ add_compile_options(-Wall -Wextra -pedantic)
 
 include_directories(include)
 
-add_executable(pycompile src/main.cpp)
+find_package(Python REQUIRED COMPONENTS Interpreter Development)
+
+add_executable(pycompile src/main.cpp
+        src/bytecode.cpp)
+target_link_libraries(pycompile PRIVATE Python::Python)

@@ -9,7 +9,9 @@
 #include <Python.h>
 #include <optional>
 #include <string>
+#include <variant>
 #include <vector>
+
 
 /**
  * The maximum depth to evaluate nested Python Callables to
@@ -64,6 +66,34 @@ struct CodeInfo {
 
 
 /**
+ * The type of the instruction argument, which can be one of several types depending on the opcode.
+ */
+enum class ArgvalType {
+    None,
+    Int,
+    Str,
+    TupleStr,
+    Code
+};
+
+
+/**
+ * Dummy struct to represent the absence of an instruction argument, since some instructions have no argument.
+ */
+struct ArgvalNone {
+};
+
+
+struct Instruction; // Forward declaration of Instruction struct.
+
+/**
+ * A variant type to represent the possible types of instruction arguments, which can be ArgvalNone, an int, a string,
+ * a tuple of strings, or a nested code object (represented as a vector of Instructions).
+ */
+using Argval = std::variant<ArgvalNone, int, std::string, std::vector<std::string>, std::vector<Instruction> >;
+
+
+/**
  * A single Python bytecode instruction, as returned by dis.get_instructions().
  */
 struct Instruction {
@@ -72,10 +102,8 @@ struct Instruction {
     std::string opname; // The human-readable opcode name
     std::string argrepr; // Human-readable description of the instruction argument, if any
     std::optional<size_t> lineno; // The line number, set when starts_line is not None
-    int argvalInt; // If the instruction argument is an integer, its value
-    std::string argvalStr; // If the instruction argument is a string, its value
-    std::vector<std::string> argvalTuple; // If the instruction argument is a tuple of strings
-    std::vector<Instruction> argvalCode; // For nested code objects (lambda, comprehension, etc.)
+    ArgvalType argvalType; // The type of the instruction argument, which determines how to interpret argval
+    Argval argval; // The instruction argument, which can be of various types depending on the opcode
 };
 
 

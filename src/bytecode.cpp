@@ -150,12 +150,15 @@ void printDisassembly(const DisassembledCode& code, const int depth) {
         printInstruction(instr, depth);
 
         // If the instruction has a nested code object, print it recursively with increased indentation.
-        if (!instr.argvalCode.empty()) {
+        if (instr.argvalType == ArgvalType::Code) {
             printf("%s  [nested code object]:\n", ind.c_str());
             // Wrap nested instructions in a temporary DisassembledCode for printing
-            DisassembledCode nested;
-            nested.instructions = instr.argvalCode;
-            printDisassembly(nested, depth + 1);
+            if (const std::vector<Instruction>* nestedCode = std::get_if<std::vector<Instruction> >(&instr.argval)) {
+                DisassembledCode nested;
+                nested.instructions = *nestedCode;
+                printDisassembly(nested, depth + 1);
+            } else
+                throw std::runtime_error("Expected argval to be a vector of Instructions for nested code object");
         }
     }
 }
@@ -211,19 +214,29 @@ DisassembledCode disassemble(PyObject* code, const int depth) {
 
         // argval: int | str | tuple | code object | other
         PyObject* argval = PyObject_GetAttrString(item, "argval");
-        if (PyLong_Check(argval))
-            instr.argvalInt = PyLong_AsInt(argval);
-        else if (PyUnicode_Check(argval))
-            instr.argvalStr = PyUnicode_AsUTF8(argval);
-        else if (PyTuple_Check(argval)) {
+        if (PyLong_Check(argval)) {
+            instr.argvalType = ArgvalType::Int;
+            instr.argval = PyLong_AsInt(argval);
+        } else if (PyUnicode_Check(argval)) {
+            instr.argvalType = ArgvalType::Str;
+            instr.argval = PyUnicode_AsUTF8(argval);
+        } else if (PyTuple_Check(argval)) {
+            instr.argvalType = ArgvalType::TupleStr;
+            std::vector<std::string> tupleStrs;
             const Py_ssize_t n = PyTuple_Size(argval);
             for (Py_ssize_t i = 0; i < n; i++) {
                 PyObject* s = PyTuple_GetItem(argval, i); // borrowed
                 if (PyUnicode_Check(s))
-                    instr.argvalTuple.emplace_back(PyUnicode_AsUTF8(s));
+                    tupleStrs.emplace_back(PyUnicode_AsUTF8(s));
             }
-        } else if (PyCode_Check(argval))
-            instr.argvalCode = disassemble(argval, depth + 1).instructions;
+            instr.argval = std::move(tupleStrs);
+        } else if (PyCode_Check(argval)) {
+            instr.argvalType = ArgvalType::Code;
+            instr.argval = disassemble(argval, depth + 1).instructions;
+        } else {
+            instr.argvalType = ArgvalType::None; // for any other types, we just treat it as None
+            instr.argval = ArgvalNone{};
+        }
 
         Py_DECREF(argval);
         Py_DECREF(item);

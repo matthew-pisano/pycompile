@@ -11,5 +11,6 @@ include_directories(include)
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 
 add_executable(pycompile src/main.cpp
-        src/bytecode.cpp)
+        src/bytecode.cpp
+        src/utils.cpp)
 target_link_libraries(pycompile PRIVATE Python::Python)

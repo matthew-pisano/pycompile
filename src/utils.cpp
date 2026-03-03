@@ -6,6 +6,8 @@
 
 #include <Python.h>
 #include <stdexcept>
+#include <fstream>
+#include <sstream>
 
 std::string getPythonErrorTraceback() {
     PyObject* exc = PyErr_GetRaisedException();
@@ -40,4 +42,16 @@ std::string getPythonErrorTraceback() {
 
     Py_DECREF(exc);
     return msg;
+}
+
+std::string readFileString(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open())
+        throw std::runtime_error("Could not open file: " + filename);
+
+    std::ostringstream oss;
+    oss << file.rdbuf();
+    file.close();
+
+    return oss.str();
 }

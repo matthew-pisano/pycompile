@@ -121,7 +121,7 @@ void printInstruction(const Instruction& instr, const int indentLevel) {
 }
 
 
-void printDisassembly(const DisassembledCode& code, const int depth) {
+void printByteCodeModule(const ByteCodeModule& code, const int depth) {
     const std::string ind(depth * 4, ' ');
 
     // Print code metadata
@@ -154,9 +154,9 @@ void printDisassembly(const DisassembledCode& code, const int depth) {
             printf("%s  [nested code object]:\n", ind.c_str());
             // Wrap nested instructions in a temporary DisassembledCode for printing
             if (const std::vector<Instruction>* nestedCode = std::get_if<std::vector<Instruction> >(&instr.argval)) {
-                DisassembledCode nested;
+                ByteCodeModule nested;
                 nested.instructions = *nestedCode;
-                printDisassembly(nested, depth + 1);
+                printByteCodeModule(nested, depth + 1);
             } else
                 throw std::runtime_error("Expected argval to be a vector of Instructions for nested code object");
         }
@@ -164,11 +164,15 @@ void printDisassembly(const DisassembledCode& code, const int depth) {
 }
 
 
-DisassembledCode disassemble(PyObject* code, const int depth) {
-    DisassembledCode result;
+ByteCodeModule generatePythonBytecode(CompiledModule compiledModule, const int depth) {
+    ByteCodeModule result;
+    result.filename = compiledModule.filename;
+    result.module_name = compiledModule.module_name;
 
     if (depth > NESTED_FUNCTION_DEPTH)
         throw std::runtime_error("Maximum nested function depth exceeded");
+
+    PyObject* code = compiledModule.codeObject; // Borrowed reference, do not decref
 
     // Code-level metadata
     result.info.freevars = extractPyTupleStrings(code, "co_freevars");
@@ -213,32 +217,32 @@ DisassembledCode disassemble(PyObject* code, const int depth) {
         Py_XDECREF(startsLine);
 
         // argval: int | str | tuple | code object | other
-        PyObject* argval = PyObject_GetAttrString(item, "argval");
-        if (PyLong_Check(argval)) {
+        PyObject* argval = PyObject_GetAttrString(item, "argval"); // borrowed reference, do not decref yet
+        CompiledModule nestedCode{compiledModule.filename, compiledModule.module_name, argval};
+        if (PyLong_Check(nestedCode.codeObject)) {
             instr.argvalType = ArgvalType::Int;
-            instr.argval = PyLong_AsInt(argval);
-        } else if (PyUnicode_Check(argval)) {
+            instr.argval = PyLong_AsInt(nestedCode.codeObject);
+        } else if (PyUnicode_Check(nestedCode.codeObject)) {
             instr.argvalType = ArgvalType::Str;
-            instr.argval = PyUnicode_AsUTF8(argval);
-        } else if (PyTuple_Check(argval)) {
+            instr.argval = PyUnicode_AsUTF8(nestedCode.codeObject);
+        } else if (PyTuple_Check(nestedCode.codeObject)) {
             instr.argvalType = ArgvalType::TupleStr;
             std::vector<std::string> tupleStrs;
-            const Py_ssize_t n = PyTuple_Size(argval);
+            const Py_ssize_t n = PyTuple_Size(nestedCode.codeObject);
             for (Py_ssize_t i = 0; i < n; i++) {
-                PyObject* s = PyTuple_GetItem(argval, i); // borrowed
+                PyObject* s = PyTuple_GetItem(nestedCode.codeObject, i); // borrowed
                 if (PyUnicode_Check(s))
                     tupleStrs.emplace_back(PyUnicode_AsUTF8(s));
             }
             instr.argval = std::move(tupleStrs);
-        } else if (PyCode_Check(argval)) {
+        } else if (PyCode_Check(nestedCode.codeObject)) {
             instr.argvalType = ArgvalType::Code;
-            instr.argval = disassemble(argval, depth + 1).instructions;
+            instr.argval = generatePythonBytecode(std::move(nestedCode), depth + 1).instructions;
         } else {
             instr.argvalType = ArgvalType::None; // for any other types, we just treat it as None
             instr.argval = ArgvalNone{};
         }
 
-        Py_DECREF(argval);
         Py_DECREF(item);
         result.instructions.push_back(std::move(instr));
     }

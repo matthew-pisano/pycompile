@@ -164,7 +164,7 @@ void printByteCodeModule(const ByteCodeModule& code, const int depth) {
 }
 
 
-ByteCodeModule generatePythonBytecode(CompiledModule compiledModule, const int depth) {
+ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, const int depth) {
     ByteCodeModule result;
     result.filename = compiledModule.filename;
     result.module_name = compiledModule.module_name;
@@ -217,33 +217,36 @@ ByteCodeModule generatePythonBytecode(CompiledModule compiledModule, const int d
         Py_XDECREF(startsLine);
 
         // argval: int | str | tuple | code object | other
-        PyObject* argval = PyObject_GetAttrString(item, "argval"); // borrowed reference, do not decref yet
-        CompiledModule nestedCode{compiledModule.filename, compiledModule.module_name, argval};
-        if (PyLong_Check(nestedCode.codeObject)) {
+        PyObject* argval = PyObject_GetAttrString(item, "argval"); // borrowed reference
+        if (PyLong_Check(argval)) {
             instr.argvalType = ArgvalType::Int;
-            instr.argval = PyLong_AsInt(nestedCode.codeObject);
-        } else if (PyUnicode_Check(nestedCode.codeObject)) {
+            instr.argval = PyLong_AsInt(argval);
+        } else if (PyUnicode_Check(argval)) {
             instr.argvalType = ArgvalType::Str;
-            instr.argval = PyUnicode_AsUTF8(nestedCode.codeObject);
-        } else if (PyTuple_Check(nestedCode.codeObject)) {
+            instr.argval = PyUnicode_AsUTF8(argval);
+        } else if (PyTuple_Check(argval)) {
             instr.argvalType = ArgvalType::TupleStr;
             std::vector<std::string> tupleStrs;
-            const Py_ssize_t n = PyTuple_Size(nestedCode.codeObject);
+            const Py_ssize_t n = PyTuple_Size(argval);
             for (Py_ssize_t i = 0; i < n; i++) {
-                PyObject* s = PyTuple_GetItem(nestedCode.codeObject, i); // borrowed
+                PyObject* s = PyTuple_GetItem(argval, i); // borrowed
                 if (PyUnicode_Check(s))
                     tupleStrs.emplace_back(PyUnicode_AsUTF8(s));
             }
             instr.argval = std::move(tupleStrs);
-        } else if (PyCode_Check(nestedCode.codeObject)) {
+        } else if (PyCode_Check(argval)) {
             instr.argvalType = ArgvalType::Code;
-            instr.argval = generatePythonBytecode(std::move(nestedCode), depth + 1).instructions;
+            // Increment refcount so the temporary CompiledModule owns the code object and will decref it when destroyed.
+            Py_XINCREF(argval);
+            CompiledModule nested{compiledModule.filename, compiledModule.module_name, argval};
+            instr.argval = generatePythonBytecode(nested, depth + 1).instructions;
         } else {
             instr.argvalType = ArgvalType::None; // for any other types, we just treat it as None
             instr.argval = ArgvalNone{};
         }
 
         Py_DECREF(item);
+        Py_XDECREF(argval);
         result.instructions.push_back(std::move(instr));
     }
 

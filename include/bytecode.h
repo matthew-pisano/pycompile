@@ -144,6 +144,6 @@ void printByteCodeModule(const ByteCodeModule& code, int depth = 0);
  * @return A ByteCodeModule struct containing the metadata and instructions of the code object
  * @throws std::runtime_error if the max nested function depth is exceeded, or if there are errors during disassembly.
  */
-ByteCodeModule generatePythonBytecode(CompiledModule compiledModule, int depth = 0);
+ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, int depth = 0);
 
 #endif //PYCOMPILE_BYTECODE_H

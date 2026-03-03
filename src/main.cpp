@@ -61,10 +61,10 @@ int main(const int argc, char* argv[]) {
     }
 
     for (const ByteCodeModule& bytecodeModule : bytecodeModules) {
-        printf("Bytecode for module '%s' (from file '%s'):\n", bytecodeModule.module_name.c_str(),
-               bytecodeModule.filename.c_str());
+        std::cout << std::format("Bytecode for module '{}' (from file '{}'):\n", bytecodeModule.module_name,
+                                 bytecodeModule.filename) << std::endl;
         printByteCodeModule(bytecodeModule);
-        printf("\n");
+        std::cout << std::endl;
     }
 
     return 0;

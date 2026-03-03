@@ -80,6 +80,14 @@ enum class ArgvalType {
 
 
 /**
+ * Helper function to convert an ArgvalType enum value to a human-readable string for debugging and printing purposes.
+ * @param type The ArgvalType enum value to convert to a string
+ * @return A string representation of the ArgvalType value, such as "Int", "Str", "TupleStr", "Code", or "None".
+ */
+inline std::string argvalTypeToString(ArgvalType type);
+
+
+/**
  * Dummy struct to represent the absence of an instruction argument, since some instructions have no argument.
  */
 struct ArgvalNone {

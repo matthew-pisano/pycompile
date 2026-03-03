@@ -6,7 +6,29 @@
 #include <stdexcept>
 
 #include "bytecode.h"
+
+#include <iomanip>
+#include <iostream>
+
 #include "utils.h"
+
+
+inline std::string argvalTypeToString(const ArgvalType type) {
+    switch (type) {
+        case ArgvalType::None:
+            return "None";
+        case ArgvalType::Int:
+            return "Int";
+        case ArgvalType::Str:
+            return "Str";
+        case ArgvalType::TupleStr:
+            return "TupleStr";
+        case ArgvalType::Code:
+            return "Code";
+        default:
+            return "Unknown";
+    }
+}
 
 
 /**
@@ -110,14 +132,28 @@ std::vector<ExceptionTableEntry> decodeExceptionTable(PyObject* code) {
 
 void printInstruction(const Instruction& instr, const int indentLevel) {
     const std::string ind(indentLevel * 4, ' ');
-    printf("%s%s offset %4lu | %-30s | %s\n",
-           ind.c_str(),
-           instr.lineno.has_value()
-               ? ("L" + std::to_string(*instr.lineno) + " ").c_str()
-               : "    ",
-           instr.offset,
-           instr.opname.c_str(),
-           instr.argrepr.c_str());
+
+    std::string instRepr;
+    if (!instr.argrepr.empty())
+        instRepr = instr.argrepr;
+    else if (instr.argvalType == ArgvalType::Int)
+        instRepr = std::to_string(std::get<int>(instr.argval));
+    else if (instr.argvalType == ArgvalType::Str)
+        instRepr = std::get<std::string>(instr.argval);
+    else if (instr.argvalType == ArgvalType::TupleStr) {
+        instRepr = "[tuple]";
+    } else if (instr.argvalType == ArgvalType::Code)
+        instRepr = "[code object]";
+    else
+        instRepr = "";
+
+    const std::string argTypeStr = "[" + argvalTypeToString(instr.argvalType) + "]";
+    const std::string linenoStr = instr.lineno.has_value() ? "L" + std::to_string(*instr.lineno) : "    ";
+
+    std::cout << ind << linenoStr << " offset " << std::setw(4) << std::left << instr.offset << " | "
+            << std::setw(30) << std::left << instr.opname << " "
+            << std::setw(10) << std::left << argTypeStr << " | "
+            << instRepr << std::endl;
 }
 
 
@@ -126,22 +162,22 @@ void printByteCodeModule(const ByteCodeModule& code, const int depth) {
 
     // Print code metadata
     if (!code.info.cellvars.empty()) {
-        printf("%scellvars: ", ind.c_str());
+        std::cout << ind << "cellvars: ";
         for (const auto& v : code.info.cellvars)
-            printf("%s ", v.c_str());
-        printf("\n");
+            std::cout << v << " ";
+        std::cout << "\n";
     }
     if (!code.info.freevars.empty()) {
-        printf("%sfreevars: ", ind.c_str());
+        std::cout << ind << "freevars: ";
         for (const auto& v : code.info.freevars)
-            printf("%s ", v.c_str());
-        printf("\n");
+            std::cout << v << " ";
+        std::cout << "\n";
     }
     if (!code.info.exceptionTable.empty()) {
-        printf("%sexception table:\n", ind.c_str());
+        std::cout << ind << "exception table:\n";
         for (const auto& e : code.info.exceptionTable) {
-            printf("%s  [%lu, %lu) -> target %lu  depth %lu  lasti %d\n",
-                   ind.c_str(), e.start, e.end, e.target, e.depth, static_cast<int>(e.lasti));
+            std::cout << ind << "  [" << e.start << ", " << e.end << ") -> target " << e.target
+                    << "  depth " << e.depth << "  lasti " << (e.lasti ? "true" : "false") << "\n";
         }
     }
 
@@ -151,7 +187,7 @@ void printByteCodeModule(const ByteCodeModule& code, const int depth) {
 
         // If the instruction has a nested code object, print it recursively with increased indentation.
         if (instr.argvalType == ArgvalType::Code) {
-            printf("%s  [nested code object]:\n", ind.c_str());
+            std::cout << ind << "  [nested code object]:\n";
             // Wrap nested instructions in a temporary DisassembledCode for printing
             if (const std::vector<Instruction>* nestedCode = std::get_if<std::vector<Instruction> >(&instr.argval)) {
                 ByteCodeModule nested;

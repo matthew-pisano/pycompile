@@ -111,7 +111,8 @@ struct Instruction {
     int opcode; // The numeric opcode
     std::string opname; // The human-readable opcode name
     std::string argrepr; // Human-readable description of the instruction argument, if any
-    std::optional<size_t> lineno; // The line number, set when starts_line is not None
+    std::optional<size_t> lineno; // The line number, if available
+    bool startsLine; // Whether this instruction starts a new source line
     ArgvalType argvalType; // The type of the instruction argument, which determines how to interpret argval
     Argval argval; // The instruction argument, which can be of various types depending on the opcode
 };

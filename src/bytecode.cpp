@@ -148,9 +148,10 @@ void printInstruction(const Instruction& instr, const int indentLevel) {
         instRepr = "";
 
     const std::string argTypeStr = "[" + argvalTypeToString(instr.argvalType) + "]";
-    const std::string linenoStr = instr.lineno.has_value() ? "L" + std::to_string(*instr.lineno) : "    ";
+    const std::string lineStartStr = instr.startsLine ? "*" : " ";
+    const std::string linenoStr = instr.lineno.has_value() ? "L" + std::to_string(*instr.lineno) : "L-";
 
-    std::cout << ind << linenoStr << " offset " << std::setw(4) << std::left << instr.offset << " | "
+    std::cout << ind << lineStartStr << linenoStr << " offset " << std::setw(4) << std::left << instr.offset << " | "
             << std::setw(30) << std::left << instr.opname << " "
             << std::setw(10) << std::left << argTypeStr << " | "
             << instRepr << std::endl;
@@ -225,6 +226,11 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
     if (!instrIt)
         throw std::runtime_error(getPythonErrorTraceback());
 
+    // Get the first line number from the code object
+    PyObject* firstLineno = PyObject_GetAttrString(code, "co_firstlineno");
+    int currentLineno = firstLineno ? PyLong_AsInt(firstLineno) : 1;
+    Py_XDECREF(firstLineno);
+
     PyObject* item;
     // Iterate over the instructions returned by dis, extracting their attributes into Instruction structs.
     while ((item = PyIter_Next(instrIt))) {
@@ -246,11 +252,25 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
         instr.argrepr = PyUnicode_AsUTF8(argrepr);
         Py_DECREF(argrepr);
 
-        // startsLine is int | None
+        // starts_line is a boolean indicating whether this instruction starts a new source line.
         PyObject* startsLine = PyObject_GetAttrString(item, "starts_line");
-        if (startsLine && startsLine != Py_None)
-            instr.lineno = PyLong_AsLong(startsLine);
+        bool isStartOfLine = startsLine && PyObject_IsTrue(startsLine) == 1;
+        instr.startsLine = isStartOfLine;
         Py_XDECREF(startsLine);
+
+        PyObject* linenoAttr = PyObject_GetAttrString(item, "positions");
+        if (linenoAttr && linenoAttr != Py_None) {
+            // In Python 3.11+, positions is available
+            PyObject* startLine = PyObject_GetAttrString(linenoAttr, "lineno");
+            if (startLine && startLine != Py_None)
+                currentLineno = PyLong_AsInt(startLine);
+
+            instr.lineno = currentLineno;
+            Py_XDECREF(startLine);
+            Py_DECREF(linenoAttr);
+        } else
+        // Fallback for older Python versions or if positions unavailable
+            Py_XDECREF(linenoAttr);
 
         // argval: int | str | tuple | code object | other
         PyObject* argval = PyObject_GetAttrString(item, "argval"); // borrowed reference

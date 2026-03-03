@@ -4,6 +4,7 @@
 
 #include "bytecode.h"
 #include "pythoncode.h"
+#include "python_raii.h"
 #include "utils.h"
 
 
@@ -35,7 +36,7 @@ int main(const int argc, char* argv[]) {
         }
     }
 
-    Py_Initialize();
+    PythonInterpreter pyInterp; // Initializes Python via RAII
 
     std::vector<CompiledModule> compiledModules;
     for (size_t i = 0; i < inputFileNames.size(); i++) {
@@ -44,9 +45,6 @@ int main(const int argc, char* argv[]) {
         try {
             compiledModules.push_back(compilePythonSource(source, fileName, fileName));
         } catch (const std::runtime_error& e) {
-            // Clear compiled modules so their destructors (which Py_DECREF) run while Python is still initialized.
-            compiledModules.clear();
-            Py_Finalize();
             std::cerr << "Error compiling file '" + fileName + "': " + e.what() << std::endl;
             return 1;
         }
@@ -57,9 +55,6 @@ int main(const int argc, char* argv[]) {
         try {
             bytecodeModules.push_back(generatePythonBytecode(module));
         } catch (const std::runtime_error& e) {
-            // Ensure compiledModules are cleared before finalizing Python to avoid Py_DECREF after finalization
-            compiledModules.clear();
-            Py_Finalize();
             std::cerr << "Error generating bytecode for file '" + module.filename + "': " + e.what() << std::endl;
             return 1;
         }
@@ -72,8 +67,5 @@ int main(const int argc, char* argv[]) {
         printf("\n");
     }
 
-    // Ensure compiledModules are cleared before finalizing Python to avoid Py_DECREF after finalization
-    compiledModules.clear();
-    Py_Finalize();
     return 0;
 }

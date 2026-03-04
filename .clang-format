@@ -47,6 +47,7 @@ MacroBlockEnd: ''
 MaxEmptyLinesToKeep: 2
 NamespaceIndentation: All
 PointerAlignment: Left
+SortIncludes: true
 SpaceAfterCStyleCast: true
 SpaceAfterTemplateKeyword: false
 SpaceInEmptyParentheses: false

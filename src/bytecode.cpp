@@ -6,7 +6,29 @@
 #include <stdexcept>
 
 #include "bytecode.h"
+
+#include <iomanip>
+#include <iostream>
+
 #include "utils.h"
+
+
+inline std::string argvalTypeToString(const ArgvalType type) {
+    switch (type) {
+        case ArgvalType::None:
+            return "None";
+        case ArgvalType::Int:
+            return "Int";
+        case ArgvalType::Str:
+            return "Str";
+        case ArgvalType::TupleStr:
+            return "TupleStr";
+        case ArgvalType::Code:
+            return "Code";
+        default:
+            return "Unknown";
+    }
+}
 
 
 /**
@@ -110,38 +132,53 @@ std::vector<ExceptionTableEntry> decodeExceptionTable(PyObject* code) {
 
 void printInstruction(const Instruction& instr, const int indentLevel) {
     const std::string ind(indentLevel * 4, ' ');
-    printf("%s%s offset %4lu | %-30s | %s\n",
-           ind.c_str(),
-           instr.lineno.has_value()
-               ? ("L" + std::to_string(*instr.lineno) + " ").c_str()
-               : "    ",
-           instr.offset,
-           instr.opname.c_str(),
-           instr.argrepr.c_str());
+
+    std::string instRepr;
+    if (!instr.argrepr.empty())
+        instRepr = instr.argrepr;
+    else if (instr.argvalType == ArgvalType::Int)
+        instRepr = std::to_string(std::get<int>(instr.argval));
+    else if (instr.argvalType == ArgvalType::Str)
+        instRepr = std::get<std::string>(instr.argval);
+    else if (instr.argvalType == ArgvalType::TupleStr) {
+        instRepr = "[tuple]";
+    } else if (instr.argvalType == ArgvalType::Code)
+        instRepr = "[code object]";
+    else
+        instRepr = "";
+
+    const std::string argTypeStr = "[" + argvalTypeToString(instr.argvalType) + "]";
+    const std::string lineStartStr = instr.startsLine ? "*" : " ";
+    const std::string linenoStr = instr.lineno.has_value() ? "L" + std::to_string(*instr.lineno) : "L-";
+
+    std::cout << ind << lineStartStr << linenoStr << " offset " << std::setw(4) << std::left << instr.offset << " | "
+            << std::setw(30) << std::left << instr.opname << " "
+            << std::setw(10) << std::left << argTypeStr << " | "
+            << instRepr << std::endl;
 }
 
 
-void printDisassembly(const DisassembledCode& code, const int depth) {
+void printByteCodeModule(const ByteCodeModule& code, const int depth) {
     const std::string ind(depth * 4, ' ');
 
     // Print code metadata
     if (!code.info.cellvars.empty()) {
-        printf("%scellvars: ", ind.c_str());
+        std::cout << ind << "cellvars: ";
         for (const auto& v : code.info.cellvars)
-            printf("%s ", v.c_str());
-        printf("\n");
+            std::cout << v << " ";
+        std::cout << "\n";
     }
     if (!code.info.freevars.empty()) {
-        printf("%sfreevars: ", ind.c_str());
+        std::cout << ind << "freevars: ";
         for (const auto& v : code.info.freevars)
-            printf("%s ", v.c_str());
-        printf("\n");
+            std::cout << v << " ";
+        std::cout << "\n";
     }
     if (!code.info.exceptionTable.empty()) {
-        printf("%sexception table:\n", ind.c_str());
+        std::cout << ind << "exception table:\n";
         for (const auto& e : code.info.exceptionTable) {
-            printf("%s  [%lu, %lu) -> target %lu  depth %lu  lasti %d\n",
-                   ind.c_str(), e.start, e.end, e.target, e.depth, static_cast<int>(e.lasti));
+            std::cout << ind << "  [" << e.start << ", " << e.end << ") -> target " << e.target
+                    << "  depth " << e.depth << "  lasti " << (e.lasti ? "true" : "false") << "\n";
         }
     }
 
@@ -151,12 +188,12 @@ void printDisassembly(const DisassembledCode& code, const int depth) {
 
         // If the instruction has a nested code object, print it recursively with increased indentation.
         if (instr.argvalType == ArgvalType::Code) {
-            printf("%s  [nested code object]:\n", ind.c_str());
+            std::cout << ind << "  [nested code object]:\n";
             // Wrap nested instructions in a temporary DisassembledCode for printing
             if (const std::vector<Instruction>* nestedCode = std::get_if<std::vector<Instruction> >(&instr.argval)) {
-                DisassembledCode nested;
+                ByteCodeModule nested;
                 nested.instructions = *nestedCode;
-                printDisassembly(nested, depth + 1);
+                printByteCodeModule(nested, depth + 1);
             } else
                 throw std::runtime_error("Expected argval to be a vector of Instructions for nested code object");
         }
@@ -164,11 +201,15 @@ void printDisassembly(const DisassembledCode& code, const int depth) {
 }
 
 
-DisassembledCode disassemble(PyObject* code, const int depth) {
-    DisassembledCode result;
+ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, const int depth) {
+    ByteCodeModule result;
+    result.filename = compiledModule.filename;
+    result.module_name = compiledModule.module_name;
 
     if (depth > NESTED_FUNCTION_DEPTH)
         throw std::runtime_error("Maximum nested function depth exceeded");
+
+    PyObject* code = compiledModule.codeObject; // Borrowed reference, do not decref
 
     // Code-level metadata
     result.info.freevars = extractPyTupleStrings(code, "co_freevars");
@@ -184,6 +225,11 @@ DisassembledCode disassemble(PyObject* code, const int depth) {
     Py_DECREF(dis);
     if (!instrIt)
         throw std::runtime_error(getPythonErrorTraceback());
+
+    // Get the first line number from the code object
+    PyObject* firstLineno = PyObject_GetAttrString(code, "co_firstlineno");
+    int currentLineno = firstLineno ? PyLong_AsInt(firstLineno) : 1;
+    Py_XDECREF(firstLineno);
 
     PyObject* item;
     // Iterate over the instructions returned by dis, extracting their attributes into Instruction structs.
@@ -206,14 +252,28 @@ DisassembledCode disassemble(PyObject* code, const int depth) {
         instr.argrepr = PyUnicode_AsUTF8(argrepr);
         Py_DECREF(argrepr);
 
-        // startsLine is int | None
+        // starts_line is a boolean indicating whether this instruction starts a new source line.
         PyObject* startsLine = PyObject_GetAttrString(item, "starts_line");
-        if (startsLine && startsLine != Py_None)
-            instr.lineno = PyLong_AsLong(startsLine);
+        bool isStartOfLine = startsLine && PyObject_IsTrue(startsLine) == 1;
+        instr.startsLine = isStartOfLine;
         Py_XDECREF(startsLine);
 
+        PyObject* linenoAttr = PyObject_GetAttrString(item, "positions");
+        if (linenoAttr && linenoAttr != Py_None) {
+            // In Python 3.11+, positions is available
+            PyObject* startLine = PyObject_GetAttrString(linenoAttr, "lineno");
+            if (startLine && startLine != Py_None)
+                currentLineno = PyLong_AsInt(startLine);
+
+            instr.lineno = currentLineno;
+            Py_XDECREF(startLine);
+            Py_DECREF(linenoAttr);
+        } else
+        // Fallback for older Python versions or if positions unavailable
+            Py_XDECREF(linenoAttr);
+
         // argval: int | str | tuple | code object | other
-        PyObject* argval = PyObject_GetAttrString(item, "argval");
+        PyObject* argval = PyObject_GetAttrString(item, "argval"); // borrowed reference
         if (PyLong_Check(argval)) {
             instr.argvalType = ArgvalType::Int;
             instr.argval = PyLong_AsInt(argval);
@@ -232,14 +292,17 @@ DisassembledCode disassemble(PyObject* code, const int depth) {
             instr.argval = std::move(tupleStrs);
         } else if (PyCode_Check(argval)) {
             instr.argvalType = ArgvalType::Code;
-            instr.argval = disassemble(argval, depth + 1).instructions;
+            // Increment refcount so the temporary CompiledModule owns the code object and will decref it when destroyed.
+            Py_XINCREF(argval);
+            CompiledModule nested{compiledModule.filename, compiledModule.module_name, argval};
+            instr.argval = generatePythonBytecode(nested, depth + 1).instructions;
         } else {
             instr.argvalType = ArgvalType::None; // for any other types, we just treat it as None
             instr.argval = ArgvalNone{};
         }
 
-        Py_DECREF(argval);
         Py_DECREF(item);
+        Py_XDECREF(argval);
         result.instructions.push_back(std::move(instr));
     }
 

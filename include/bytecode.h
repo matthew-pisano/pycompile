@@ -12,6 +12,8 @@
 #include <variant>
 #include <vector>
 
+#include "pythoncode.h"
+
 
 /**
  * The maximum depth to evaluate nested Python Callables to
@@ -78,6 +80,14 @@ enum class ArgvalType {
 
 
 /**
+ * Helper function to convert an ArgvalType enum value to a human-readable string for debugging and printing purposes.
+ * @param type The ArgvalType enum value to convert to a string
+ * @return A string representation of the ArgvalType value, such as "Int", "Str", "TupleStr", "Code", or "None".
+ */
+inline std::string argvalTypeToString(ArgvalType type);
+
+
+/**
  * Dummy struct to represent the absence of an instruction argument, since some instructions have no argument.
  */
 struct ArgvalNone {
@@ -101,16 +111,19 @@ struct Instruction {
     int opcode; // The numeric opcode
     std::string opname; // The human-readable opcode name
     std::string argrepr; // Human-readable description of the instruction argument, if any
-    std::optional<size_t> lineno; // The line number, set when starts_line is not None
+    std::optional<size_t> lineno; // The line number, if available
+    bool startsLine; // Whether this instruction starts a new source line
     ArgvalType argvalType; // The type of the instruction argument, which determines how to interpret argval
     Argval argval; // The instruction argument, which can be of various types depending on the opcode
 };
 
 
 /**
- * A disassembled code object, containing its metadata and the list of instructions.
+ * A bytecode module object, containing its metadata and the list of instructions.
  */
-struct DisassembledCode {
+struct ByteCodeModule {
+    std::string filename; // The filename associated with the code object, used for error messages and debugging
+    std::string module_name; // The module name associated with the code object, used for error messages and debugging
     CodeInfo info; // Metadata about the code object
     std::vector<Instruction> instructions; // The list of bytecode instructions
 };
@@ -125,21 +138,21 @@ void printInstruction(const Instruction& instr, int indentLevel = 0);
 
 
 /**
- * Helper function to print the disassembled code in a human-readable format, including metadata and instructions.
- * @param code The DisassembledCode struct to print
+ * Helper function to print the bytecode module in a human-readable format, including metadata and instructions.
+ * @param code The ByteCodeModule struct to print
  * @param depth The current recursion depth for nested code objects, used for indentation (default is 0)
  */
-void printDisassembly(const DisassembledCode& code, int depth = 0);
+void printByteCodeModule(const ByteCodeModule& code, int depth = 0);
 
 
 /**
- * Disassemble a Python code object into a DisassembledCode struct, extracting its metadata and instructions.
+ * Disassemble a Python code object into a ByteCodeModule struct, extracting its metadata and instructions.
  * This function is recursive and will disassemble nested code objects (e.g. lambdas, comprehensions) up to a max depth.
- * @param code A Python code object to disassemble
+ * @param compiledModule A CompiledModule struct containing the compiled code object to disassemble
  * @param depth The current recursion depth for nested code objects (default is 0)
- * @return A DisassembledCode struct containing the metadata and instructions of the code object
+ * @return A ByteCodeModule struct containing the metadata and instructions of the code object
  * @throws std::runtime_error if the max nested function depth is exceeded, or if there are errors during disassembly.
  */
-DisassembledCode disassemble(PyObject* code, int depth = 0);
+ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, int depth = 0);
 
 #endif //PYCOMPILE_BYTECODE_H

@@ -152,7 +152,7 @@ void printInstruction(const Instruction& instr, const int indentLevel) {
     const std::string linenoStr = instr.lineno.has_value() ? "L" + std::to_string(*instr.lineno) : "L-";
 
     std::cout << ind << lineStartStr << linenoStr << " offset " << std::setw(4) << std::left << instr.offset << " | "
-            << std::setw(30) << std::left << instr.opname << " "
+            << std::setw(30) << std::left << instr.opcode << " "
             << std::setw(10) << std::left << argTypeStr << " | "
             << instRepr << std::endl;
 }
@@ -241,11 +241,12 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
         Py_DECREF(offset);
 
         PyObject* opcode = PyObject_GetAttrString(item, "opcode");
-        instr.opcode = PyLong_AsInt(opcode);
+        instr.opcodeId = PyLong_AsInt(opcode);
         Py_DECREF(opcode);
 
         PyObject* opname = PyObject_GetAttrString(item, "opname");
-        instr.opname = PyUnicode_AsUTF8(opname);
+        std::string opcodeStr = PyUnicode_AsUTF8(opname);
+        instr.opcode = pythonOpcodeFromString(opcodeStr);
         Py_DECREF(opname);
 
         PyObject* argrepr = PyObject_GetAttrString(item, "argrepr");

@@ -21,7 +21,8 @@ find_package(Python REQUIRED COMPONENTS Interpreter Development)
 set(PYCOMPILE_SOURCES
         src/bytecode.cpp
         src/utils.cpp
-        src/pythoncode.cpp)
+        src/pythoncode.cpp
+        src/python_opcodes.cpp)
 
 add_executable(pycompile src/main.cpp ${PYCOMPILE_SOURCES})
 target_link_libraries(pycompile PRIVATE Python::Python CLI11::CLI11)

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "pythoncode.h"
+#include "python_opcodes.h"
 
 
 /**
@@ -108,8 +109,8 @@ using Argval = std::variant<ArgvalNone, int, std::string, std::vector<std::strin
  */
 struct Instruction {
     size_t offset; // Byte offset of this instruction in the code object
-    int opcode; // The numeric opcode
-    std::string opname; // The human-readable opcode name
+    int opcodeId; // The numeric opcode
+    PythonOpcode opcode; // The human-readable opcode name
     std::string argrepr; // Human-readable description of the instruction argument, if any
     std::optional<size_t> lineno; // The line number, if available
     bool startsLine; // Whether this instruction starts a new source line

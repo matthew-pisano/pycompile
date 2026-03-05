@@ -6,14 +6,17 @@
 #include "pythoncode.h"
 #include "python_raii.h"
 #include "utils.h"
+#include "version.h"
 
 
 int main(const int argc, char* argv[]) {
     const std::string name = "pycompile";
+    const std::string version = name + " " + Version::VERSION;
 
     std::vector<std::string> inputFileNames;
-    CLI::App app{name + " - Python Compiler", name};
+    CLI::App app{version + " - Python Compiler", name};
     app.add_option("file", inputFileNames, "A Python file")->required()->allow_extra_args();
+    app.set_version_flag("--version", version);
 
     // Set up help message
     app.failure_message([name](const CLI::App* _app, const CLI::Error& e) -> std::string {

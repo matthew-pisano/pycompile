@@ -5,12 +5,12 @@
 
 #include <stdexcept>
 
-#include "bytecode.h"
+#include "bytecode/bytecode.h"
 
 #include <iomanip>
 #include <iostream>
 
-#include "utils.h"
+#include "bytecode/python_error.h"
 
 
 inline std::string argvalTypeToString(const ArgvalType type) {
@@ -117,9 +117,7 @@ std::vector<ExceptionTableEntry> decodeExceptionTable(PyObject* code) {
         const size_t depthLasti = readVarint(data, len, pos);
 
         entries.push_back({
-                start,
-                start + length,
-                target,
+                start, start + length, target,
                 depthLasti >> 1, // depth is the varint value shifted right by 1 (divide by 2)
                 (depthLasti & 1) != 0 // lasti flag is the least significant bit
         });
@@ -152,8 +150,7 @@ void printInstruction(const Instruction& instr, const int indentLevel) {
     const std::string linenoStr = instr.lineno.has_value() ? "L" + std::to_string(*instr.lineno) : "L-";
 
     std::cout << ind << lineStartStr << linenoStr << " offset " << std::setw(4) << std::left << instr.offset << " | "
-            << std::setw(30) << std::left << instr.opcode << " "
-            << std::setw(10) << std::left << argTypeStr << " | "
+            << std::setw(30) << std::left << instr.opcode << " " << std::setw(10) << std::left << argTypeStr << " | "
             << instRepr << std::endl;
 }
 
@@ -177,8 +174,8 @@ void printByteCodeModule(const ByteCodeModule& code, const int depth) {
     if (!code.info.exceptionTable.empty()) {
         std::cout << ind << "exception table:\n";
         for (const auto& e : code.info.exceptionTable) {
-            std::cout << ind << "  [" << e.start << ", " << e.end << ") -> target " << e.target
-                    << "  depth " << e.depth << "  lasti " << (e.lasti ? "true" : "false") << "\n";
+            std::cout << ind << "  [" << e.start << ", " << e.end << ") -> target " << e.target << "  depth " << e.depth
+                    << "  lasti " << (e.lasti ? "true" : "false") << "\n";
         }
     }
 
@@ -293,7 +290,8 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
             instr.argval = std::move(tupleStrs);
         } else if (PyCode_Check(argval)) {
             instr.argvalType = ArgvalType::Code;
-            // Increment refcount so the temporary CompiledModule owns the code object and will decref it when destroyed.
+            // Increment refcount so the temporary CompiledModule owns the code object and will decref it when
+            // destroyed.
             Py_XINCREF(argval);
             CompiledModule nested{compiledModule.filename, compiledModule.module_name, argval};
             instr.argval = generatePythonBytecode(nested, depth + 1).instructions;

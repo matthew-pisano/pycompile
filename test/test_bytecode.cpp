@@ -5,8 +5,8 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "bytecode.h"
-#include "pythoncode.h"
+#include "../include/bytecode/bytecode.h"
+#include "../include/bytecode/pythoncode.h"
 
 /**
  * Extracts a vector of opcodes from a given vector of instruction

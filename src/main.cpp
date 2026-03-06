@@ -2,9 +2,9 @@
 #include <Python.h>
 #include <iostream>
 
-#include "bytecode.h"
-#include "pythoncode.h"
-#include "python_raii.h"
+#include "bytecode/bytecode.h"
+#include "bytecode/pythoncode.h"
+#include "bytecode/python_raii.h"
 #include "utils.h"
 #include "version.h"
 

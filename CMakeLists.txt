@@ -46,10 +46,11 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 
 set(PYCOMPILE_SOURCES
-        src/bytecode.cpp
+        src/bytecode/bytecode.cpp
         src/utils.cpp
-        src/pythoncode.cpp
-        src/python_opcodes.cpp)
+        src/bytecode/pythoncode.cpp
+        src/bytecode/python_opcodes.cpp
+        src/bytecode/python_error.cpp)
 
 add_executable(pycompile src/main.cpp ${PYCOMPILE_SOURCES})
 target_link_libraries(pycompile PRIVATE Python::Python CLI11::CLI11)

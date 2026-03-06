@@ -12,8 +12,8 @@
 #include <variant>
 #include <vector>
 
-#include "pythoncode.h"
-#include "python_opcodes.h"
+#include "bytecode/pythoncode.h"
+#include "bytecode/python_opcodes.h"
 
 
 /**

@@ -13,10 +13,10 @@
  * @param instructions The vector of instructions
  * @return A vector of opcodes from the instructions
  */
-std::vector<PythonOpcode> extractInstructionOpcodes(const std::vector<Instruction>& instructions) {
+std::vector<PythonOpcode> extractInstructionOpcodes(const std::vector<ByteCodeInstruction>& instructions) {
     std::vector<PythonOpcode> opcodes;
     opcodes.reserve(instructions.size());
-    for (const Instruction& inst : instructions)
+    for (const ByteCodeInstruction& inst : instructions)
         opcodes.push_back(inst.opcode);
     return opcodes;
 }

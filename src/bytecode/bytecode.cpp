@@ -128,7 +128,7 @@ std::vector<ExceptionTableEntry> decodeExceptionTable(PyObject* code) {
 }
 
 
-void printInstruction(const Instruction& instr, const int indentLevel) {
+void printInstruction(const ByteCodeInstruction& instr, const int indentLevel) {
     const std::string ind(indentLevel * 4, ' ');
 
     std::string instRepr;
@@ -187,7 +187,7 @@ void printByteCodeModule(const ByteCodeModule& code, const int depth) {
         if (instr.argvalType == ArgvalType::Code) {
             std::cout << ind << "  [nested code object]:\n";
             // Wrap nested instructions in a temporary DisassembledCode for printing
-            if (const std::vector<Instruction>* nestedCode = std::get_if<std::vector<Instruction> >(&instr.argval)) {
+            if (const std::vector<ByteCodeInstruction>* nestedCode = std::get_if<std::vector<ByteCodeInstruction> >(&instr.argval)) {
                 ByteCodeModule nested;
                 nested.instructions = *nestedCode;
                 printByteCodeModule(nested, depth + 1);
@@ -231,7 +231,7 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
     PyObject* item;
     // Iterate over the instructions returned by dis, extracting their attributes into Instruction structs.
     while ((item = PyIter_Next(instrIt))) {
-        Instruction instr{};
+        ByteCodeInstruction instr{};
 
         PyObject* offset = PyObject_GetAttrString(item, "offset");
         instr.offset = PyLong_AsLong(offset);

@@ -27,6 +27,40 @@ class PyIR_Op<string mnemonic, list<Trait> traits = []>
     : Op<PyIR_Dialect, mnemonic, traits>;
 
 
+def PyIR_Resume : PyIR_Op<"resume"> {
+    let summary = "Resume execution of a generator or start a module";
+    let arguments = (ins SI64Attr:$arg);
+    let assemblyFormat = "$arg attr-dict";
+}
+
+def PyIR_PushNull : PyIR_Op<"push_null"> {
+    let summary = "Push a null value onto the stack (for calls without self)";
+    let results = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "attr-dict";
+}
+
+def PyIR_PopTop : PyIR_Op<"pop_top"> {
+    let summary = "Discard the top of stack";
+    let arguments = (ins ByteCodeObject_Type:$value);
+    let assemblyFormat = "$value attr-dict `:` type($value)";
+}
+
+def PyIR_LoadName : PyIR_Op<"load_name"> {
+    let summary = "Load a name from the current scope";
+    let arguments = (ins StrAttr:$var_name);
+    let results = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$var_name attr-dict";
+}
+
+def PyIR_Call : PyIR_Op<"call"> {
+    let summary = "Call a callable with arguments";
+    let arguments = (ins ByteCodeObject_Type:$callee,
+                        Variadic<ByteCodeObject_Type>:$args);
+    let results = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$callee `(` $args `)` attr-dict `:` functional-type($args, $result)";
+}
+
+
 def PyIR_LoadFast : PyIR_Op<"load_fast", [Pure]> {
     let summary = "Load a local variable by name";
     let arguments = (ins StrAttr:$var_name);

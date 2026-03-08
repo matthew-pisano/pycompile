@@ -124,7 +124,7 @@ struct ByteCodeInstruction {
  */
 struct ByteCodeModule {
     std::string filename; // The filename associated with the code object, used for error messages and debugging
-    std::string module_name; // The module name associated with the code object, used for error messages and debugging
+    std::string moduleName; // The module name associated with the code object, used for error messages and debugging
     CodeInfo info; // Metadata about the code object
     std::vector<ByteCodeInstruction> instructions; // The list of bytecode instructions
 };

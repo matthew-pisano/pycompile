@@ -15,6 +15,8 @@
 
 #include "pyir/pyir_types.h"
 
+#define GET_OP_CLASSES
 #include "pyir_ops.h.inc"
+#undef GET_OP_CLASSES
 
 #endif //PYCOMPILE_PYIR_OPS_H

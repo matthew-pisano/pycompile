@@ -8,3 +8,12 @@
 #include "pyir/pyir_types.h"
 
 #include "pyir.cpp.inc"
+
+namespace pyir {
+    void PyIRDialect::initialize() {
+        addOperations<BinaryOp, Call, LoadConst, LoadDeref, LoadFast, LoadName, PopTop, PushNull, Resume, ReturnValue,
+                      StoreFast, StoreDeref>();
+
+        addTypes<ByteCodeObjectType>();
+    }
+} // namespace pyir

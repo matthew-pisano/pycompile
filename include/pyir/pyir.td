@@ -7,8 +7,6 @@ def PyIR_Dialect : Dialect {
     let name = "pyir";
     let summary = "Python bytecode IR dialect";
     let cppNamespace = "::pyir";
-
-    let useDefaultAttributePrinterParser = 1; // Generate a single merged .h.inc for the dialect class
 }
 
 

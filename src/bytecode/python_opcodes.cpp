@@ -15,7 +15,7 @@ PythonOpcode pythonOpcodeFromString(const std::string& opcodeName) {
 #undef PYTHON_OPCODE
     };
     const auto it = table.find(opcodeName);
-    return it != table.end() ? it->second : PythonOpcode::Unknown;
+    return it != table.end() ? it->second : PythonOpcode::UNKNOWN;
 }
 
 

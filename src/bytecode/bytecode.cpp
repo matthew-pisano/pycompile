@@ -103,7 +103,7 @@ std::vector<ExceptionTableEntry> decodeExceptionTable(PyObject* code) {
         return entries;
     }
 
-    const auto* data = reinterpret_cast<unsigned char*>(PyBytes_AsString(raw));
+    const unsigned char* data = reinterpret_cast<unsigned char*>(PyBytes_AsString(raw));
     const Py_ssize_t len = PyBytes_Size(raw);
     Py_ssize_t pos = 0;
 
@@ -161,33 +161,34 @@ void printByteCodeModule(const ByteCodeModule& code, const int depth) {
     // Print code metadata
     if (!code.info.cellvars.empty()) {
         std::cout << ind << "cellvars: ";
-        for (const auto& v : code.info.cellvars)
+        for (const std::string& v : code.info.cellvars)
             std::cout << v << " ";
         std::cout << "\n";
     }
     if (!code.info.freevars.empty()) {
         std::cout << ind << "freevars: ";
-        for (const auto& v : code.info.freevars)
+        for (const std::string& v : code.info.freevars)
             std::cout << v << " ";
         std::cout << "\n";
     }
     if (!code.info.exceptionTable.empty()) {
         std::cout << ind << "exception table:\n";
-        for (const auto& e : code.info.exceptionTable) {
+        for (const ExceptionTableEntry& e : code.info.exceptionTable) {
             std::cout << ind << "  [" << e.start << ", " << e.end << ") -> target " << e.target << "  depth " << e.depth
                     << "  lasti " << (e.lasti ? "true" : "false") << "\n";
         }
     }
 
     // Print instructions
-    for (const auto& instr : code.instructions) {
+    for (const ByteCodeInstruction& instr : code.instructions) {
         printInstruction(instr, depth);
 
         // If the instruction has a nested code object, print it recursively with increased indentation.
         if (instr.argvalType == ArgvalType::Code) {
             std::cout << ind << "  [nested code object]:\n";
             // Wrap nested instructions in a temporary DisassembledCode for printing
-            if (const std::vector<ByteCodeInstruction>* nestedCode = std::get_if<std::vector<ByteCodeInstruction> >(&instr.argval)) {
+            if (const std::vector<ByteCodeInstruction>* nestedCode = std::get_if<std::vector<ByteCodeInstruction> >(
+                    &instr.argval)) {
                 ByteCodeModule nested;
                 nested.instructions = *nestedCode;
                 printByteCodeModule(nested, depth + 1);
@@ -201,7 +202,7 @@ void printByteCodeModule(const ByteCodeModule& code, const int depth) {
 ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, const int depth) {
     ByteCodeModule result;
     result.filename = compiledModule.filename;
-    result.module_name = compiledModule.module_name;
+    result.moduleName = compiledModule.module_name;
 
     if (depth > NESTED_FUNCTION_DEPTH)
         throw std::runtime_error("Maximum nested function depth exceeded");

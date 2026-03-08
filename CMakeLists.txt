@@ -86,7 +86,9 @@ set(PYCOMPILE_SOURCES
         src/bytecode/pythoncode.cpp
         src/bytecode/python_opcodes.cpp
         src/bytecode/python_error.cpp
-        src/pyir/pyir_codegen.cpp)
+        src/pyir/pyir_codegen.cpp
+        src/pyir/pyir_runtime.cpp
+)
 
 set(PYCOMPILE_LIBS
         Python::Python

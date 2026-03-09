@@ -72,9 +72,9 @@ int main(const int argc, char* argv[]) {
         std::cout << std::endl;
     }
 
+    mlir::MLIRContext context;
     mlir::OwningOpRef<mlir::ModuleOp> mlirModule;
     try {
-        mlir::MLIRContext context;
         mlirModule = pyir::generateMLIR(context, bytecodeModules);
     } catch (const std::runtime_error& e) {
         std::cerr << "Error generating mlir from modules: " << e.what() << std::endl;

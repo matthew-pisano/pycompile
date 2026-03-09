@@ -115,6 +115,7 @@ add_executable(pycompile-tests
         ${PYCOMPILE_SOURCES}
         test/test_bytecode.cpp
         test/test_main.cpp
+        test/test_mlir_codegen.cpp
 )
 target_link_libraries(pycompile-tests PRIVATE ${PYCOMPILE_LIBS} Catch2::Catch2WithMain)
 

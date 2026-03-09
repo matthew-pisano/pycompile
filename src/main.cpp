@@ -89,5 +89,7 @@ int main(const int argc, char* argv[]) {
     std::cout << std::format("MLIR for file '{}':\n", filename) << std::endl;
     pyir::printMLIRModule(mlirModule.get());
     std::cout << std::endl;
+
+    mlirModule.release();
     return 0;
 }

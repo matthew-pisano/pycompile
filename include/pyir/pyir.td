@@ -7,6 +7,7 @@ def PyIR_Dialect : Dialect {
     let name = "pyir";
     let summary = "Python bytecode IR dialect";
     let cppNamespace = "::pyir";
+    let useDefaultTypePrinterParser = 1;
 }
 
 

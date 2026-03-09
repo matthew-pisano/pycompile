@@ -7,7 +7,6 @@
 
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/BuiltinOps.h>
-#include <mlir/IR/Builders.h>
 #include <mlir/IR/MLIRContext.h>
 
 #include "bytecode/bytecode.h"
@@ -19,6 +18,10 @@ namespace pyir {
 
     // Wraps multiple modules into a single mlir::ModuleOp
     mlir::OwningOpRef<mlir::ModuleOp> generateMLIR(mlir::MLIRContext& ctx, const std::vector<ByteCodeModule>& modules);
-}
+
+    void printMLIRFuncOp(mlir::func::FuncOp fn);
+
+    void printMLIRModule(const mlir::ModuleOp& module);
+} //namespace pyir
 
 #endif //PYCOMPILE_PYIR_CODEGEN_H

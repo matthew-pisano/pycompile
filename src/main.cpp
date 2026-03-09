@@ -1,12 +1,14 @@
 #include <CLI/CLI.hpp>
 #include <Python.h>
 #include <iostream>
+#include <mlir/IR/OwningOpRef.h>
 
 #include "bytecode/bytecode.h"
 #include "bytecode/pythoncode.h"
 #include "bytecode/python_raii.h"
 #include "utils.h"
 #include "version.h"
+#include "pyir/pyir_codegen.h"
 
 
 int main(const int argc, char* argv[]) {
@@ -70,5 +72,22 @@ int main(const int argc, char* argv[]) {
         std::cout << std::endl;
     }
 
+    mlir::OwningOpRef<mlir::ModuleOp> mlirModule;
+    try {
+        mlir::MLIRContext context;
+        mlirModule = pyir::generateMLIR(context, bytecodeModules);
+    } catch (const std::runtime_error& e) {
+        std::cerr << "Error generating mlir from modules: " << e.what() << std::endl;
+        return 1;
+    }
+
+    mlir::Location loc = mlirModule.get().getLoc();
+    std::string filename = "<unknown>";
+    if (const mlir::FileLineColLoc fileLoc = mlir::dyn_cast<mlir::FileLineColLoc>(loc))
+        filename = fileLoc.getFilename().str();
+
+    std::cout << std::format("MLIR for file '{}':\n", filename) << std::endl;
+    pyir::printMLIRModule(mlirModule.get());
+    std::cout << std::endl;
     return 0;
 }

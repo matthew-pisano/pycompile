@@ -56,7 +56,7 @@ namespace pyir {
         ByteCodeObjectType pyType = ByteCodeObjectType::get(&ctx);
 
         // All Python module-level code is wrapped in a zero-argument function that returns a single PyObject (the final return value).
-        mlir::FunctionType fnType = builder.getFunctionType({}, {pyType});
+        mlir::FunctionType fnType = builder.getFunctionType({}, {});
         mlir::func::FuncOp fn = builder.create<mlir::func::FuncOp>(mlir::UnknownLoc::get(&ctx),
                                                                    llvm::StringRef(module.moduleName),
                                                                    fnType);
@@ -102,14 +102,14 @@ namespace pyir {
                     break;
 
                 case PythonOpcode::LOAD_CONST: {
+                    if (std::holds_alternative<ArgvalNone>(instr.argval))
+                        break;
+
                     mlir::Attribute attr;
                     if (const std::string* s = std::get_if<std::string>(&instr.argval))
                         attr = builder.getStringAttr(*s);
                     else if (const int* i = std::get_if<int>(&instr.argval))
                         attr = builder.getI64IntegerAttr(*i);
-                    else
-                        // None or other unhandled constant — use unit attr as a placeholder
-                        attr = builder.getUnitAttr();
 
                     stack.push_back(builder.create<LoadConst>(loc, pyType, attr).getResult());
                     break;
@@ -203,9 +203,9 @@ namespace pyir {
                     break;
 
                 case PythonOpcode::RETURN_VALUE: {
-                    const mlir::Value val = stack.back();
-                    stack.pop_back();
-                    builder.create<mlir::func::ReturnOp>(loc, mlir::ValueRange{val});
+                    if (!stack.empty())
+                        stack.pop_back();
+                    builder.create<mlir::func::ReturnOp>(loc);
                     break;
                 }
 

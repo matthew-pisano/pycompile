@@ -75,7 +75,11 @@ int main(const int argc, char* argv[]) {
     mlir::MLIRContext context;
     mlir::OwningOpRef<mlir::ModuleOp> mlirModule;
     try {
-        mlirModule = pyir::generateMLIR(context, bytecodeModules);
+        // Skip module merging if only one is included
+        if (bytecodeModules.size() > 1)
+            mlirModule = pyir::generateMLIR(context, bytecodeModules);
+        else
+            mlirModule = pyir::generateMLIR(context, bytecodeModules[0]);
     } catch (const std::runtime_error& e) {
         std::cerr << "Error generating mlir from modules: " << e.what() << std::endl;
         return 1;

@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <mlir/IR/Verifier.h>
+#include <mlir/IR/AsmState.h>
 #include <mlir/Dialect/ControlFlow/IR/ControlFlowOps.h>
 
 #include "pyir/pyir_ops.h"
@@ -46,13 +47,12 @@ namespace pyir {
 
     /**
      * Translates a ByteCodeModule to an MLIR FuncOp instruction-by-instruction
-     * @param builder The MLIR OpBuilder to use
+     * @param builder The MLIR OpBuilder to use by reference
      * @param ctx The MLIR Context
      * @param module The original ByteCodeModule
-     * @return The result MLIR FuncOp
      * @throw runtime_error For unknown or malformed ops
      */
-    mlir::func::FuncOp emitFuncOps(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ByteCodeModule& module) {
+    void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ByteCodeModule& module) {
         ByteCodeObjectType pyType = ByteCodeObjectType::get(&ctx);
 
         // All Python module-level code is wrapped in a zero-argument function that returns a single PyObject (the final return value).
@@ -189,10 +189,9 @@ namespace pyir {
                         stack.pop_back();
                     }
 
-                    // Pop callee, then null sentinel below it
-                    const mlir::Value callee = stack.back();
-                    stack.pop_back();
-                    stack.pop_back(); // null sentinel from PUSH_NULL
+                    stack.pop_back(); // null sentinel
+                    mlir::Value callee = stack.back();
+                    stack.pop_back(); // actual callee
 
                     stack.push_back(builder.create<Call>(loc, pyType, callee, args).getResult());
                     break;
@@ -252,8 +251,6 @@ namespace pyir {
                             std::to_string(instr.offset));
             }
         }
-
-        return fn;
     }
 
 
@@ -268,8 +265,7 @@ namespace pyir {
         mlir::ModuleOp mlirModule = mlir::ModuleOp::create(fileLoc);
         builder.setInsertionPointToEnd(mlirModule.getBody());
 
-        const mlir::func::FuncOp fn = emitFuncOps(builder, ctx, module);
-        mlirModule.push_back(fn);
+        buildMLIRModule(builder, ctx, module);
 
         // Verify the module is well-formed before returning
         if (mlir::failed(mlir::verify(mlirModule))) {

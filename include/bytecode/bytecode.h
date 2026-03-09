@@ -12,8 +12,8 @@
 #include <variant>
 #include <vector>
 
-#include "pythoncode.h"
-#include "python_opcodes.h"
+#include "bytecode/pythoncode.h"
+#include "bytecode/python_opcodes.h"
 
 
 /**
@@ -95,19 +95,19 @@ struct ArgvalNone {
 };
 
 
-struct Instruction; // Forward declaration of Instruction struct.
+struct ByteCodeInstruction; // Forward declaration of Instruction struct.
 
 /**
  * A variant type to represent the possible types of instruction arguments, which can be ArgvalNone, an int, a string,
  * a tuple of strings, or a nested code object (represented as a vector of Instructions).
  */
-using Argval = std::variant<ArgvalNone, int, std::string, std::vector<std::string>, std::vector<Instruction> >;
+using Argval = std::variant<ArgvalNone, int, std::string, std::vector<std::string>, std::vector<ByteCodeInstruction> >;
 
 
 /**
  * A single Python bytecode instruction, as returned by dis.get_instructions().
  */
-struct Instruction {
+struct ByteCodeInstruction {
     size_t offset; // Byte offset of this instruction in the code object
     int opcodeId; // The numeric opcode
     PythonOpcode opcode; // The human-readable opcode name
@@ -124,9 +124,9 @@ struct Instruction {
  */
 struct ByteCodeModule {
     std::string filename; // The filename associated with the code object, used for error messages and debugging
-    std::string module_name; // The module name associated with the code object, used for error messages and debugging
+    std::string moduleName; // The module name associated with the code object, used for error messages and debugging
     CodeInfo info; // Metadata about the code object
-    std::vector<Instruction> instructions; // The list of bytecode instructions
+    std::vector<ByteCodeInstruction> instructions; // The list of bytecode instructions
 };
 
 
@@ -135,7 +135,7 @@ struct ByteCodeModule {
  * @param instr The Instruction struct to print
  * @param indentLevel The current indentation level (number of spaces) to use for printing the instruction
  */
-void printInstruction(const Instruction& instr, int indentLevel = 0);
+void printInstruction(const ByteCodeInstruction& instr, int indentLevel = 0);
 
 
 /**

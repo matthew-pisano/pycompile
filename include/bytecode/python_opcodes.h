@@ -14,9 +14,9 @@
  */
 enum class PythonOpcode {
 #define PYTHON_OPCODE(name, str) name,
-#include "python_opcodes.inc"
+#include "bytecode/python_opcodes.inc"
 #undef PYTHON_OPCODE
-    Unknown
+    UNKNOWN
 };
 
 

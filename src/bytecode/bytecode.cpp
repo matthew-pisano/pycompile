@@ -5,12 +5,12 @@
 
 #include <stdexcept>
 
-#include "bytecode.h"
+#include "bytecode/bytecode.h"
 
 #include <iomanip>
 #include <iostream>
 
-#include "utils.h"
+#include "bytecode/python_error.h"
 
 
 inline std::string argvalTypeToString(const ArgvalType type) {
@@ -103,7 +103,7 @@ std::vector<ExceptionTableEntry> decodeExceptionTable(PyObject* code) {
         return entries;
     }
 
-    const auto* data = reinterpret_cast<unsigned char*>(PyBytes_AsString(raw));
+    const unsigned char* data = reinterpret_cast<unsigned char*>(PyBytes_AsString(raw));
     const Py_ssize_t len = PyBytes_Size(raw);
     Py_ssize_t pos = 0;
 
@@ -117,9 +117,7 @@ std::vector<ExceptionTableEntry> decodeExceptionTable(PyObject* code) {
         const size_t depthLasti = readVarint(data, len, pos);
 
         entries.push_back({
-                start,
-                start + length,
-                target,
+                start, start + length, target,
                 depthLasti >> 1, // depth is the varint value shifted right by 1 (divide by 2)
                 (depthLasti & 1) != 0 // lasti flag is the least significant bit
         });
@@ -130,7 +128,7 @@ std::vector<ExceptionTableEntry> decodeExceptionTable(PyObject* code) {
 }
 
 
-void printInstruction(const Instruction& instr, const int indentLevel) {
+void printInstruction(const ByteCodeInstruction& instr, const int indentLevel) {
     const std::string ind(indentLevel * 4, ' ');
 
     std::string instRepr;
@@ -152,8 +150,7 @@ void printInstruction(const Instruction& instr, const int indentLevel) {
     const std::string linenoStr = instr.lineno.has_value() ? "L" + std::to_string(*instr.lineno) : "L-";
 
     std::cout << ind << lineStartStr << linenoStr << " offset " << std::setw(4) << std::left << instr.offset << " | "
-            << std::setw(30) << std::left << instr.opcode << " "
-            << std::setw(10) << std::left << argTypeStr << " | "
+            << std::setw(30) << std::left << instr.opcode << " " << std::setw(10) << std::left << argTypeStr << " | "
             << instRepr << std::endl;
 }
 
@@ -164,33 +161,34 @@ void printByteCodeModule(const ByteCodeModule& code, const int depth) {
     // Print code metadata
     if (!code.info.cellvars.empty()) {
         std::cout << ind << "cellvars: ";
-        for (const auto& v : code.info.cellvars)
+        for (const std::string& v : code.info.cellvars)
             std::cout << v << " ";
         std::cout << "\n";
     }
     if (!code.info.freevars.empty()) {
         std::cout << ind << "freevars: ";
-        for (const auto& v : code.info.freevars)
+        for (const std::string& v : code.info.freevars)
             std::cout << v << " ";
         std::cout << "\n";
     }
     if (!code.info.exceptionTable.empty()) {
         std::cout << ind << "exception table:\n";
-        for (const auto& e : code.info.exceptionTable) {
-            std::cout << ind << "  [" << e.start << ", " << e.end << ") -> target " << e.target
-                    << "  depth " << e.depth << "  lasti " << (e.lasti ? "true" : "false") << "\n";
+        for (const ExceptionTableEntry& e : code.info.exceptionTable) {
+            std::cout << ind << "  [" << e.start << ", " << e.end << ") -> target " << e.target << "  depth " << e.depth
+                    << "  lasti " << (e.lasti ? "true" : "false") << "\n";
         }
     }
 
     // Print instructions
-    for (const auto& instr : code.instructions) {
+    for (const ByteCodeInstruction& instr : code.instructions) {
         printInstruction(instr, depth);
 
         // If the instruction has a nested code object, print it recursively with increased indentation.
         if (instr.argvalType == ArgvalType::Code) {
             std::cout << ind << "  [nested code object]:\n";
             // Wrap nested instructions in a temporary DisassembledCode for printing
-            if (const std::vector<Instruction>* nestedCode = std::get_if<std::vector<Instruction> >(&instr.argval)) {
+            if (const std::vector<ByteCodeInstruction>* nestedCode = std::get_if<std::vector<ByteCodeInstruction> >(
+                    &instr.argval)) {
                 ByteCodeModule nested;
                 nested.instructions = *nestedCode;
                 printByteCodeModule(nested, depth + 1);
@@ -204,7 +202,7 @@ void printByteCodeModule(const ByteCodeModule& code, const int depth) {
 ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, const int depth) {
     ByteCodeModule result;
     result.filename = compiledModule.filename;
-    result.module_name = compiledModule.module_name;
+    result.moduleName = compiledModule.module_name;
 
     if (depth > NESTED_FUNCTION_DEPTH)
         throw std::runtime_error("Maximum nested function depth exceeded");
@@ -234,7 +232,7 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
     PyObject* item;
     // Iterate over the instructions returned by dis, extracting their attributes into Instruction structs.
     while ((item = PyIter_Next(instrIt))) {
-        Instruction instr{};
+        ByteCodeInstruction instr{};
 
         PyObject* offset = PyObject_GetAttrString(item, "offset");
         instr.offset = PyLong_AsLong(offset);
@@ -293,7 +291,8 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
             instr.argval = std::move(tupleStrs);
         } else if (PyCode_Check(argval)) {
             instr.argvalType = ArgvalType::Code;
-            // Increment refcount so the temporary CompiledModule owns the code object and will decref it when destroyed.
+            // Increment refcount so the temporary CompiledModule owns the code object and will decref it when
+            // destroyed.
             Py_XINCREF(argval);
             CompiledModule nested{compiledModule.filename, compiledModule.module_name, argval};
             instr.argval = generatePythonBytecode(nested, depth + 1).instructions;

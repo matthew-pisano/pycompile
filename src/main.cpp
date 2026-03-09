@@ -1,12 +1,44 @@
 #include <CLI/CLI.hpp>
 #include <Python.h>
 #include <iostream>
+#include <mlir/IR/OwningOpRef.h>
 
-#include "bytecode.h"
-#include "pythoncode.h"
-#include "python_raii.h"
+#include "bytecode/bytecode.h"
+#include "bytecode/pythoncode.h"
+#include "bytecode/python_raii.h"
 #include "utils.h"
 #include "version.h"
+#include "pyir/pyir_codegen.h"
+
+
+/**
+ * Prints Python Bytecode modules in textual format
+ * @param bytecodeModules The bytecode modules to print
+ */
+void printByteCode(const std::vector<ByteCodeModule>& bytecodeModules) {
+    for (const ByteCodeModule& bytecodeModule : bytecodeModules) {
+        std::cout << std::format("Bytecode for module '{}' (from file '{}'):\n", bytecodeModule.moduleName,
+                                 bytecodeModule.filename) << std::endl;
+        printByteCodeModule(bytecodeModule);
+        std::cout << std::endl;
+    }
+}
+
+
+/**
+ * Prints MLIR in textual format
+ * @param mlirModule The MLIR module to print
+ */
+void printMLIR(mlir::ModuleOp mlirModule) {
+    mlir::Location loc = mlirModule.getLoc();
+    std::string filename = "<unknown>";
+    if (const mlir::FileLineColLoc fileLoc = mlir::dyn_cast<mlir::FileLineColLoc>(loc))
+        filename = fileLoc.getFilename().str();
+
+    std::cout << std::format("MLIR for file '{}':\n", filename) << std::endl;
+    pyir::printMLIRModule(mlirModule);
+    std::cout << std::endl;
+}
 
 
 int main(const int argc, char* argv[]) {
@@ -41,6 +73,7 @@ int main(const int argc, char* argv[]) {
 
     PythonInterpreter pyInterp; // Initializes Python via RAII
 
+    // Compile source to Python PyObjects
     std::vector<CompiledModule> compiledModules;
     for (size_t i = 0; i < inputFileNames.size(); i++) {
         const std::string& fileName = inputFileNames[i];
@@ -53,6 +86,7 @@ int main(const int argc, char* argv[]) {
         }
     }
 
+    // Disassemble PyObjects into Python bytecode
     std::vector<ByteCodeModule> bytecodeModules;
     for (const CompiledModule& module : compiledModules) {
         try {
@@ -62,13 +96,22 @@ int main(const int argc, char* argv[]) {
             return 1;
         }
     }
+    printByteCode(bytecodeModules);
 
-    for (const ByteCodeModule& bytecodeModule : bytecodeModules) {
-        std::cout << std::format("Bytecode for module '{}' (from file '{}'):\n", bytecodeModule.module_name,
-                                 bytecodeModule.filename) << std::endl;
-        printByteCodeModule(bytecodeModule);
-        std::cout << std::endl;
+    // Lower bytecode into PYIR MLIR dialect
+    mlir::MLIRContext context; // Must exit scope after all other MLIR instances
+    mlir::OwningOpRef<mlir::ModuleOp> mlirModule;
+    try {
+        // Skip module merging if only one is included
+        if (bytecodeModules.size() > 1)
+            mlirModule = pyir::generateMLIR(context, bytecodeModules);
+        else
+            mlirModule = pyir::generateMLIR(context, bytecodeModules[0]);
+    } catch (const std::runtime_error& e) {
+        std::cerr << "Error generating mlir from modules: " << e.what() << std::endl;
+        return 1;
     }
+    printMLIR(mlirModule.get());
 
     return 0;
 }

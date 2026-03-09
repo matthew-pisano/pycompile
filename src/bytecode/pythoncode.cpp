@@ -2,11 +2,11 @@
 // Created by matthew on 3/2/26.
 //
 
-#include "pythoncode.h"
+#include "bytecode/pythoncode.h"
 
 #include <stdexcept>
 
-#include "utils.h"
+#include "bytecode/python_error.h"
 
 
 CompiledModule compilePythonSource(const std::string& source, const std::string& filename,

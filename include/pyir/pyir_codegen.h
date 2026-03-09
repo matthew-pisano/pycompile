@@ -1,0 +1,27 @@
+//
+// Created by matthew on 3/6/26.
+//
+
+#ifndef PYCOMPILE_PYIR_CODEGEN_H
+#define PYCOMPILE_PYIR_CODEGEN_H
+
+#include <mlir/Dialect/Func/IR/FuncOps.h>
+#include <mlir/IR/BuiltinOps.h>
+#include <mlir/IR/MLIRContext.h>
+
+#include "bytecode/bytecode.h"
+#include "pyir/pyir_ops.h"
+
+namespace pyir {
+    // Wraps a single module into an mlir::ModuleOp containing one FuncOp
+    mlir::OwningOpRef<mlir::ModuleOp> generateMLIR(mlir::MLIRContext& ctx, const ByteCodeModule& module);
+
+    // Wraps multiple modules into a single mlir::ModuleOp
+    mlir::OwningOpRef<mlir::ModuleOp> generateMLIR(mlir::MLIRContext& ctx, const std::vector<ByteCodeModule>& modules);
+
+    void printMLIRFuncOp(mlir::func::FuncOp fn);
+
+    void printMLIRModule(const mlir::ModuleOp& module);
+} //namespace pyir
+
+#endif //PYCOMPILE_PYIR_CODEGEN_H

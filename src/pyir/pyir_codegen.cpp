@@ -8,6 +8,7 @@
 #include <mlir/IR/Verifier.h>
 #include <mlir/IR/AsmState.h>
 #include <mlir/Dialect/ControlFlow/IR/ControlFlowOps.h>
+#include <mlir/Dialect/Arith/IR/Arith.h>
 
 #include "pyir/pyir_ops.h"
 
@@ -254,11 +255,32 @@ namespace pyir {
     }
 
 
+    void insertMainEntryPoint(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, llvm::StringRef moduleFnName) {
+        const mlir::UnknownLoc loc = mlir::UnknownLoc::get(&ctx);
+        mlir::IntegerType i32Type = builder.getIntegerType(32);
+
+        // main returns int
+        mlir::FunctionType mainType = builder.getFunctionType({}, {i32Type});
+        mlir::func::FuncOp mainFn = builder.create<mlir::func::FuncOp>(loc, "main", mainType);
+
+        mlir::Block* block = mainFn.addEntryBlock();
+        builder.setInsertionPointToStart(block);
+
+        // Call the compiled module function
+        builder.create<mlir::func::CallOp>(loc, moduleFnName, mlir::TypeRange{});
+
+        // return 0
+        auto zero = builder.create<mlir::arith::ConstantIntOp>(loc, 0, 32);
+        builder.create<mlir::func::ReturnOp>(loc, mlir::ValueRange{zero});
+    }
+
+
     mlir::OwningOpRef<mlir::ModuleOp> generateMLIR(mlir::MLIRContext& ctx, const ByteCodeModule& module) {
         // Dialects must be loaded before any ops are created
         ctx.loadDialect<PyIRDialect>();
         ctx.loadDialect<mlir::func::FuncDialect>();
         ctx.loadDialect<mlir::cf::ControlFlowDialect>();
+        ctx.loadDialect<mlir::arith::ArithDialect>();
 
         mlir::OpBuilder builder(&ctx);
         const mlir::FileLineColLoc fileLoc = mlir::FileLineColLoc::get(&ctx, module.filename, 0, 0);
@@ -266,6 +288,9 @@ namespace pyir {
         builder.setInsertionPointToEnd(mlirModule.getBody());
 
         buildMLIRModule(builder, ctx, module);
+        // Reset insertion point to module level before emitting main
+        builder.setInsertionPointToEnd(mlirModule.getBody());
+        insertMainEntryPoint(builder, ctx, module.moduleName);
 
         // Verify the module is well-formed before returning
         if (mlir::failed(mlir::verify(mlirModule))) {

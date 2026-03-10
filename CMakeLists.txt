@@ -95,6 +95,8 @@ target_link_libraries(pyir_lowering PRIVATE
         LLVMCore
         LLVMTarget
         LLVMX86CodeGen
+        MLIRArithToLLVM
+        MLIRArithDialect
 )
 
 

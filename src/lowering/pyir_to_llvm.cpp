@@ -15,6 +15,8 @@
 #include <mlir/Pass/Pass.h>
 #include <mlir/Transforms/DialectConversion.h>
 #include <mlir/Conversion/FuncToLLVM/ConvertFuncToLLVM.h>
+#include <mlir/Conversion/ArithToLLVM/ArithToLLVM.h>
+#include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Transforms/Passes.h>
 
 
@@ -366,13 +368,16 @@ struct PyIRToLLVMPass : mlir::PassWrapper<PyIRToLLVMPass, mlir::OperationPass<ml
         mlir::RewritePatternSet patterns(ctx);
         populatePyIRToLLVMPatterns(patterns, typeConverter);
         mlir::populateFuncToLLVMConversionPatterns(typeConverter, patterns);
+        mlir::arith::populateArithToLLVMConversionPatterns(typeConverter, patterns);
 
         mlir::LLVMConversionTarget target(*ctx);
         target.addIllegalDialect<pyir::PyIRDialect>();
+        target.addIllegalDialect<mlir::arith::ArithDialect>();
         target.addLegalDialect<mlir::LLVM::LLVMDialect>();
         target.addLegalOp<mlir::ModuleOp>();
 
-        if (mlir::failed(mlir::applyFullConversion(module, target, std::move(patterns))))
+        if (mlir::failed(mlir::applyFullConversion(
+                module, target, std::move(patterns))))
             signalPassFailure();
     }
 };

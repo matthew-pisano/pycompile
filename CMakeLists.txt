@@ -40,8 +40,7 @@ FetchContent_MakeAvailable(cli11)
 
 add_compile_options(-Wall -Wextra -pedantic)
 
-include_directories(include)
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(include ${CMAKE_CURRENT_BINARY_DIR})
 
 find_package(MLIR REQUIRED CONFIG)
 
@@ -77,6 +76,27 @@ add_mlir_library(pyir
         MLIRSupport
 )
 
+add_library(pyir_lowering
+        src/lowering/pyir_to_llvm.cpp
+        src/lowering/llvm_export.cpp
+)
+
+target_include_directories(pyir_lowering PRIVATE
+        ${MLIR_INCLUDE_DIRS}
+        ${LLVM_INCLUDE_DIRS}
+)
+
+target_link_libraries(pyir_lowering PRIVATE
+        pyir
+        MLIRIR
+        MLIRLLVMDialect
+        MLIRLLVMToLLVMIRTranslation
+        MLIRFuncToLLVM
+        LLVMCore
+        LLVMTarget
+        LLVMX86CodeGen
+)
+
 
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 
@@ -93,6 +113,7 @@ set(PYCOMPILE_SOURCES
 set(PYCOMPILE_LIBS
         Python::Python
         pyir
+        pyir_lowering
         MLIRFuncDialect
         MLIRControlFlowDialect
         MLIRArithDialect

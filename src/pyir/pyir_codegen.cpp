@@ -85,7 +85,7 @@ namespace pyir {
                 offsetToBlock[e.target] = fn.addBlock();
 
         for (const ByteCodeInstruction& instr : module.instructions) {
-            mlir::Location loc = getInstructionLocation(ctx, instr, module.filename);
+            const mlir::Location loc = getInstructionLocation(ctx, instr, module.filename);
 
             // If this offset is a jump target, switch to its block.
             // Emit a branch from the current block if it isn't already terminated.
@@ -287,7 +287,7 @@ namespace pyir {
             for (mlir::Operation& op : mlirModule.get().getBody()->getOperations())
                 ops.push_back(&op);
 
-            for (auto* op : ops) {
+            for (mlir::Operation* op : ops) {
                 op->remove();
                 merged.getBody()->push_back(op);
             }
@@ -311,7 +311,7 @@ namespace pyir {
             pos_ += size;
         }
 
-        uint64_t current_pos() const override { return pos_; }
+        [[nodiscard]] uint64_t current_pos() const override { return pos_; }
 
     private:
         std::ostream& os_;

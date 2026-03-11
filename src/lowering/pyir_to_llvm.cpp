@@ -240,16 +240,9 @@ struct PushNullLowering : PyIROpConversion {
         PyIROpConversion(pyir::PushNull::getOperationName(), tc, ctx) {
     }
 
-    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                         mlir::ConversionPatternRewriter& rewriter) const override {
-        mlir::MLIRContext* ctx = op->getContext();
-        const mlir::ModuleOp module = getModule(op);
-        const mlir::Location loc = op->getLoc();
-
-        const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {});
-        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_push_null", fnType);
-        mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{});
-        rewriter.replaceOp(op, call.getResult());
+        rewriter.replaceOpWithNewOp<mlir::LLVM::ZeroOp>(op, ptrType(op->getContext()));
         return mlir::success();
     }
 };
@@ -336,8 +329,17 @@ struct PopTopLowering : PyIROpConversion {
         PyIROpConversion(pyir::PopTop::getOperationName(), tc, ctx) {
     }
 
-    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override {
+        mlir::MLIRContext* ctx = op->getContext();
+        const mlir::ModuleOp module = getModule(op);
+        const mlir::Location loc = op->getLoc();
+
+        const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
+                mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx)});
+        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_decref", fnType);
+
+        rewriter.create<mlir::LLVM::CallOp>(loc, fn, operands[0]);
         rewriter.eraseOp(op);
         return mlir::success();
     }

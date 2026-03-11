@@ -178,18 +178,22 @@ void exportObjectFile(const mlir::ModuleOp module, const std::filesystem::path& 
 
 
 void linkObjectFile(const std::filesystem::path& obj, const std::filesystem::path& output) {
-    auto cc = llvm::sys::findProgramByName("cc");
-    if (!cc)
-        throw std::runtime_error("cc not found");
+    llvm::ErrorOr<std::string> cppCompiler = llvm::sys::findProgramByName("c++");
+    if (!cppCompiler)
+        cppCompiler = llvm::sys::findProgramByName("g++");
+    if (!cppCompiler)
+        cppCompiler = llvm::sys::findProgramByName("clang++");
+    if (!cppCompiler)
+        throw std::runtime_error("Unable to find a suitable compiler in PATH");
 
+    const std::string objStr = obj.string();
+    const std::string outStr = output.string();
     const std::string runtimeLib = PYIR_RUNTIME_LIB_PATH;
-    const std::vector<llvm::StringRef> args = {*cc, obj.string(),
-                                               runtimeLib,
-                                               "-o", output.string()
+    const std::vector<llvm::StringRef> args = {*cppCompiler, objStr, runtimeLib, "-o", outStr
     };
 
     std::string errMsg;
-    int ret = llvm::sys::ExecuteAndWait(*cc, args, std::nullopt, {}, 0, 0, &errMsg);
+    int ret = llvm::sys::ExecuteAndWait(*cppCompiler, args, std::nullopt, {}, 0, 0, &errMsg);
     if (ret != 0)
         throw std::runtime_error("Linking failed: " + errMsg);
 }

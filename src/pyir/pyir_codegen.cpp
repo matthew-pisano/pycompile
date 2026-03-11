@@ -15,6 +15,22 @@
 namespace pyir {
 
     /**
+     * Mangles a Python module name to work as a valid MLIR symbol
+     * @param filename The path to the Python module
+     * @return
+     */
+    std::string mangleModuleName(const std::string& filename) {
+        std::string result = "__pymodule_";
+        for (const char c : filename) {
+            if (std::isalnum(c))
+                result += c;
+            else
+                result += '_';
+        }
+        return result;
+    }
+
+    /**
      * Gets the location of the given instruction in terms of MLIR
      * @param ctx The MLIR context
      * @param instr The instruction to locate
@@ -51,15 +67,17 @@ namespace pyir {
      * @param builder The MLIR OpBuilder to use by reference
      * @param ctx The MLIR Context
      * @param module The original ByteCodeModule
+     * @param moduleName The name to give the MLIR module
      * @throw runtime_error For unknown or malformed ops
      */
-    void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ByteCodeModule& module) {
+    void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ByteCodeModule& module,
+                         const std::string& moduleName) {
         ByteCodeObjectType pyType = ByteCodeObjectType::get(&ctx);
 
         // All Python module-level code is wrapped in a zero-argument function that returns a single PyObject (the final return value).
         mlir::FunctionType fnType = builder.getFunctionType({}, {});
         mlir::func::FuncOp fn = builder.create<mlir::func::FuncOp>(mlir::UnknownLoc::get(&ctx),
-                                                                   llvm::StringRef(module.moduleName),
+                                                                   llvm::StringRef(moduleName),
                                                                    fnType);
 
         mlir::Block* block = fn.addEntryBlock();
@@ -283,14 +301,15 @@ namespace pyir {
         ctx.loadDialect<mlir::arith::ArithDialect>();
 
         mlir::OpBuilder builder(&ctx);
-        const mlir::FileLineColLoc fileLoc = mlir::FileLineColLoc::get(&ctx, module.filename, 0, 0);
+        const std::string mlirModuleName = mangleModuleName(module.filename);
+        const mlir::FileLineColLoc fileLoc = mlir::FileLineColLoc::get(&ctx, mlirModuleName, 0, 0);
         mlir::ModuleOp mlirModule = mlir::ModuleOp::create(fileLoc);
         builder.setInsertionPointToEnd(mlirModule.getBody());
 
-        buildMLIRModule(builder, ctx, module);
+        buildMLIRModule(builder, ctx, module, mlirModuleName);
         // Reset insertion point to module level before emitting main
         builder.setInsertionPointToEnd(mlirModule.getBody());
-        insertMainEntryPoint(builder, ctx, module.moduleName);
+        insertMainEntryPoint(builder, ctx, mlirModuleName);
 
         // Verify the module is well-formed before returning
         if (mlir::failed(mlir::verify(mlirModule))) {

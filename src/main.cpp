@@ -33,11 +33,11 @@ void printByteCode(const std::vector<ByteCodeModule>& bytecodeModules) {
  */
 void printMLIR(mlir::ModuleOp mlirModule) {
     mlir::Location loc = mlirModule.getLoc();
-    std::string filename = "<unknown>";
+    std::string moduleName = "<unknown>";
     if (const mlir::FileLineColLoc fileLoc = mlir::dyn_cast<mlir::FileLineColLoc>(loc))
-        filename = fileLoc.getFilename().str();
+        moduleName = fileLoc.getFilename().str();
 
-    std::cout << std::format("MLIR for file '{}':\n", filename) << std::endl;
+    std::cout << std::format("MLIR for module '{}':\n", moduleName) << std::endl;
     pyir::printMLIRModule(mlirModule);
     std::cout << std::endl;
 }
@@ -49,11 +49,11 @@ void printMLIR(mlir::ModuleOp mlirModule) {
  */
 void printLLVMDialect(mlir::ModuleOp mlirModule) {
     mlir::Location loc = mlirModule.getLoc();
-    std::string filename = "<unknown>";
+    std::string moduleName = "<unknown>";
     if (const mlir::FileLineColLoc fileLoc = mlir::dyn_cast<mlir::FileLineColLoc>(loc))
-        filename = fileLoc.getFilename().str();
+        moduleName = fileLoc.getFilename().str();
 
-    std::cout << std::format("LLVM MLIR dialect for file '{}':\n", filename) << std::endl;
+    std::cout << std::format("LLVM MLIR dialect for module '{}':\n", moduleName) << std::endl;
     const mlir::OpPrintingFlags flags;
     mlirModule.getOperation()->print(llvm::outs(), flags);
 }
@@ -65,11 +65,11 @@ void printLLVMDialect(mlir::ModuleOp mlirModule) {
  */
 void printLLVMIR(mlir::ModuleOp mlirModule) {
     mlir::Location loc = mlirModule.getLoc();
-    std::string filename = "<unknown>";
+    std::string moduleName = "<unknown>";
     if (const mlir::FileLineColLoc fileLoc = mlir::dyn_cast<mlir::FileLineColLoc>(loc))
-        filename = fileLoc.getFilename().str();
+        moduleName = fileLoc.getFilename().str();
 
-    std::cout << std::format("LLVM IR for file '{}':\n", filename) << std::endl;
+    std::cout << std::format("LLVM IR for module '{}':\n", moduleName) << std::endl;
     exportLLVMIR(mlirModule);
 }
 

@@ -99,6 +99,12 @@ target_link_libraries(pyir_lowering PRIVATE
 )
 
 
+add_library(stdpyir SHARED
+        src/pyir/pyir_runtime.cpp
+)
+target_include_directories(stdpyir PUBLIC include)
+
+
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 
 set(PYCOMPILE_SOURCES
@@ -108,7 +114,6 @@ set(PYCOMPILE_SOURCES
         src/bytecode/python_opcodes.cpp
         src/bytecode/python_error.cpp
         src/pyir/pyir_codegen.cpp
-        src/pyir/pyir_runtime.cpp
 )
 
 set(PYCOMPILE_LIBS
@@ -124,6 +129,7 @@ set(PYCOMPILE_LIBS
 
 add_executable(pycompile src/main.cpp ${PYCOMPILE_SOURCES})
 target_link_libraries(pycompile PRIVATE ${PYCOMPILE_LIBS} CLI11::CLI11)
+add_dependencies(pycompile stdpyir)
 
 
 FetchContent_Declare(

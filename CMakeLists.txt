@@ -40,7 +40,7 @@ FetchContent_MakeAvailable(cli11)
 
 add_compile_options(-Wall -Wextra -pedantic)
 
-include_directories(include ${CMAKE_CURRENT_BINARY_DIR})
+include_directories(include)
 
 find_package(MLIR REQUIRED CONFIG)
 
@@ -75,11 +75,13 @@ add_mlir_library(pyir
         MLIRIR
         MLIRSupport
 )
+target_include_directories(pyir SYSTEM PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(pyir_lowering
         src/lowering/pyir_to_llvm.cpp
         src/lowering/llvm_export.cpp
 )
+target_include_directories(pyir_lowering SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 target_include_directories(pyir_lowering PRIVATE
         ${MLIR_INCLUDE_DIRS}
@@ -105,7 +107,6 @@ target_compile_definitions(pyir_lowering PRIVATE
 add_library(stdpyir STATIC
         src/pyir/pyir_runtime.cpp
 )
-target_include_directories(stdpyir PUBLIC include)
 set_target_properties(stdpyir PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
 )

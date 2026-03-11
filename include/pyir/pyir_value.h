@@ -13,7 +13,8 @@ struct NoneType {
 };
 
 
-inline bool operator==(NoneType lhs, NoneType rhs) {
+inline bool operator==(NoneType, NoneType) {
+    // Unused args
     return true; // None is always None
 }
 

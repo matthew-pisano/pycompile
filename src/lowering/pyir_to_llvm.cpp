@@ -151,7 +151,7 @@ struct LoadNameLowering : PyIROpConversion {
         PyIROpConversion(pyir::LoadName::getOperationName(), tc, ctx) {
     }
 
-    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                         mlir::ConversionPatternRewriter& rewriter) const override {
         pyir::LoadName loadName = mlir::cast<pyir::LoadName>(op);
         mlir::MLIRContext* ctx = op->getContext();
@@ -191,7 +191,7 @@ struct LoadConstLowering : PyIROpConversion {
         PyIROpConversion(pyir::LoadConst::getOperationName(), tc, ctx) {
     }
 
-    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                         mlir::ConversionPatternRewriter& rewriter) const override {
         pyir::LoadConst loadConst = mlir::cast<pyir::LoadConst>(op);
         mlir::MLIRContext* ctx = op->getContext();

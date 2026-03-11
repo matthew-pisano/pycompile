@@ -18,6 +18,7 @@
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
 #include <llvm/Passes/PassBuilder.h>
+#include <llvm/Support/Program.h>
 
 #include <stdexcept>
 
@@ -173,4 +174,18 @@ void exportObjectFile(const mlir::ModuleOp module, const std::filesystem::path& 
 
     codegenPm.run(*llvmModule);
     outStream.flush();
+}
+
+
+void linkObjectFile(const std::filesystem::path& obj, const std::filesystem::path& output) {
+    auto cc = llvm::sys::findProgramByName("cc");
+    if (!cc)
+        throw std::runtime_error("cc not found");
+
+    const std::vector<llvm::StringRef> args = {*cc, obj.string(), "-o", output.string()};
+
+    std::string errMsg;
+    int ret = llvm::sys::ExecuteAndWait(*cc, args, std::nullopt, {}, 0, 0, &errMsg);
+    if (ret != 0)
+        throw std::runtime_error("Linking failed: " + errMsg);
 }

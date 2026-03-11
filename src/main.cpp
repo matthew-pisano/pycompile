@@ -147,9 +147,29 @@ int main(const int argc, char* argv[]) {
     printMLIR(mlirModule.get());
 
     // Lower PYIR to an LLVM MLIR dialect
-    lowerToLLVM(context, mlirModule.get());
+    try {
+        lowerToLLVM(context, mlirModule.get());
+    } catch (const std::runtime_error& e) {
+        std::cerr << "Error lowering mlir module: " << e.what() << std::endl;
+        return 1;
+    }
     printLLVMDialect(mlirModule.get());
-
     printLLVMIR(mlirModule.get());
+
+    // Create object file
+    try {
+        exportObjectFile(mlirModule.get(), "out/a.o");
+    } catch (const std::runtime_error& e) {
+        std::cerr << "Error creating object file: " << e.what() << std::endl;
+        return 1;
+    }
+    // Link object file into executable
+    try {
+        linkObjectFile("out/a.o", "out/a.out");
+    } catch (const std::runtime_error& e) {
+        std::cerr << "Error linking executable: " << e.what() << std::endl;
+        return 1;
+    }
+
     return 0;
 }

@@ -47,4 +47,12 @@ void exportLLVMIR(mlir::ModuleOp module, const LLVMExportOptions& options = {});
 void exportObjectFile(mlir::ModuleOp module, const std::filesystem::path& output,
                       const LLVMExportOptions& options = {});
 
+
+/**
+ * Links an object file with system libraries to create an executable
+ * @param obj The path to the object file
+ * @param output The path to the output file
+ */
+void linkObjectFile(const std::filesystem::path& obj, const std::filesystem::path& output);
+
 #endif //PYCOMPILE_LLVM_EXPORT_H

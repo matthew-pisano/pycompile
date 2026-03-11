@@ -65,7 +65,7 @@ namespace pyir {
         mlir::Block* block = fn.addEntryBlock();
         builder.setInsertionPointToStart(block);
 
-        // Value stack — maps the CPython evaluation stack to SSA values.
+        // Value stack, maps the CPython evaluation stack to SSA values.
         std::vector<mlir::Value> stack;
 
         // Pre-pass: collect all jump target offsets and create blocks for them.
@@ -199,7 +199,7 @@ namespace pyir {
                 }
 
                 case PythonOpcode::POP_TOP:
-                    // Discard top of stack — if the value is unused MLIR's DCE will clean up the producing op if it's Pure.
+                    // Discard top of stack, if the value is unused MLIR's DCE will clean up the producing op if it's Pure.
                     stack.pop_back();
                     break;
 

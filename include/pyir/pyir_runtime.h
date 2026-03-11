@@ -31,13 +31,13 @@ namespace pyir::runtime {
 
     Value ge(const Value& lhs, const Value& rhs);
 
-    // name resolution — returns a builtin Fn or None
+    // name resolution, returns a builtin Fn or None
     Value loadName(const char* name);
 
     // call dispatch
     Value call(const Value& callee, Value* args, int64_t argc);
 
-    // truthiness — used by conditional jumps
+    // truthiness, used by conditional jumps
     bool toBool(Value val);
 
     // builtins

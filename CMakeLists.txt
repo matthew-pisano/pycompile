@@ -91,10 +91,13 @@ target_link_libraries(pyir_lowering PRIVATE
         MLIRIR
         MLIRLLVMDialect
         MLIRLLVMToLLVMIRTranslation
+        MLIRBuiltinToLLVMIRTranslation
         MLIRFuncToLLVM
         LLVMCore
         LLVMTarget
         LLVMX86CodeGen
+        LLVMX86AsmParser
+        LLVMPasses
         MLIRArithToLLVM
         MLIRArithDialect
 )

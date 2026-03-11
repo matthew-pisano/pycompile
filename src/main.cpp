@@ -8,6 +8,7 @@
 #include "bytecode/python_raii.h"
 #include "utils.h"
 #include "version.h"
+#include "lowering/llvm_export.h"
 #include "lowering/pyir_to_llvm.h"
 #include "pyir/pyir_codegen.h"
 
@@ -55,6 +56,21 @@ void printLLVMDialect(mlir::ModuleOp mlirModule) {
     std::cout << std::format("LLVM MLIR dialect for file '{}':\n", filename) << std::endl;
     const mlir::OpPrintingFlags flags;
     mlirModule.getOperation()->print(llvm::outs(), flags);
+}
+
+
+/**
+ * Prints LLVM IR in textual format
+ * @param mlirModule The MLIR module to print
+ */
+void printLLVMIR(mlir::ModuleOp mlirModule) {
+    mlir::Location loc = mlirModule.getLoc();
+    std::string filename = "<unknown>";
+    if (const mlir::FileLineColLoc fileLoc = mlir::dyn_cast<mlir::FileLineColLoc>(loc))
+        filename = fileLoc.getFilename().str();
+
+    std::cout << std::format("LLVM IR for file '{}':\n", filename) << std::endl;
+    exportLLVMIR(mlirModule);
 }
 
 
@@ -133,5 +149,7 @@ int main(const int argc, char* argv[]) {
     // Lower PYIR to an LLVM MLIR dialect
     lowerToLLVM(context, mlirModule.get());
     printLLVMDialect(mlirModule.get());
+
+    printLLVMIR(mlirModule.get());
     return 0;
 }

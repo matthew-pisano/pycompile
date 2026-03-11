@@ -182,9 +182,11 @@ void linkObjectFile(const std::filesystem::path& obj, const std::filesystem::pat
     if (!cc)
         throw std::runtime_error("cc not found");
 
+    const std::string runtimeLib = PYIR_RUNTIME_LIB_PATH;
     const std::vector<llvm::StringRef> args = {*cc, obj.string(),
-                                               "-L", "cmake-build-debug", "-lstdpyir",
-                                               "-o", output.string()};
+                                               runtimeLib,
+                                               "-o", output.string()
+    };
 
     std::string errMsg;
     int ret = llvm::sys::ExecuteAndWait(*cc, args, std::nullopt, {}, 0, 0, &errMsg);

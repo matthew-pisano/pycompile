@@ -97,12 +97,18 @@ target_link_libraries(pyir_lowering PRIVATE
         MLIRArithDialect
         LLVM
 )
+target_compile_definitions(pyir_lowering PRIVATE
+        "PYIR_RUNTIME_LIB_PATH=\"${CMAKE_BINARY_DIR}/lib/libstdpyir.a\""
+)
 
 
-add_library(stdpyir SHARED
+add_library(stdpyir STATIC
         src/pyir/pyir_runtime.cpp
 )
 target_include_directories(stdpyir PUBLIC include)
+set_target_properties(stdpyir PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+)
 
 
 find_package(Python REQUIRED COMPONENTS Interpreter Development)

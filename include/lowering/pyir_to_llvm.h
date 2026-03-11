@@ -23,13 +23,13 @@ void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns, mlir::LLVMTyp
 
 /**
  * Creates a standalone pass that lowers all PyIR dialect ops to the LLVM dialect. After this pass runs, the module
- * contains only LLVM dialect ops and is ready for translation to LLVM IR via mlir::translateModuleToLLVMIR.
+ * contains only LLVM dialect ops.
  */
 std::unique_ptr<mlir::Pass> createPyIRToLLVMPass();
 
 
 /**
- * Lowers the PYIR module to LLVMIR
+ * Lowers the PYIR module to a dialect of LLVM
  * @param ctx The MLIR context
  * @param module The module to lower
  */

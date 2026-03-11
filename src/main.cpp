@@ -43,16 +43,16 @@ void printMLIR(mlir::ModuleOp mlirModule) {
 
 
 /**
- * Prints lowered LLVMIR in textual format
+ * Prints lowered LLVM dialect in textual format
  * @param mlirModule The MLIR module to print
  */
-void printLLVMIR(mlir::ModuleOp mlirModule) {
+void printLLVMDialect(mlir::ModuleOp mlirModule) {
     mlir::Location loc = mlirModule.getLoc();
     std::string filename = "<unknown>";
     if (const mlir::FileLineColLoc fileLoc = mlir::dyn_cast<mlir::FileLineColLoc>(loc))
         filename = fileLoc.getFilename().str();
 
-    std::cout << std::format("LLVMIR for file '{}':\n", filename) << std::endl;
+    std::cout << std::format("LLVM MLIR dialect for file '{}':\n", filename) << std::endl;
     const mlir::OpPrintingFlags flags;
     mlirModule.getOperation()->print(llvm::outs(), flags);
 }
@@ -130,8 +130,8 @@ int main(const int argc, char* argv[]) {
     }
     printMLIR(mlirModule.get());
 
-    // Lower PYIR to LLVMIR
+    // Lower PYIR to an LLVM MLIR dialect
     lowerToLLVM(context, mlirModule.get());
-    printLLVMIR(mlirModule.get());
+    printLLVMDialect(mlirModule.get());
     return 0;
 }

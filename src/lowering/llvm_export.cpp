@@ -22,6 +22,8 @@
 
 #include <stdexcept>
 
+#include "utils.h"
+
 /**
  * Initializes LLVM's native target, ASM printer, and ASM parser. Safe to call multiple times: LLVM initialization
  * is idempotent.
@@ -140,6 +142,9 @@ std::unique_ptr<llvm::Module> translateToLLVMIR(llvm::LLVMContext& llvmCtx,
                                                 const mlir::OwningOpRef<mlir::ModuleOp>& module,
                                                 const LLVMExportOptions& options) {
     std::unique_ptr<llvm::Module> llvmModule = translateToLLVM(module, llvmCtx);
+    const std::string moduleName = getMLIRModuleName(module);
+    llvmModule->setModuleIdentifier(moduleName);
+    llvmModule->setSourceFileName(moduleName);
 
     const std::unique_ptr<llvm::TargetMachine> tm = createTargetMachine(options);
     llvmModule->setTargetTriple(llvm::Triple(tm->getTargetTriple().str()));

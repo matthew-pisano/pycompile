@@ -79,13 +79,21 @@ int main(const int argc, char* argv[]) {
     const std::string version = name + " " + Version::VERSION;
 
     std::vector<std::string> inputFileNames;
+    bool upToPreprocess = false;
+    bool upToCompile = false;
+    bool upToLower = false;
+    std::string outputFileName;
     CLI::App app{version + " - Python Compiler", name};
     app.add_option("file", inputFileNames, "A Python file")->required()->allow_extra_args();
+    app.add_flag("-E", upToPreprocess, "Preprocess only; do not compile, lower, or link.");
+    app.add_flag("-S", upToCompile, "Compile only; do not lower, or link.");
+    app.add_flag("-c", upToLower, "Compile and lower, but do not link.");
+    app.add_option("-o", outputFileName, "A Python file");
     app.set_version_flag("--version", version);
 
-    // Set up help message
-    app.failure_message([name](const CLI::App* _app, const CLI::Error& e) -> std::string {
-        return name + ": error: " + CLI::FailureMessage::simple(_app, e);
+    app.callback([&] {
+        if (!outputFileName.empty() && inputFileNames.size() > 1 && (upToPreprocess || upToCompile || upToLower))
+            throw CLI::ValidationError("Cannot specify -o with -c, -S or -E with multiple files");
     });
 
     try {

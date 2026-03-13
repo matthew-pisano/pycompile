@@ -14,4 +14,12 @@
  */
 std::string readFileString(const std::string& filename);
 
+
+/**
+ * Helper function to write contents to a file
+ * @param filename The file to write to.
+ * @param content The content to write to the file.
+ */
+void writeFileString(const std::string& filename, const std::string& content);
+
 #endif //PYCOMPILE_UTILS_H

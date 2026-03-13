@@ -19,3 +19,13 @@ std::string readFileString(const std::string& filename) {
 
     return oss.str();
 }
+
+
+void writeFileString(const std::string& filename, const std::string& content) {
+    std::ofstream file(filename);
+    if (!file.is_open())
+        throw std::runtime_error("Could not open file: " + filename);
+
+    file << content;
+    file.close();
+}

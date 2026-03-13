@@ -5,6 +5,7 @@
 #ifndef PYCOMPILE_UTILS_H
 #define PYCOMPILE_UTILS_H
 #include <string>
+#include <mlir/IR/BuiltinOps.h>
 
 /**
  * Helper function to read the contents of a file into a string.
@@ -21,5 +22,14 @@ std::string readFileString(const std::string& filename);
  * @param content The content to write to the file.
  */
 void writeFileString(const std::string& filename, const std::string& content);
+
+
+/**
+ * Extracts the name from an MLIR module.
+ * @param mlirModule The module to name.
+ * @return The module name.
+ * @throw runtime_error if no name could be determined.
+ */
+std::string getMLIRModuleName(const mlir::OwningOpRef<mlir::ModuleOp>& mlirModule);
 
 #endif //PYCOMPILE_UTILS_H

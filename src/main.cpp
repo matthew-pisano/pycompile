@@ -1,3 +1,4 @@
+#include <csignal>
 #include <CLI/CLI.hpp>
 #include <Python.h>
 #include <iostream>
@@ -14,63 +15,63 @@
 
 
 /**
- * Prints Python Bytecode modules in textual format
- * @param bytecodeModules The bytecode modules to print
+ * Serializes Python Bytecode modules in textual format.
+ * @param bytecodeModules The bytecode modules to serialize.
+ * @param filename The filename to write to if a single module. Otherwise, names will be assumed.
  */
-void printByteCode(const std::vector<ByteCodeModule>& bytecodeModules) {
+void exportByteCode(const std::vector<ByteCodeModule>& bytecodeModules, const std::string& filename = "") {
     for (const ByteCodeModule& bytecodeModule : bytecodeModules) {
-        std::cout << std::format("Bytecode for module '{}' (from file '{}'):\n", bytecodeModule.moduleName,
-                                 bytecodeModule.filename) << std::endl;
-        printByteCodeModule(bytecodeModule);
-        std::cout << std::endl;
+        std::string moduleFileName = filename;
+        if (bytecodeModules.size() > 1 || filename.empty()) {
+            std::filesystem::path modulePath(bytecodeModule.filename);
+            moduleFileName = modulePath.replace_extension(".byc");
+        }
+
+        std::stringstream ss;
+        serializeByteCodeModule(bytecodeModule, ss);
+        writeFileString(moduleFileName, ss.str());
     }
 }
 
 
 /**
- * Prints MLIR in textual format
- * @param mlirModule The MLIR module to print
+ * Serializes MLIR in textual format.
+ * @param mlirModules The MLIR modules to serialize.
+* @param filename The filename to write to if a single module. Otherwise, names will be assumed.
  */
-void printMLIR(mlir::ModuleOp mlirModule) {
-    mlir::Location loc = mlirModule.getLoc();
-    std::string moduleName = "<unknown>";
-    if (const mlir::FileLineColLoc fileLoc = mlir::dyn_cast<mlir::FileLineColLoc>(loc))
-        moduleName = fileLoc.getFilename().str();
+void exportMLIRModules(const std::vector<mlir::OwningOpRef<mlir::ModuleOp> >& mlirModules,
+                       const std::string& filename = "") {
+    for (const mlir::OwningOpRef<mlir::ModuleOp>& mlirModule : mlirModules) {
+        std::string moduleFileName = filename;
+        if (mlirModules.size() > 1 || filename.empty()) {
+            std::filesystem::path modulePath(getMLIRModuleName(mlirModule));
+            moduleFileName = modulePath.replace_extension(".mlir");
+        }
 
-    std::cout << std::format("MLIR for module '{}':\n", moduleName) << std::endl;
-    pyir::printMLIRModule(mlirModule);
-    std::cout << std::endl;
+        std::string mlirModuleContent;
+        llvm::raw_string_ostream llvmOs(mlirModuleContent);
+        const mlir::OpPrintingFlags flags;
+        mlirModule.get().getOperation()->print(llvmOs, flags);
+        writeFileString(moduleFileName, mlirModuleContent);
+    }
 }
 
-
 /**
- * Prints lowered LLVM dialect in textual format
- * @param mlirModule The MLIR module to print
+ * Serializes LLVM IR in textual format.
+ * @param llvmModule The LLVM IR module to print.
+ * @param filename The filename to write to if a single module. Otherwise, names will be assumed.
  */
-void printLLVMDialect(mlir::ModuleOp mlirModule) {
-    mlir::Location loc = mlirModule.getLoc();
-    std::string moduleName = "<unknown>";
-    if (const mlir::FileLineColLoc fileLoc = mlir::dyn_cast<mlir::FileLineColLoc>(loc))
-        moduleName = fileLoc.getFilename().str();
+void exportLLVMIR(const mlir::OwningOpRef<mlir::ModuleOp>& llvmModule, const std::string& filename = "") {
+    std::string moduleFileName = filename;
+    if (filename.empty()) {
+        std::filesystem::path modulePath(getMLIRModuleName(llvmModule));
+        moduleFileName = modulePath.replace_extension(".llvm");
+    }
 
-    std::cout << std::format("LLVM MLIR dialect for module '{}':\n", moduleName) << std::endl;
-    const mlir::OpPrintingFlags flags;
-    mlirModule.getOperation()->print(llvm::outs(), flags);
-}
-
-
-/**
- * Prints LLVM IR in textual format
- * @param mlirModule The MLIR module to print
- */
-void printLLVMIR(mlir::ModuleOp mlirModule) {
-    mlir::Location loc = mlirModule.getLoc();
-    std::string moduleName = "<unknown>";
-    if (const mlir::FileLineColLoc fileLoc = mlir::dyn_cast<mlir::FileLineColLoc>(loc))
-        moduleName = fileLoc.getFilename().str();
-
-    std::cout << std::format("LLVM IR for module '{}':\n", moduleName) << std::endl;
-    exportLLVMIR(mlirModule);
+    std::string mlirModuleContent;
+    llvm::raw_string_ostream llvmOs(mlirModuleContent);
+    serializeLLVMIR(llvmModule, llvmOs);
+    writeFileString(moduleFileName, mlirModuleContent);
 }
 
 
@@ -137,43 +138,66 @@ int main(const int argc, char* argv[]) {
             return 1;
         }
     }
-    printByteCode(bytecodeModules);
+    if (upToPreprocess) {
+        exportByteCode(bytecodeModules, outputFileName);
+        return 0;
+    }
 
     // Lower bytecode into PYIR MLIR dialect
     mlir::MLIRContext context; // Must exit scope after all other MLIR instances
-    mlir::OwningOpRef<mlir::ModuleOp> mlirModule;
-    try {
-        // Skip module merging if only one is included
-        if (bytecodeModules.size() > 1)
-            mlirModule = pyir::generateMLIR(context, bytecodeModules);
-        else
-            mlirModule = pyir::generateMLIR(context, bytecodeModules[0]);
-    } catch (const std::runtime_error& e) {
-        std::cerr << "Error generating mlir from modules: " << e.what() << std::endl;
-        return 1;
+    std::vector<mlir::OwningOpRef<mlir::ModuleOp> > mlirModules;
+    for (const ByteCodeModule& module : bytecodeModules) {
+        try {
+            mlirModules.push_back(pyir::generatePyIR(context, module));
+        } catch (const std::runtime_error& e) {
+            std::cerr << "Error generating PyIR for file '" + module.filename + "': " + e.what() << std::endl;
+            return 1;
+        }
     }
-    printMLIR(mlirModule.get());
+    if (upToCompile) {
+        exportMLIRModules(mlirModules, outputFileName);
+        return 0;
+    }
+
+    mlir::OwningOpRef<mlir::ModuleOp> mergedMlirModule;
+    if (mlirModules.size() > 1)
+        try {
+            mergedMlirModule = pyir::mergePyIRModules(context, mlirModules);
+        } catch (const std::runtime_error& e) {
+            std::cerr << "Error merging PyIR modules: " << e.what() << std::endl;
+            return 1;
+        }
+    else
+        mergedMlirModule = std::move(mlirModules[0]);
 
     // Lower PYIR to an LLVM MLIR dialect
     try {
-        lowerToLLVM(context, mlirModule.get());
+        lowerToLLVM(context, mergedMlirModule.get());
     } catch (const std::runtime_error& e) {
         std::cerr << "Error lowering mlir module: " << e.what() << std::endl;
         return 1;
     }
-    printLLVMDialect(mlirModule.get());
-    printLLVMIR(mlirModule.get());
+    if (upToLower) {
+        exportLLVMIR(mergedMlirModule, outputFileName);
+        return 0;
+    }
+
+    if (outputFileName.empty())
+        outputFileName = "a.out";
 
     // Create object file
+    std::filesystem::path modulePath(getMLIRModuleName(mergedMlirModule));
+    const std::string moduleObjectPath = modulePath.replace_extension(".o");
     try {
-        exportObjectFile(mlirModule.get(), "out/a.o");
+        exportObjectFile(mergedMlirModule.get(), moduleObjectPath);
     } catch (const std::runtime_error& e) {
         std::cerr << "Error creating object file: " << e.what() << std::endl;
         return 1;
     }
+
     // Link object file into executable
     try {
-        linkObjectFile("out/a.o", "out/a.out");
+        linkObjectFile(moduleObjectPath, outputFileName);
     } catch (const std::runtime_error& e) {
         std::cerr << "Error linking executable: " << e.what() << std::endl;
         return 1;

@@ -24,7 +24,7 @@ struct MLIRFixture {
         // compile source through your pipeline
         const CompiledModule compiledModule = compilePythonSource(source, "<embedded>", "<embedded>");
         const ByteCodeModule bytecodeModule = generatePythonBytecode(compiledModule);
-        return pyir::generateMLIR(ctx, bytecodeModule);
+        return pyir::generatePyIR(ctx, bytecodeModule);
     }
 };
 

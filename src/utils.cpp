@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <fstream>
 #include <sstream>
+#include <mlir/IR/Location.h>
 
 std::string readFileString(const std::string& filename) {
     std::ifstream file(filename);
@@ -28,4 +29,12 @@ void writeFileString(const std::string& filename, const std::string& content) {
 
     file << content;
     file.close();
+}
+
+
+std::string getMLIRModuleName(const mlir::OwningOpRef<mlir::ModuleOp>& mlirModule) {
+    mlir::Location loc = mlirModule.get().getLoc();
+    if (const mlir::FileLineColLoc fileLoc = mlir::dyn_cast<mlir::FileLineColLoc>(loc))
+        return fileLoc.getFilename().str();
+    throw std::runtime_error("Unable to parse PyIR module name");
 }

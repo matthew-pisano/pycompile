@@ -26,14 +26,14 @@ struct LLVMExportOptions {
 
 
 /**
- * Translates a fully lowered MLIR module (containing only LLVM dialect ops) to LLVM IR and prints it to stdout
- *
- * Useful for inspecting the generated IR before compiling to an object file.
+ * Translates a fully lowered MLIR module (containing LLVM dialect ops) to LLVM IR and prints it to the given stream
  *
  * @param module The MLIR module to translate. Must contain only LLVM dialect ops.
+ * @param os The output stream to serialize to.
  * @param options Export options controlling target and optimization level.
  */
-void exportLLVMIR(mlir::ModuleOp module, const LLVMExportOptions& options = {});
+void serializeLLVMIR(const mlir::OwningOpRef<mlir::ModuleOp>& module, llvm::raw_string_ostream& os,
+                     const LLVMExportOptions& options = {});
 
 
 /**
@@ -44,7 +44,7 @@ void exportLLVMIR(mlir::ModuleOp module, const LLVMExportOptions& options = {});
  * @param options Export options controlling target and optimization level.
  * @throws std::runtime_error if translation or compilation fails.
  */
-void exportObjectFile(mlir::ModuleOp module, const std::filesystem::path& output,
+void exportObjectFile(const mlir::OwningOpRef<mlir::ModuleOp>& module, const std::filesystem::path& output,
                       const LLVMExportOptions& options = {});
 
 

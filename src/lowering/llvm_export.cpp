@@ -81,11 +81,12 @@ static std::unique_ptr<llvm::TargetMachine> createTargetMachine(const LLVMExport
  * @return An owning pointer to the translated llvm::Module.
  * @throws std::runtime_error if translation fails.
  */
-static std::unique_ptr<llvm::Module> translateToLLVM(mlir::ModuleOp mlirModule, llvm::LLVMContext& llvmCtx) {
-    mlir::registerLLVMDialectTranslation(*mlirModule.getContext());
-    mlir::registerBuiltinDialectTranslation(*mlirModule.getContext());
+static std::unique_ptr<llvm::Module> translateToLLVM(const mlir::OwningOpRef<mlir::ModuleOp>& mlirModule,
+                                                     llvm::LLVMContext& llvmCtx) {
+    mlir::registerLLVMDialectTranslation(*mlirModule.get().getContext());
+    mlir::registerBuiltinDialectTranslation(*mlirModule.get().getContext());
 
-    std::unique_ptr<llvm::Module> llvmModule = mlir::translateModuleToLLVMIR(mlirModule, llvmCtx);
+    std::unique_ptr<llvm::Module> llvmModule = mlir::translateModuleToLLVMIR(mlirModule.get(), llvmCtx);
     if (!llvmModule)
         throw std::runtime_error("failed to translate MLIR module to LLVM IR");
 
@@ -135,9 +136,10 @@ static void optimizeLLVMModule(llvm::Module& llvmModule, llvm::TargetMachine& tm
 }
 
 
-void exportLLVMIR(const mlir::ModuleOp module, const LLVMExportOptions& options) {
+void serializeLLVMIR(const mlir::OwningOpRef<mlir::ModuleOp>& module, llvm::raw_string_ostream& os,
+                     const LLVMExportOptions& options) {
     llvm::LLVMContext llvmCtx;
-    const std::unique_ptr<llvm::Module> llvmModule = translateToLLVM(module, llvmCtx);
+    const std::unique_ptr<llvm::Module> llvmModule = translateToLLVM(module.get(), llvmCtx);
 
     const std::unique_ptr<llvm::TargetMachine> tm = createTargetMachine(options);
     llvmModule->setTargetTriple(llvm::Triple(tm->getTargetTriple().str()));
@@ -145,12 +147,11 @@ void exportLLVMIR(const mlir::ModuleOp module, const LLVMExportOptions& options)
 
     optimizeLLVMModule(*llvmModule, *tm, options.optLevel);
 
-    llvmModule->print(llvm::outs(), nullptr);
-    llvm::outs().flush();
+    llvmModule->print(os, nullptr);
 }
 
 
-void exportObjectFile(const mlir::ModuleOp module, const std::filesystem::path& output,
+void exportObjectFile(const mlir::OwningOpRef<mlir::ModuleOp>& module, const std::filesystem::path& output,
                       const LLVMExportOptions& options) {
     llvm::LLVMContext llvmCtx;
     const std::unique_ptr<llvm::Module> llvmModule = translateToLLVM(module, llvmCtx);

@@ -4,6 +4,7 @@
 
 #include "pyir/pyir_codegen.h"
 
+#include <filesystem>
 #include <iostream>
 #include <mlir/IR/Verifier.h>
 #include <mlir/IR/AsmState.h>
@@ -300,12 +301,13 @@ namespace pyir {
         ctx.loadDialect<mlir::cf::ControlFlowDialect>();
         ctx.loadDialect<mlir::arith::ArithDialect>();
 
+        const std::string baseModuleName = std::filesystem::path(module.filename).filename();
         mlir::OpBuilder builder(&ctx);
-        const std::string mlirModuleName = mangleModuleName(module.filename);
-        const mlir::FileLineColLoc fileLoc = mlir::FileLineColLoc::get(&ctx, mlirModuleName, 0, 0);
+        const mlir::FileLineColLoc fileLoc = mlir::FileLineColLoc::get(&ctx, baseModuleName, 0, 0);
         mlir::ModuleOp mlirModule = mlir::ModuleOp::create(fileLoc);
         builder.setInsertionPointToEnd(mlirModule.getBody());
 
+        const std::string mlirModuleName = mangleModuleName(baseModuleName);
         buildMLIRModule(builder, ctx, module, mlirModuleName);
         // Reset insertion point to module level before emitting main
         builder.setInsertionPointToEnd(mlirModule.getBody());

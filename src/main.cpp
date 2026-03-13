@@ -68,7 +68,7 @@ void exportLLVMIR(const std::unique_ptr<llvm::Module>& llvmModule, const std::st
     std::string moduleFileName = filename;
     if (filename.empty()) {
         const std::filesystem::path modulePath(llvmModule->getName().data());
-        moduleFileName = modulePath.filename().replace_extension(".llvm");
+        moduleFileName = modulePath.filename().replace_extension(".ll");
     }
 
     std::string mlirModuleContent;

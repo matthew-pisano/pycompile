@@ -32,7 +32,7 @@ def PyIR_Resume : PyIR_Op<"resume"> {
     let assemblyFormat = "$arg attr-dict";
 }
 
-def PyIR_PushNull : PyIR_Op<"push_null"> {
+def PyIR_PushNull : PyIR_Op<"push_null", [Pure]> {
     let summary = "Push a null value onto the stack (for calls without self)";
     let results = (outs ByteCodeObject_Type:$result);
     let assemblyFormat = "attr-dict";
@@ -51,7 +51,7 @@ def PyIR_LoadName : PyIR_Op<"load_name"> {
     let assemblyFormat = "$var_name attr-dict";
 }
 
-def PyIR_Call : PyIR_Op<"call"> {
+def PyIR_Call : PyIR_Op<"call", [DeclareOpInterfaceMethods<MemoryEffectsOpInterface>]> {
     let summary = "Call a callable with arguments";
     let arguments = (ins ByteCodeObject_Type:$callee,
                         Variadic<ByteCodeObject_Type>:$args);

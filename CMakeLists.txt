@@ -41,7 +41,6 @@ FetchContent_MakeAvailable(cli11)
 add_compile_options(-Wall -Wextra -pedantic)
 
 include_directories(include)
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 find_package(MLIR REQUIRED CONFIG)
 
@@ -76,6 +75,41 @@ add_mlir_library(pyir
         MLIRIR
         MLIRSupport
 )
+target_include_directories(pyir SYSTEM PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+
+add_library(pyir_lowering
+        src/lowering/pyir_to_llvm.cpp
+        src/lowering/llvm_export.cpp
+)
+target_include_directories(pyir_lowering SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+target_include_directories(pyir_lowering PRIVATE
+        ${MLIR_INCLUDE_DIRS}
+        ${LLVM_INCLUDE_DIRS}
+)
+
+target_link_libraries(pyir_lowering PRIVATE
+        pyir
+        MLIRIR
+        MLIRLLVMDialect
+        MLIRLLVMToLLVMIRTranslation
+        MLIRBuiltinToLLVMIRTranslation
+        MLIRFuncToLLVM
+        MLIRArithToLLVM
+        MLIRArithDialect
+        LLVM
+)
+target_compile_definitions(pyir_lowering PRIVATE
+        "PYIR_RUNTIME_LIB_PATH=\"${CMAKE_BINARY_DIR}/lib/libstdpyir.a\""
+)
+
+
+add_library(stdpyir STATIC
+        src/pyir/pyir_runtime.cpp
+)
+set_target_properties(stdpyir PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+)
 
 
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
@@ -87,12 +121,12 @@ set(PYCOMPILE_SOURCES
         src/bytecode/python_opcodes.cpp
         src/bytecode/python_error.cpp
         src/pyir/pyir_codegen.cpp
-        src/pyir/pyir_runtime.cpp
 )
 
 set(PYCOMPILE_LIBS
         Python::Python
         pyir
+        pyir_lowering
         MLIRFuncDialect
         MLIRControlFlowDialect
         MLIRArithDialect
@@ -102,6 +136,7 @@ set(PYCOMPILE_LIBS
 
 add_executable(pycompile src/main.cpp ${PYCOMPILE_SOURCES})
 target_link_libraries(pycompile PRIVATE ${PYCOMPILE_LIBS} CLI11::CLI11)
+add_dependencies(pycompile stdpyir)
 
 
 FetchContent_Declare(

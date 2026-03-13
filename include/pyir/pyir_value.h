@@ -6,54 +6,90 @@
 #define PYCOMPILE_PYIR_VALUE_H
 #include <string>
 #include <variant>
-
-namespace pyir::runtime {
-    struct NoneType {
-    };
+#include <atomic>
 
 
-    inline bool operator==(NoneType lhs, NoneType rhs) {
-        return true; // None is always None
+struct NoneType {
+};
+
+
+inline bool operator==(NoneType, NoneType) {
+    // Unused args
+    return true; // None is always None
+}
+
+
+struct Value {
+    using Fn = Value*(*)(Value**, int64_t);
+    using Data = std::variant<NoneType, bool, int64_t, double, std::string, Fn>;
+
+    Data data;
+    std::atomic<int32_t> refcount{1};
+
+    // Disable copy/move: Values live on the heap and are managed by refcount
+    Value(const Value&) = delete;
+
+    Value& operator=(const Value&) = delete;
+
+    explicit Value(NoneType) :
+        data(NoneType{}) {
     }
 
+    explicit Value(bool b) :
+        data(b) {
+    }
 
-    struct Value {
-        using Fn = Value(*)(Value*, int64_t);
-        using Data = std::variant<NoneType, bool, int64_t, double, std::string, Fn>;
-        Data data;
+    explicit Value(int64_t i) :
+        data(i) {
+    }
 
-        explicit Value(NoneType) :
-            data(NoneType{}) {
-        }
+    explicit Value(double f) :
+        data(f) {
+    }
 
-        explicit Value(bool b) :
-            data(b) {
-        }
+    explicit Value(std::string s) :
+        data(std::move(s)) {
+    }
 
-        explicit Value(int64_t i) :
-            data(i) {
-        }
+    explicit Value(Fn f) :
+        data(f) {
+    }
 
-        explicit Value(double f) :
-            data(f) {
-        }
+    void incref() { refcount.fetch_add(1, std::memory_order_relaxed); }
 
-        explicit Value(std::string s) :
-            data(std::move(s)) {
-        }
+    void decref() {
+        if (refcount.fetch_sub(1, std::memory_order_acq_rel) == 1)
+            delete this;
+    }
 
-        explicit Value(Fn f) :
-            data(f) {
-        }
+    bool isNone() const { return std::holds_alternative<NoneType>(data); }
+    bool isBool() const { return std::holds_alternative<bool>(data); }
+    bool isInt() const { return std::holds_alternative<int64_t>(data); }
+    bool isFloat() const { return std::holds_alternative<double>(data); }
+    bool isStr() const { return std::holds_alternative<std::string>(data); }
+    bool isFn() const { return std::holds_alternative<Fn>(data); }
+};
 
-        bool isNone() const { return std::holds_alternative<NoneType>(data); }
-        bool isBool() const { return std::holds_alternative<bool>(data); }
-        bool isInt() const { return std::holds_alternative<int64_t>(data); }
-        bool isFloat() const { return std::holds_alternative<double>(data); }
-        bool isStr() const { return std::holds_alternative<std::string>(data); }
-        bool isFn() const { return std::holds_alternative<Fn>(data); }
-    };
 
-} //namespace pyir::runtime
+struct ValueRef {
+    Value* ptr;
+
+    explicit ValueRef(Value* p) :
+        ptr(p) {
+    } // takes ownership, no incref
+    ~ValueRef() {
+        if (ptr)
+            ptr->decref();
+    }
+
+    Value* get() const { return ptr; }
+
+    Value* release() {
+        Value* p = ptr;
+        ptr = nullptr;
+        return p;
+    }
+};
+
 
 #endif //PYCOMPILE_PYIR_VALUE_H

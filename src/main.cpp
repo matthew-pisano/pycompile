@@ -8,6 +8,8 @@
 #include "bytecode/python_raii.h"
 #include "utils.h"
 #include "version.h"
+#include "lowering/llvm_export.h"
+#include "lowering/pyir_to_llvm.h"
 #include "pyir/pyir_codegen.h"
 
 
@@ -31,13 +33,44 @@ void printByteCode(const std::vector<ByteCodeModule>& bytecodeModules) {
  */
 void printMLIR(mlir::ModuleOp mlirModule) {
     mlir::Location loc = mlirModule.getLoc();
-    std::string filename = "<unknown>";
+    std::string moduleName = "<unknown>";
     if (const mlir::FileLineColLoc fileLoc = mlir::dyn_cast<mlir::FileLineColLoc>(loc))
-        filename = fileLoc.getFilename().str();
+        moduleName = fileLoc.getFilename().str();
 
-    std::cout << std::format("MLIR for file '{}':\n", filename) << std::endl;
+    std::cout << std::format("MLIR for module '{}':\n", moduleName) << std::endl;
     pyir::printMLIRModule(mlirModule);
     std::cout << std::endl;
+}
+
+
+/**
+ * Prints lowered LLVM dialect in textual format
+ * @param mlirModule The MLIR module to print
+ */
+void printLLVMDialect(mlir::ModuleOp mlirModule) {
+    mlir::Location loc = mlirModule.getLoc();
+    std::string moduleName = "<unknown>";
+    if (const mlir::FileLineColLoc fileLoc = mlir::dyn_cast<mlir::FileLineColLoc>(loc))
+        moduleName = fileLoc.getFilename().str();
+
+    std::cout << std::format("LLVM MLIR dialect for module '{}':\n", moduleName) << std::endl;
+    const mlir::OpPrintingFlags flags;
+    mlirModule.getOperation()->print(llvm::outs(), flags);
+}
+
+
+/**
+ * Prints LLVM IR in textual format
+ * @param mlirModule The MLIR module to print
+ */
+void printLLVMIR(mlir::ModuleOp mlirModule) {
+    mlir::Location loc = mlirModule.getLoc();
+    std::string moduleName = "<unknown>";
+    if (const mlir::FileLineColLoc fileLoc = mlir::dyn_cast<mlir::FileLineColLoc>(loc))
+        moduleName = fileLoc.getFilename().str();
+
+    std::cout << std::format("LLVM IR for module '{}':\n", moduleName) << std::endl;
+    exportLLVMIR(mlirModule);
 }
 
 
@@ -112,6 +145,31 @@ int main(const int argc, char* argv[]) {
         return 1;
     }
     printMLIR(mlirModule.get());
+
+    // Lower PYIR to an LLVM MLIR dialect
+    try {
+        lowerToLLVM(context, mlirModule.get());
+    } catch (const std::runtime_error& e) {
+        std::cerr << "Error lowering mlir module: " << e.what() << std::endl;
+        return 1;
+    }
+    printLLVMDialect(mlirModule.get());
+    printLLVMIR(mlirModule.get());
+
+    // Create object file
+    try {
+        exportObjectFile(mlirModule.get(), "out/a.o");
+    } catch (const std::runtime_error& e) {
+        std::cerr << "Error creating object file: " << e.what() << std::endl;
+        return 1;
+    }
+    // Link object file into executable
+    try {
+        linkObjectFile("out/a.o", "out/a.out");
+    } catch (const std::runtime_error& e) {
+        std::cerr << "Error linking executable: " << e.what() << std::endl;
+        return 1;
+    }
 
     return 0;
 }

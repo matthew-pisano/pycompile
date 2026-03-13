@@ -8,10 +8,27 @@
 #include <mlir/IR/Verifier.h>
 #include <mlir/IR/AsmState.h>
 #include <mlir/Dialect/ControlFlow/IR/ControlFlowOps.h>
+#include <mlir/Dialect/Arith/IR/Arith.h>
 
 #include "pyir/pyir_ops.h"
 
 namespace pyir {
+
+    /**
+     * Mangles a Python module name to work as a valid MLIR symbol
+     * @param filename The path to the Python module
+     * @return
+     */
+    std::string mangleModuleName(const std::string& filename) {
+        std::string result = "__pymodule_";
+        for (const char c : filename) {
+            if (std::isalnum(c))
+                result += c;
+            else
+                result += '_';
+        }
+        return result;
+    }
 
     /**
      * Gets the location of the given instruction in terms of MLIR
@@ -50,21 +67,23 @@ namespace pyir {
      * @param builder The MLIR OpBuilder to use by reference
      * @param ctx The MLIR Context
      * @param module The original ByteCodeModule
+     * @param moduleName The name to give the MLIR module
      * @throw runtime_error For unknown or malformed ops
      */
-    void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ByteCodeModule& module) {
+    void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ByteCodeModule& module,
+                         const std::string& moduleName) {
         ByteCodeObjectType pyType = ByteCodeObjectType::get(&ctx);
 
         // All Python module-level code is wrapped in a zero-argument function that returns a single PyObject (the final return value).
         mlir::FunctionType fnType = builder.getFunctionType({}, {});
         mlir::func::FuncOp fn = builder.create<mlir::func::FuncOp>(mlir::UnknownLoc::get(&ctx),
-                                                                   llvm::StringRef(module.moduleName),
+                                                                   llvm::StringRef(moduleName),
                                                                    fnType);
 
         mlir::Block* block = fn.addEntryBlock();
         builder.setInsertionPointToStart(block);
 
-        // Value stack — maps the CPython evaluation stack to SSA values.
+        // Value stack, maps the CPython evaluation stack to SSA values.
         std::vector<mlir::Value> stack;
 
         // Pre-pass: collect all jump target offsets and create blocks for them.
@@ -85,7 +104,7 @@ namespace pyir {
                 offsetToBlock[e.target] = fn.addBlock();
 
         for (const ByteCodeInstruction& instr : module.instructions) {
-            mlir::Location loc = getInstructionLocation(ctx, instr, module.filename);
+            const mlir::Location loc = getInstructionLocation(ctx, instr, module.filename);
 
             // If this offset is a jump target, switch to its block.
             // Emit a branch from the current block if it isn't already terminated.
@@ -198,7 +217,7 @@ namespace pyir {
                 }
 
                 case PythonOpcode::POP_TOP:
-                    // Discard top of stack — if the value is unused MLIR's DCE will clean up the producing op if it's Pure.
+                    // Discard top of stack, if the value is unused MLIR's DCE will clean up the producing op if it's Pure.
                     stack.pop_back();
                     break;
 
@@ -254,18 +273,43 @@ namespace pyir {
     }
 
 
+    void insertMainEntryPoint(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, llvm::StringRef moduleFnName) {
+        const mlir::UnknownLoc loc = mlir::UnknownLoc::get(&ctx);
+        mlir::IntegerType i32Type = builder.getIntegerType(32);
+
+        // main returns int
+        mlir::FunctionType mainType = builder.getFunctionType({}, {i32Type});
+        mlir::func::FuncOp mainFn = builder.create<mlir::func::FuncOp>(loc, "main", mainType);
+
+        mlir::Block* block = mainFn.addEntryBlock();
+        builder.setInsertionPointToStart(block);
+
+        // Call the compiled module function
+        builder.create<mlir::func::CallOp>(loc, moduleFnName, mlir::TypeRange{});
+
+        // return 0
+        auto zero = builder.create<mlir::arith::ConstantIntOp>(loc, 0, 32);
+        builder.create<mlir::func::ReturnOp>(loc, mlir::ValueRange{zero});
+    }
+
+
     mlir::OwningOpRef<mlir::ModuleOp> generateMLIR(mlir::MLIRContext& ctx, const ByteCodeModule& module) {
         // Dialects must be loaded before any ops are created
         ctx.loadDialect<PyIRDialect>();
         ctx.loadDialect<mlir::func::FuncDialect>();
         ctx.loadDialect<mlir::cf::ControlFlowDialect>();
+        ctx.loadDialect<mlir::arith::ArithDialect>();
 
         mlir::OpBuilder builder(&ctx);
-        const mlir::FileLineColLoc fileLoc = mlir::FileLineColLoc::get(&ctx, module.filename, 0, 0);
+        const std::string mlirModuleName = mangleModuleName(module.filename);
+        const mlir::FileLineColLoc fileLoc = mlir::FileLineColLoc::get(&ctx, mlirModuleName, 0, 0);
         mlir::ModuleOp mlirModule = mlir::ModuleOp::create(fileLoc);
         builder.setInsertionPointToEnd(mlirModule.getBody());
 
-        buildMLIRModule(builder, ctx, module);
+        buildMLIRModule(builder, ctx, module, mlirModuleName);
+        // Reset insertion point to module level before emitting main
+        builder.setInsertionPointToEnd(mlirModule.getBody());
+        insertMainEntryPoint(builder, ctx, mlirModuleName);
 
         // Verify the module is well-formed before returning
         if (mlir::failed(mlir::verify(mlirModule))) {
@@ -287,7 +331,7 @@ namespace pyir {
             for (mlir::Operation& op : mlirModule.get().getBody()->getOperations())
                 ops.push_back(&op);
 
-            for (auto* op : ops) {
+            for (mlir::Operation* op : ops) {
                 op->remove();
                 merged.getBody()->push_back(op);
             }
@@ -311,7 +355,7 @@ namespace pyir {
             pos_ += size;
         }
 
-        uint64_t current_pos() const override { return pos_; }
+        [[nodiscard]] uint64_t current_pos() const override { return pos_; }
 
     private:
         std::ostream& os_;

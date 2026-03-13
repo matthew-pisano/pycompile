@@ -7,51 +7,61 @@
 
 #include "pyir/pyir_value.h"
 
-namespace pyir::runtime {
+extern "C" {
 
-    // arithmetic
-    Value add(const Value& lhs, const Value& rhs);
+// arithmetic
+Value* pyir_add(const Value* lhs, const Value* rhs);
 
-    Value sub(const Value& lhs, const Value& rhs);
+Value* pyir_sub(const Value* lhs, const Value* rhs);
 
-    Value mul(const Value& lhs, const Value& rhs);
+Value* pyir_mul(const Value* lhs, const Value* rhs);
 
-    Value div(const Value& lhs, const Value& rhs);
+Value* pyir_div(const Value* lhs, const Value* rhs);
 
-    // comparison
-    Value eq(const Value& lhs, const Value& rhs);
+// comparison
+Value* pyir_eq(const Value* lhs, const Value* rhs);
 
-    Value ne(const Value& lhs, const Value& rhs);
+Value* pyir_ne(const Value* lhs, const Value* rhs);
 
-    Value lt(const Value& lhs, const Value& rhs);
+Value* pyir_lt(const Value* lhs, const Value* rhs);
 
-    Value le(const Value& lhs, const Value& rhs);
+Value* pyir_le(const Value* lhs, const Value* rhs);
 
-    Value gt(const Value& lhs, const Value& rhs);
+Value* pyir_gt(const Value* lhs, const Value* rhs);
 
-    Value ge(const Value& lhs, const Value& rhs);
+Value* pyir_ge(const Value* lhs, const Value* rhs);
 
-    // name resolution — returns a builtin Fn or None
-    Value loadName(const char* name);
+// name resolution, returns a builtin Fn or None
+Value* pyir_load_name(const char* name);
 
-    // call dispatch
-    Value call(const Value& callee, Value* args, int64_t argc);
+// call dispatch
+Value* pyir_call(const Value* callee, Value** args, int64_t argc);
 
-    // truthiness — used by conditional jumps
-    bool toBool(Value val);
+// Stub for Python push null
+Value* pyir_push_null();
 
-    // builtins
-    Value builtinPrint(const Value* args, int64_t argc);
+// Decrease reference counting for v
+void pyir_decref(Value* v);
 
-    Value builtinLen(Value* args, int64_t argc);
+Value* pyir_load_const_str(const char* str);
 
-    Value builtinInt(Value* args, int64_t argc);
+Value* pyir_load_const_int(const int64_t val);
 
-    Value builtinFloat(Value* args, int64_t argc);
+// truthiness, used by conditional jumps
+bool pyir_toBool(Value val);
 
-    Value builtinStr(const Value* args, int64_t argc);
+// builtins
+Value* pyir_builtinPrint(Value** args, int64_t argc);
 
-    Value builtinBool(Value* args, int64_t argc);
+Value* pyir_builtinLen(Value** args, int64_t argc);
+
+Value* pyir_builtinInt(Value** args, int64_t argc);
+
+Value* pyir_builtinFloat(Value** args, int64_t argc);
+
+Value* pyir_builtinStr(Value** args, int64_t argc);
+
+Value* pyir_builtinBool(Value** args, int64_t argc);
 
 } //namespace pyir::runtime
 

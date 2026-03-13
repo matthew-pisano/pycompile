@@ -75,6 +75,32 @@ void exportLLVMIR(const mlir::OwningOpRef<mlir::ModuleOp>& llvmModule, const std
 }
 
 
+std::vector<ByteCodeModule> compilePython(const std::vector<std::string>& fileContents,
+                                          const std::vector<std::string>& fileNames) {
+    PythonInterpreter pyInterp; // Initializes Python via RAII
+    std::vector<CompiledModule> compiledModules;
+    compiledModules.reserve(fileContents.size());
+    for (size_t i = 0; i < fileContents.size(); i++)
+        try {
+            compiledModules.push_back(compilePythonSource(fileContents[0], fileNames[i], fileNames[i]));
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error("Error compiling Python file '" + fileNames[i] + "': " + e.what());
+        }
+
+    // Disassemble PyObjects into Python bytecode
+    std::vector<ByteCodeModule> bytecodeModules;
+    bytecodeModules.reserve(compiledModules.size());
+    for (size_t i = 0; i < compiledModules.size(); i++)
+        try {
+            bytecodeModules.push_back(generatePythonBytecode(compiledModules[i]));
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error("Error generating bytecode for Python file '" + fileNames[i] + "': " + e.what());
+        }
+
+    return bytecodeModules;
+}
+
+
 int main(const int argc, char* argv[]) {
     const std::string name = "pycompile";
     const std::string version = name + " " + Version::VERSION;
@@ -113,30 +139,13 @@ int main(const int argc, char* argv[]) {
         }
     }
 
-    PythonInterpreter pyInterp; // Initializes Python via RAII
-
-    // Compile source to Python PyObjects
-    std::vector<CompiledModule> compiledModules;
-    for (size_t i = 0; i < inputFileNames.size(); i++) {
-        const std::string& fileName = inputFileNames[i];
-        const std::string& source = fileContents[i];
-        try {
-            compiledModules.push_back(compilePythonSource(source, fileName, fileName));
-        } catch (const std::runtime_error& e) {
-            std::cerr << "Error compiling file '" + fileName + "': " + e.what() << std::endl;
-            return 1;
-        }
-    }
-
-    // Disassemble PyObjects into Python bytecode
+    // Compile source to Python bytecode
     std::vector<ByteCodeModule> bytecodeModules;
-    for (const CompiledModule& module : compiledModules) {
-        try {
-            bytecodeModules.push_back(generatePythonBytecode(module));
-        } catch (const std::runtime_error& e) {
-            std::cerr << "Error generating bytecode for file '" + module.filename + "': " + e.what() << std::endl;
-            return 1;
-        }
+    try {
+        bytecodeModules = compilePython(fileContents, inputFileNames);
+    } catch (const std::runtime_error& e) {
+        std::cerr << e.what() << std::endl;
+        return 1;
     }
     if (upToPreprocess) {
         exportByteCode(bytecodeModules, outputFileName);
@@ -202,6 +211,13 @@ int main(const int argc, char* argv[]) {
         std::cerr << "Error linking executable: " << e.what() << std::endl;
         return 1;
     }
+
+    // Remove object file unless requested to keep
+    if (!upToLower)
+        if (std::remove(moduleObjectPath.c_str()) != 0) {
+            std::cerr << "Error deleting object file: " << moduleObjectPath << std::endl;
+            return 1;
+        }
 
     return 0;
 }

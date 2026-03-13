@@ -24,8 +24,8 @@ void exportByteCode(const std::vector<ByteCodeModule>& bytecodeModules, const st
     for (const ByteCodeModule& bytecodeModule : bytecodeModules) {
         std::string moduleFileName = filename;
         if (bytecodeModules.size() > 1 || filename.empty()) {
-            std::filesystem::path modulePath(bytecodeModule.filename);
-            moduleFileName = modulePath.replace_extension(".byc");
+            const std::filesystem::path modulePath(bytecodeModule.filename);
+            moduleFileName = modulePath.filename().replace_extension(".byc");
         }
 
         std::stringstream ss;
@@ -45,8 +45,8 @@ void exportMLIRModules(const std::vector<mlir::OwningOpRef<mlir::ModuleOp> >& ml
     for (const mlir::OwningOpRef<mlir::ModuleOp>& mlirModule : mlirModules) {
         std::string moduleFileName = filename;
         if (mlirModules.size() > 1 || filename.empty()) {
-            std::filesystem::path modulePath(getMLIRModuleName(mlirModule));
-            moduleFileName = modulePath.replace_extension(".mlir");
+            const std::filesystem::path modulePath(getMLIRModuleName(mlirModule));
+            moduleFileName = modulePath.filename().replace_extension(".mlir");
         }
 
         std::string mlirModuleContent;
@@ -65,8 +65,8 @@ void exportMLIRModules(const std::vector<mlir::OwningOpRef<mlir::ModuleOp> >& ml
 void exportLLVMIR(const mlir::OwningOpRef<mlir::ModuleOp>& llvmModule, const std::string& filename = "") {
     std::string moduleFileName = filename;
     if (filename.empty()) {
-        std::filesystem::path modulePath(getMLIRModuleName(llvmModule));
-        moduleFileName = modulePath.replace_extension(".llvm");
+        const std::filesystem::path modulePath(getMLIRModuleName(llvmModule));
+        moduleFileName = modulePath.filename().replace_extension(".llvm");
     }
 
     std::string mlirModuleContent;
@@ -110,17 +110,28 @@ int main(const int argc, char* argv[]) {
     bool upToPreprocess = false;
     bool upToCompile = false;
     bool upToLower = false;
+    bool saveAllTemps = false;
     std::string outputFileName;
+    std::string tmpFilesName;
     CLI::App app{version + " - Python Compiler", name};
     app.add_option("file", inputFileNames, "A Python file")->required()->allow_extra_args();
-    app.add_flag("-E", upToPreprocess, "Preprocess only; do not compile, lower, or link.");
-    app.add_flag("-S", upToCompile, "Compile only; do not lower, or link.");
-    app.add_flag("-c", upToLower, "Compile and lower, but do not link.");
-    app.add_option("-o", outputFileName, "A Python file");
+    app.add_flag("-E", upToPreprocess, "Preprocess only; do not compile, lower, or link");
+    app.add_flag("-S", upToCompile, "Compile only; do not lower, or link");
+    app.add_flag("-c", upToLower, "Compile and lower, but do not link");
+    app.add_flag("--save-temps", saveAllTemps, "Do not delete intermediate files");
+    app.add_option("-o", outputFileName, "The name of the output file");
     app.set_version_flag("--version", version);
 
     app.callback([&] {
-        if (!outputFileName.empty() && inputFileNames.size() > 1 && (upToPreprocess || upToCompile || upToLower))
+        if (!saveAllTemps)
+            tmpFilesName = outputFileName;
+        else {
+            upToPreprocess = true;
+            upToCompile = true;
+            upToLower = true;
+        }
+
+        if (!tmpFilesName.empty() && inputFileNames.size() > 1 && (upToPreprocess || upToCompile || upToLower))
             throw CLI::ValidationError("Cannot specify -o with -c, -S or -E with multiple files");
     });
 
@@ -149,8 +160,9 @@ int main(const int argc, char* argv[]) {
         return 1;
     }
     if (upToPreprocess) {
-        exportByteCode(bytecodeModules, outputFileName);
-        return 0;
+        exportByteCode(bytecodeModules, tmpFilesName);
+        if (!saveAllTemps)
+            return 0;
     }
 
     // Lower bytecode into PYIR MLIR dialect
@@ -165,8 +177,9 @@ int main(const int argc, char* argv[]) {
         }
     }
     if (upToCompile) {
-        exportMLIRModules(mlirModules, outputFileName);
-        return 0;
+        exportMLIRModules(mlirModules, tmpFilesName);
+        if (!saveAllTemps)
+            return 0;
     }
 
     mlir::OwningOpRef<mlir::ModuleOp> mergedMlirModule;
@@ -188,12 +201,10 @@ int main(const int argc, char* argv[]) {
         return 1;
     }
     if (upToLower) {
-        exportLLVMIR(mergedMlirModule, outputFileName);
-        return 0;
+        exportLLVMIR(mergedMlirModule, tmpFilesName);
+        if (!saveAllTemps)
+            return 0;
     }
-
-    if (outputFileName.empty())
-        outputFileName = "a.out";
 
     // Create object file
     std::filesystem::path modulePath(getMLIRModuleName(mergedMlirModule));
@@ -207,7 +218,7 @@ int main(const int argc, char* argv[]) {
 
     // Link object file into executable
     try {
-        linkObjectFile(moduleObjectPath, outputFileName);
+        linkObjectFile(moduleObjectPath, outputFileName.empty() ? "a.out" : outputFileName);
     } catch (const std::runtime_error& e) {
         std::cerr << "Error linking executable: " << e.what() << std::endl;
         return 1;

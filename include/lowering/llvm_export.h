@@ -9,6 +9,7 @@
 
 #include <filesystem>
 #include <string>
+#include <llvm/IR/LLVMContext.h>
 
 /**
  * Options controlling how LLVM IR is exported from an MLIR module.
@@ -28,23 +29,25 @@ struct LLVMExportOptions {
 /**
  * Translates a fully lowered MLIR module (containing LLVM dialect ops) to LLVM IR and prints it to the given stream
  *
+ * @param llvmCtx The llvm context to use for translations
  * @param module The MLIR module to translate. Must contain only LLVM dialect ops.
- * @param os The output stream to serialize to.
  * @param options Export options controlling target and optimization level.
  */
-void serializeLLVMIR(const mlir::OwningOpRef<mlir::ModuleOp>& module, llvm::raw_string_ostream& os,
-                     const LLVMExportOptions& options = {});
+std::unique_ptr<llvm::Module> translateToLLVMIR(llvm::LLVMContext& llvmCtx,
+                                                const mlir::OwningOpRef<mlir::ModuleOp>& module,
+                                                const LLVMExportOptions& options = {});
 
 
 /**
  * Translates a fully lowered MLIR module to an object file at the given path.
  *
- * @param module The MLIR module to compile. Must contain only LLVM dialect ops.
+ * @param llvmModule The LLVM IR module to export
  * @param output Path to write the object file to (e.g. "output.o").
  * @param options Export options controlling target and optimization level.
  * @throws std::runtime_error if translation or compilation fails.
  */
-void exportObjectFile(const mlir::OwningOpRef<mlir::ModuleOp>& module, const std::filesystem::path& output,
+void exportObjectFile(const std::unique_ptr<llvm::Module>& llvmModule,
+                      const std::filesystem::path& output,
                       const LLVMExportOptions& options = {});
 
 

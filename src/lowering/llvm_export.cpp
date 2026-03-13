@@ -136,10 +136,10 @@ static void optimizeLLVMModule(llvm::Module& llvmModule, llvm::TargetMachine& tm
 }
 
 
-void serializeLLVMIR(const mlir::OwningOpRef<mlir::ModuleOp>& module, llvm::raw_string_ostream& os,
-                     const LLVMExportOptions& options) {
-    llvm::LLVMContext llvmCtx;
-    const std::unique_ptr<llvm::Module> llvmModule = translateToLLVM(module.get(), llvmCtx);
+std::unique_ptr<llvm::Module> translateToLLVMIR(llvm::LLVMContext& llvmCtx,
+                                                const mlir::OwningOpRef<mlir::ModuleOp>& module,
+                                                const LLVMExportOptions& options) {
+    std::unique_ptr<llvm::Module> llvmModule = translateToLLVM(module, llvmCtx);
 
     const std::unique_ptr<llvm::TargetMachine> tm = createTargetMachine(options);
     llvmModule->setTargetTriple(llvm::Triple(tm->getTargetTriple().str()));
@@ -147,21 +147,12 @@ void serializeLLVMIR(const mlir::OwningOpRef<mlir::ModuleOp>& module, llvm::raw_
 
     optimizeLLVMModule(*llvmModule, *tm, options.optLevel);
 
-    llvmModule->print(os, nullptr);
+    return llvmModule;
 }
 
 
-void exportObjectFile(const mlir::OwningOpRef<mlir::ModuleOp>& module, const std::filesystem::path& output,
+void exportObjectFile(const std::unique_ptr<llvm::Module>& llvmModule, const std::filesystem::path& output,
                       const LLVMExportOptions& options) {
-    llvm::LLVMContext llvmCtx;
-    const std::unique_ptr<llvm::Module> llvmModule = translateToLLVM(module, llvmCtx);
-
-    const std::unique_ptr<llvm::TargetMachine> tm = createTargetMachine(options);
-    llvmModule->setTargetTriple(llvm::Triple(tm->getTargetTriple().str()));
-    llvmModule->setDataLayout(tm->createDataLayout());
-
-    optimizeLLVMModule(*llvmModule, *tm, options.optLevel);
-
     // open output file
     std::error_code ec;
     llvm::raw_fd_ostream outStream(output.string(), ec, llvm::sys::fs::OF_None);
@@ -170,6 +161,7 @@ void exportObjectFile(const mlir::OwningOpRef<mlir::ModuleOp>& module, const std
 
     // emit object file
     llvm::legacy::PassManager codegenPm;
+    const std::unique_ptr<llvm::TargetMachine> tm = createTargetMachine(options);
     if (tm->addPassesToEmitFile(codegenPm, outStream, nullptr, llvm::CodeGenFileType::ObjectFile))
         throw std::runtime_error("Target machine cannot emit object files");
 

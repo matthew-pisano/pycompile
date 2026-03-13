@@ -4,6 +4,8 @@
 #include <iostream>
 #include <mlir/IR/OwningOpRef.h>
 #include <filesystem>
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/Module.h>
 
 #include "bytecode/bytecode.h"
 #include "bytecode/pythoncode.h"
@@ -62,16 +64,16 @@ void exportMLIRModules(const std::vector<mlir::OwningOpRef<mlir::ModuleOp> >& ml
  * @param llvmModule The LLVM IR module to print.
  * @param filename The filename to write to if a single module. Otherwise, names will be assumed.
  */
-void exportLLVMIR(const mlir::OwningOpRef<mlir::ModuleOp>& llvmModule, const std::string& filename = "") {
+void exportLLVMIR(const std::unique_ptr<llvm::Module>& llvmModule, const std::string& filename = "") {
     std::string moduleFileName = filename;
     if (filename.empty()) {
-        const std::filesystem::path modulePath(getMLIRModuleName(llvmModule));
+        const std::filesystem::path modulePath(llvmModule->getName().data());
         moduleFileName = modulePath.filename().replace_extension(".llvm");
     }
 
     std::string mlirModuleContent;
     llvm::raw_string_ostream llvmOs(mlirModuleContent);
-    serializeLLVMIR(llvmModule, llvmOs);
+    llvmModule->print(llvmOs, nullptr);
     writeFileString(moduleFileName, mlirModuleContent);
 }
 
@@ -195,13 +197,22 @@ int main(const int argc, char* argv[]) {
 
     // Lower PYIR to an LLVM MLIR dialect
     try {
-        lowerToLLVM(context, mergedMlirModule.get());
+        lowerToLLVMDialect(context, mergedMlirModule);
     } catch (const std::runtime_error& e) {
         std::cerr << "Error lowering mlir module: " << e.what() << std::endl;
         return 1;
     }
+
+    llvm::LLVMContext llvmCtx; // Must exit scope after all other LLVM Module instances
+    std::unique_ptr<llvm::Module> llvmModule;
+    try {
+        llvmModule = translateToLLVMIR(llvmCtx, mergedMlirModule);
+    } catch (const std::runtime_error& e) {
+        std::cerr << "Error creating object file: " << e.what() << std::endl;
+        return 1;
+    }
     if (upToLower) {
-        exportLLVMIR(mergedMlirModule, tmpFilesName);
+        exportLLVMIR(llvmModule, tmpFilesName);
         if (!saveAllTemps)
             return 0;
     }
@@ -210,7 +221,7 @@ int main(const int argc, char* argv[]) {
     std::filesystem::path modulePath(getMLIRModuleName(mergedMlirModule));
     const std::string moduleObjectPath = modulePath.replace_extension(".o");
     try {
-        exportObjectFile(mergedMlirModule.get(), moduleObjectPath);
+        exportObjectFile(llvmModule, moduleObjectPath);
     } catch (const std::runtime_error& e) {
         std::cerr << "Error creating object file: " << e.what() << std::endl;
         return 1;

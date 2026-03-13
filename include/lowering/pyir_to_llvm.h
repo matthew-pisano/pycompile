@@ -33,6 +33,6 @@ std::unique_ptr<mlir::Pass> createPyIRToLLVMPass();
  * @param ctx The MLIR context
  * @param module The module to lower
  */
-void lowerToLLVM(mlir::MLIRContext& ctx, mlir::ModuleOp module);
+void lowerToLLVMDialect(mlir::MLIRContext& ctx, const mlir::OwningOpRef<mlir::ModuleOp>& module);
 
 #endif //PYCOMPILE_PYIR_TO_LLVM_H

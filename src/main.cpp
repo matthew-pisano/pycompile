@@ -3,6 +3,7 @@
 #include <Python.h>
 #include <iostream>
 #include <mlir/IR/OwningOpRef.h>
+#include <filesystem>
 
 #include "bytecode/bytecode.h"
 #include "bytecode/pythoncode.h"
@@ -214,8 +215,13 @@ int main(const int argc, char* argv[]) {
 
     // Remove object file unless requested to keep
     if (!upToLower)
-        if (std::remove(moduleObjectPath.c_str()) != 0) {
-            std::cerr << "Error deleting object file: " << moduleObjectPath << std::endl;
+        try {
+            if (!std::filesystem::remove(moduleObjectPath)) {
+                std::cerr << "Error deleting object file: " << moduleObjectPath << std::endl;
+                return 1;
+            }
+        } catch (const std::filesystem::filesystem_error& ex) {
+            std::cerr << "Filesystem error: " << ex.what() << std::endl;
             return 1;
         }
 

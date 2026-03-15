@@ -14,14 +14,15 @@
 
 namespace pyir {
     // Wraps a single module into an mlir::ModuleOp containing one FuncOp
-    mlir::OwningOpRef<mlir::ModuleOp> generateMLIR(mlir::MLIRContext& ctx, const ByteCodeModule& module);
+    mlir::OwningOpRef<mlir::ModuleOp> generatePyIR(mlir::MLIRContext& ctx, const ByteCodeModule& module);
 
     // Wraps multiple modules into a single mlir::ModuleOp
-    mlir::OwningOpRef<mlir::ModuleOp> generateMLIR(mlir::MLIRContext& ctx, const std::vector<ByteCodeModule>& modules);
+    mlir::OwningOpRef<mlir::ModuleOp> mergePyIRModules(mlir::MLIRContext& ctx,
+                                                       std::vector<mlir::OwningOpRef<mlir::ModuleOp> >& mlirModules);
 
-    void printMLIRFuncOp(mlir::func::FuncOp fn);
+    void printMLIRFuncOp(mlir::func::FuncOp fn, std::ostream& os);
 
-    void printMLIRModule(const mlir::ModuleOp& module);
+    void serializePyIRModule(const mlir::ModuleOp& module, std::ostream& os);
 } //namespace pyir
 
 #endif //PYCOMPILE_PYIR_CODEGEN_H

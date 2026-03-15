@@ -11,6 +11,7 @@
 #include <iostream>
 
 #include "bytecode/python_error.h"
+#include "bytecode/python_raii.h"
 
 
 inline std::string argvalTypeToString(const ArgvalType type) {
@@ -128,7 +129,7 @@ std::vector<ExceptionTableEntry> decodeExceptionTable(PyObject* code) {
 }
 
 
-void printInstruction(const ByteCodeInstruction& instr, const int indentLevel) {
+void serializeInstruction(const ByteCodeInstruction& instr, std::ostream& os, const int indentLevel) {
     const std::string ind(indentLevel * 4, ' ');
 
     std::string instRepr;
@@ -149,49 +150,49 @@ void printInstruction(const ByteCodeInstruction& instr, const int indentLevel) {
     const std::string lineStartStr = instr.startsLine ? "*" : " ";
     const std::string linenoStr = instr.lineno.has_value() ? "L" + std::to_string(*instr.lineno) : "L-";
 
-    std::cout << ind << lineStartStr << linenoStr << " offset " << std::setw(4) << std::left << instr.offset << " | "
+    os << ind << lineStartStr << linenoStr << " offset " << std::setw(4) << std::left << instr.offset << " | "
             << std::setw(30) << std::left << instr.opcode << " " << std::setw(10) << std::left << argTypeStr << " | "
             << instRepr << std::endl;
 }
 
 
-void printByteCodeModule(const ByteCodeModule& code, const int depth) {
+void serializeByteCodeModule(const ByteCodeModule& code, std::ostream& os, const int depth) {
     const std::string ind(depth * 4, ' ');
 
     // Print code metadata
     if (!code.info.cellvars.empty()) {
-        std::cout << ind << "cellvars: ";
+        os << ind << "cellvars: ";
         for (const std::string& v : code.info.cellvars)
-            std::cout << v << " ";
-        std::cout << "\n";
+            os << v << " ";
+        os << "\n";
     }
     if (!code.info.freevars.empty()) {
-        std::cout << ind << "freevars: ";
+        os << ind << "freevars: ";
         for (const std::string& v : code.info.freevars)
-            std::cout << v << " ";
-        std::cout << "\n";
+            os << v << " ";
+        os << "\n";
     }
     if (!code.info.exceptionTable.empty()) {
-        std::cout << ind << "exception table:\n";
+        os << ind << "exception table:\n";
         for (const ExceptionTableEntry& e : code.info.exceptionTable) {
-            std::cout << ind << "  [" << e.start << ", " << e.end << ") -> target " << e.target << "  depth " << e.depth
+            os << ind << "  [" << e.start << ", " << e.end << ") -> target " << e.target << "  depth " << e.depth
                     << "  lasti " << (e.lasti ? "true" : "false") << "\n";
         }
     }
 
     // Print instructions
     for (const ByteCodeInstruction& instr : code.instructions) {
-        printInstruction(instr, depth);
+        serializeInstruction(instr, os, depth);
 
         // If the instruction has a nested code object, print it recursively with increased indentation.
         if (instr.argvalType == ArgvalType::Code) {
-            std::cout << ind << "  [nested code object]:\n";
+            os << ind << "  [nested code object]:\n";
             // Wrap nested instructions in a temporary DisassembledCode for printing
             if (const std::vector<ByteCodeInstruction>* nestedCode = std::get_if<std::vector<ByteCodeInstruction> >(
                     &instr.argval)) {
                 ByteCodeModule nested;
                 nested.instructions = *nestedCode;
-                printByteCodeModule(nested, depth + 1);
+                serializeByteCodeModule(nested, os, depth + 1);
             } else
                 throw std::runtime_error("Expected argval to be a vector of Instructions for nested code object");
         }
@@ -308,4 +309,38 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
 
     Py_DECREF(instrIt);
     return result;
+}
+
+
+std::vector<ByteCodeModule> compilePython(const std::vector<std::string>& fileContents,
+                                          const std::vector<std::string>& fileNames) {
+    PythonInterpreter pyInterp; // Initializes Python via RAII
+    std::vector<CompiledModule> compiledModules;
+    compiledModules.reserve(fileContents.size());
+    for (size_t i = 0; i < fileContents.size(); i++)
+        try {
+            compiledModules.push_back(compilePythonSource(fileContents[0], fileNames[i], fileNames[i]));
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error("Error compiling Python file '" + fileNames[i] + "': " + e.what());
+        }
+
+    // Disassemble PyObjects into Python bytecode
+    std::vector<ByteCodeModule> bytecodeModules;
+    bytecodeModules.reserve(compiledModules.size());
+    for (size_t i = 0; i < compiledModules.size(); i++)
+        try {
+            bytecodeModules.push_back(generatePythonBytecode(compiledModules[i]));
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error("Error generating bytecode for Python file '" + fileNames[i] + "': " + e.what());
+        }
+
+    return bytecodeModules;
+}
+
+
+ByteCodeModule compilePython(const std::string& fileContent, const std::string& fileName) {
+    const std::vector fileContents = {fileContent};
+    const std::vector fileNames = {fileName};
+    const std::vector<ByteCodeModule> bytecodeModules = compilePython(fileContents, fileNames);
+    return bytecodeModules[0];
 }

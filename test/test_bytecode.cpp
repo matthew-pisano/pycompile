@@ -6,7 +6,6 @@
 #include <catch2/catch_all.hpp>
 
 #include "bytecode/bytecode.h"
-#include "bytecode/pythoncode.h"
 
 /**
  * Extracts a vector of opcodes from a given vector of instruction
@@ -24,8 +23,7 @@ std::vector<PythonOpcode> extractInstructionOpcodes(const std::vector<ByteCodeIn
 TEST_CASE("Test Empty Bytecode") {
     const std::string source; // Blank source
     const std::vector expectedOpcodes = {PythonOpcode::RESUME, PythonOpcode::LOAD_CONST, PythonOpcode::RETURN_VALUE};
-    const CompiledModule compiledModule = compilePythonSource(source, "<embedded>", "<embedded>");
-    const ByteCodeModule bytecodeModule = generatePythonBytecode(compiledModule);
+    const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
     const std::vector<PythonOpcode> opcodes = extractInstructionOpcodes(bytecodeModule.instructions);
 
     REQUIRE(bytecodeModule.instructions.size() == expectedOpcodes.size());
@@ -39,8 +37,7 @@ TEST_CASE("Test Integer Assign Bytecode") {
         const std::vector expectedOpcodes = {PythonOpcode::RESUME, PythonOpcode::LOAD_SMALL_INT,
                                              PythonOpcode::STORE_NAME,
                                              PythonOpcode::LOAD_CONST, PythonOpcode::RETURN_VALUE};
-        const CompiledModule compiledModule = compilePythonSource(source, "<embedded>", "<embedded>");
-        const ByteCodeModule bytecodeModule = generatePythonBytecode(compiledModule);
+        const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
         const std::vector<PythonOpcode> opcodes = extractInstructionOpcodes(bytecodeModule.instructions);
 
         REQUIRE(bytecodeModule.instructions.size() == expectedOpcodes.size());
@@ -58,8 +55,7 @@ TEST_CASE("Test Integer Assign Bytecode") {
         const std::vector expectedOpcodes = {PythonOpcode::RESUME, PythonOpcode::LOAD_CONST,
                                              PythonOpcode::STORE_NAME,
                                              PythonOpcode::LOAD_CONST, PythonOpcode::RETURN_VALUE};
-        const CompiledModule compiledModule = compilePythonSource(source, "<embedded>", "<embedded>");
-        const ByteCodeModule bytecodeModule = generatePythonBytecode(compiledModule);
+        const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
         const std::vector<PythonOpcode> opcodes = extractInstructionOpcodes(bytecodeModule.instructions);
 
         REQUIRE(bytecodeModule.instructions.size() == expectedOpcodes.size());
@@ -76,8 +72,7 @@ TEST_CASE("Test Function Bytecode") {
                                          PythonOpcode::STORE_NAME, PythonOpcode::LOAD_NAME, PythonOpcode::PUSH_NULL,
                                          PythonOpcode::LOAD_SMALL_INT, PythonOpcode::CALL, PythonOpcode::POP_TOP,
                                          PythonOpcode::LOAD_CONST, PythonOpcode::RETURN_VALUE};
-    const CompiledModule compiledModule = compilePythonSource(source, "<embedded>", "<embedded>");
-    const ByteCodeModule bytecodeModule = generatePythonBytecode(compiledModule);
+    const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
     const std::vector<PythonOpcode> opcodes = extractInstructionOpcodes(bytecodeModule.instructions);
 
     REQUIRE(bytecodeModule.instructions.size() == expectedOpcodes.size());
@@ -97,8 +92,7 @@ TEST_CASE("Test Builtin Bytecode") {
                                              PythonOpcode::PUSH_NULL,
                                              PythonOpcode::LOAD_CONST, PythonOpcode::CALL, PythonOpcode::POP_TOP,
                                              PythonOpcode::LOAD_CONST, PythonOpcode::RETURN_VALUE};
-        const CompiledModule compiledModule = compilePythonSource(source, "<embedded>", "<embedded>");
-        const ByteCodeModule bytecodeModule = generatePythonBytecode(compiledModule);
+        const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
         const std::vector<PythonOpcode> opcodes = extractInstructionOpcodes(bytecodeModule.instructions);
 
         REQUIRE(bytecodeModule.instructions.size() == expectedOpcodes.size());
@@ -113,8 +107,7 @@ TEST_CASE("Test Builtin Bytecode") {
                                              PythonOpcode::PUSH_NULL,
                                              PythonOpcode::LOAD_CONST, PythonOpcode::CALL, PythonOpcode::POP_TOP,
                                              PythonOpcode::LOAD_CONST, PythonOpcode::RETURN_VALUE};
-        const CompiledModule compiledModule = compilePythonSource(source, "<embedded>", "<embedded>");
-        const ByteCodeModule bytecodeModule = generatePythonBytecode(compiledModule);
+        const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
         const std::vector<PythonOpcode> opcodes = extractInstructionOpcodes(bytecodeModule.instructions);
 
         REQUIRE(bytecodeModule.instructions.size() == expectedOpcodes.size());
@@ -143,8 +136,7 @@ TEST_CASE("Test List Comprehension Bytecode") {
                                          PythonOpcode::RETURN_VALUE, PythonOpcode::SWAP, PythonOpcode::POP_TOP,
                                          PythonOpcode::SWAP, PythonOpcode::STORE_FAST,
                                          PythonOpcode::RERAISE};
-    const CompiledModule compiledModule = compilePythonSource(source, "<embedded>", "<embedded>");
-    const ByteCodeModule bytecodeModule = generatePythonBytecode(compiledModule);
+    const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
     const std::vector<PythonOpcode> opcodes = extractInstructionOpcodes(bytecodeModule.instructions);
 
     REQUIRE(bytecodeModule.instructions.size() == expectedOpcodes.size());

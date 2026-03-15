@@ -403,7 +403,7 @@ std::unique_ptr<mlir::Pass> createPyIRToLLVMPass() {
 }
 
 
-void lowerToLLVM(mlir::MLIRContext& ctx, const mlir::ModuleOp module) {
+void lowerToLLVMDialect(mlir::MLIRContext& ctx, const mlir::OwningOpRef<mlir::ModuleOp>& module) {
     ctx.loadDialect<mlir::LLVM::LLVMDialect>();
 
     mlir::PassManager pm(&ctx);
@@ -413,7 +413,7 @@ void lowerToLLVM(mlir::MLIRContext& ctx, const mlir::ModuleOp module) {
     // lower PyIR to LLVM dialect
     pm.addPass(createPyIRToLLVMPass());
 
-    const llvm::LogicalResult result = pm.run(module);
+    const llvm::LogicalResult result = pm.run(module.get());
     if (mlir::failed(result))
         throw std::runtime_error("Failed to lower PYIR module");
 }

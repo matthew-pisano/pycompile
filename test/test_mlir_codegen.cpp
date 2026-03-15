@@ -11,6 +11,9 @@
 #include "bytecode/pythoncode.h"
 
 
+/**
+ * Fixture that initializes the MLIR context and compiles python strings to MLIR modules
+ */
 struct MLIRFixture {
     mlir::MLIRContext ctx;
 
@@ -21,14 +24,15 @@ struct MLIRFixture {
     }
 
     mlir::OwningOpRef<mlir::ModuleOp> compile(const std::string& source) {
-        // compile source through your pipeline
-        const CompiledModule compiledModule = compilePythonSource(source, "<embedded>", "<embedded>");
-        const ByteCodeModule bytecodeModule = generatePythonBytecode(compiledModule);
-        return pyir::generateMLIR(ctx, bytecodeModule);
+        const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
+        return pyir::generatePyIR(ctx, bytecodeModule);
     }
 };
 
 
+/**
+ * Gets the MLIR operation at the given index
+ */
 mlir::Operation* getOp(mlir::func::FuncOp fn, const int index) {
     auto it = fn.getBlocks().front().getOperations().begin();
     std::advance(it, index);

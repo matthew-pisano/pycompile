@@ -4,6 +4,7 @@
 
 #include "pyir/pyir_codegen.h"
 
+#include <filesystem>
 #include <iostream>
 #include <mlir/IR/Verifier.h>
 #include <mlir/IR/AsmState.h>
@@ -293,19 +294,20 @@ namespace pyir {
     }
 
 
-    mlir::OwningOpRef<mlir::ModuleOp> generateMLIR(mlir::MLIRContext& ctx, const ByteCodeModule& module) {
+    mlir::OwningOpRef<mlir::ModuleOp> generatePyIR(mlir::MLIRContext& ctx, const ByteCodeModule& module) {
         // Dialects must be loaded before any ops are created
         ctx.loadDialect<PyIRDialect>();
         ctx.loadDialect<mlir::func::FuncDialect>();
         ctx.loadDialect<mlir::cf::ControlFlowDialect>();
         ctx.loadDialect<mlir::arith::ArithDialect>();
 
+        const std::string baseModuleName = std::filesystem::path(module.filename).filename();
         mlir::OpBuilder builder(&ctx);
-        const std::string mlirModuleName = mangleModuleName(module.filename);
-        const mlir::FileLineColLoc fileLoc = mlir::FileLineColLoc::get(&ctx, mlirModuleName, 0, 0);
+        const mlir::FileLineColLoc fileLoc = mlir::FileLineColLoc::get(&ctx, baseModuleName, 0, 0);
         mlir::ModuleOp mlirModule = mlir::ModuleOp::create(fileLoc);
         builder.setInsertionPointToEnd(mlirModule.getBody());
 
+        const std::string mlirModuleName = mangleModuleName(baseModuleName);
         buildMLIRModule(builder, ctx, module, mlirModuleName);
         // Reset insertion point to module level before emitting main
         builder.setInsertionPointToEnd(mlirModule.getBody());
@@ -321,12 +323,22 @@ namespace pyir {
     }
 
 
-    mlir::OwningOpRef<mlir::ModuleOp> generateMLIR(mlir::MLIRContext& ctx, const std::vector<ByteCodeModule>& modules) {
-        mlir::ModuleOp merged = mlir::ModuleOp::create(mlir::UnknownLoc::get(&ctx));
+    mlir::OwningOpRef<mlir::ModuleOp> mergePyIRModules(mlir::MLIRContext& ctx,
+                                                       std::vector<mlir::OwningOpRef<mlir::ModuleOp> >& mlirModules) {
+        if (mlirModules.empty())
+            throw std::runtime_error("Cannot merge an empty module list");
 
-        for (const ByteCodeModule& module : modules) {
-            const mlir::OwningOpRef<mlir::ModuleOp> mlirModule = generateMLIR(ctx, module);
+        mlir::Location loc = mlirModules[0].get().getLoc();
+        std::string mlirModuleName;
+        if (const mlir::FileLineColLoc firstFileLoc = mlir::dyn_cast<mlir::FileLineColLoc>(loc))
+            mlirModuleName = firstFileLoc.getFilename().str();
+        else
+            throw std::runtime_error("Unable to parse merged PyIR module name");
 
+        const mlir::FileLineColLoc fileLoc = mlir::FileLineColLoc::get(&ctx, mlirModuleName, 0, 0);
+        mlir::ModuleOp merged = mlir::ModuleOp::create(fileLoc);
+
+        for (mlir::OwningOpRef<mlir::ModuleOp>& mlirModule : mlirModules) {
             llvm::SmallVector<mlir::Operation*> ops;
             for (mlir::Operation& op : mlirModule.get().getBody()->getOperations())
                 ops.push_back(&op);
@@ -363,17 +375,17 @@ namespace pyir {
     };
 
 
-    void printMLIRFuncOp(mlir::func::FuncOp fn) {
-        OstreamBridge bridge(std::cout);
+    void printMLIRFuncOp(mlir::func::FuncOp fn, std::ostream& os) {
+        OstreamBridge bridge(os);
         fn.print(bridge);
         bridge.flush();
-        std::cout << std::endl;
+        os << std::endl;
     }
 
 
-    void printMLIRModule(const mlir::ModuleOp& module) {
-        module->walk([](const mlir::func::FuncOp fn) {
-            printMLIRFuncOp(fn);
+    void serializePyIRModule(const mlir::ModuleOp& module, std::ostream& os) {
+        module->walk([&os](const mlir::func::FuncOp fn) {
+            printMLIRFuncOp(fn, os);
         });
     }
 

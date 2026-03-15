@@ -22,6 +22,8 @@
 
 #include <stdexcept>
 
+#include "utils.h"
+
 /**
  * Initializes LLVM's native target, ASM printer, and ASM parser. Safe to call multiple times: LLVM initialization
  * is idempotent.
@@ -81,11 +83,12 @@ static std::unique_ptr<llvm::TargetMachine> createTargetMachine(const LLVMExport
  * @return An owning pointer to the translated llvm::Module.
  * @throws std::runtime_error if translation fails.
  */
-static std::unique_ptr<llvm::Module> translateToLLVM(mlir::ModuleOp mlirModule, llvm::LLVMContext& llvmCtx) {
-    mlir::registerLLVMDialectTranslation(*mlirModule.getContext());
-    mlir::registerBuiltinDialectTranslation(*mlirModule.getContext());
+static std::unique_ptr<llvm::Module> translateToLLVM(const mlir::OwningOpRef<mlir::ModuleOp>& mlirModule,
+                                                     llvm::LLVMContext& llvmCtx) {
+    mlir::registerLLVMDialectTranslation(*mlirModule.get().getContext());
+    mlir::registerBuiltinDialectTranslation(*mlirModule.get().getContext());
 
-    std::unique_ptr<llvm::Module> llvmModule = mlir::translateModuleToLLVMIR(mlirModule, llvmCtx);
+    std::unique_ptr<llvm::Module> llvmModule = mlir::translateModuleToLLVMIR(mlirModule.get(), llvmCtx);
     if (!llvmModule)
         throw std::runtime_error("failed to translate MLIR module to LLVM IR");
 
@@ -135,9 +138,13 @@ static void optimizeLLVMModule(llvm::Module& llvmModule, llvm::TargetMachine& tm
 }
 
 
-void exportLLVMIR(const mlir::ModuleOp module, const LLVMExportOptions& options) {
-    llvm::LLVMContext llvmCtx;
-    const std::unique_ptr<llvm::Module> llvmModule = translateToLLVM(module, llvmCtx);
+std::unique_ptr<llvm::Module> translateToLLVMIR(llvm::LLVMContext& llvmCtx,
+                                                const mlir::OwningOpRef<mlir::ModuleOp>& module,
+                                                const LLVMExportOptions& options) {
+    std::unique_ptr<llvm::Module> llvmModule = translateToLLVM(module, llvmCtx);
+    const std::string moduleName = getMLIRModuleName(module);
+    llvmModule->setModuleIdentifier(moduleName);
+    llvmModule->setSourceFileName(moduleName);
 
     const std::unique_ptr<llvm::TargetMachine> tm = createTargetMachine(options);
     llvmModule->setTargetTriple(llvm::Triple(tm->getTargetTriple().str()));
@@ -145,22 +152,12 @@ void exportLLVMIR(const mlir::ModuleOp module, const LLVMExportOptions& options)
 
     optimizeLLVMModule(*llvmModule, *tm, options.optLevel);
 
-    llvmModule->print(llvm::outs(), nullptr);
-    llvm::outs().flush();
+    return llvmModule;
 }
 
 
-void exportObjectFile(const mlir::ModuleOp module, const std::filesystem::path& output,
+void exportObjectFile(const std::unique_ptr<llvm::Module>& llvmModule, const std::filesystem::path& output,
                       const LLVMExportOptions& options) {
-    llvm::LLVMContext llvmCtx;
-    const std::unique_ptr<llvm::Module> llvmModule = translateToLLVM(module, llvmCtx);
-
-    const std::unique_ptr<llvm::TargetMachine> tm = createTargetMachine(options);
-    llvmModule->setTargetTriple(llvm::Triple(tm->getTargetTriple().str()));
-    llvmModule->setDataLayout(tm->createDataLayout());
-
-    optimizeLLVMModule(*llvmModule, *tm, options.optLevel);
-
     // open output file
     std::error_code ec;
     llvm::raw_fd_ostream outStream(output.string(), ec, llvm::sys::fs::OF_None);
@@ -169,6 +166,7 @@ void exportObjectFile(const mlir::ModuleOp module, const std::filesystem::path& 
 
     // emit object file
     llvm::legacy::PassManager codegenPm;
+    const std::unique_ptr<llvm::TargetMachine> tm = createTargetMachine(options);
     if (tm->addPassesToEmitFile(codegenPm, outStream, nullptr, llvm::CodeGenFileType::ObjectFile))
         throw std::runtime_error("Target machine cannot emit object files");
 

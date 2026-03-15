@@ -174,7 +174,7 @@ struct BinaryOpLowering : PyIROpConversion {
         const std::string opStr = binaryOp.getOp().str();
         const auto it = opToFn.find(opStr);
         if (it == opToFn.end())
-            return op->emitError("unsupported binary operator: ") << opStr;
+            return op->emitError("Unsupported binary operator: ") << opStr;
 
         // declare: extern Value* pyir_add(Value* lhs, Value* rhs) (and siblings)
         const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(

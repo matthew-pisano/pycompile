@@ -11,6 +11,7 @@
 #include <iostream>
 
 #include "bytecode/python_error.h"
+#include "bytecode/python_raii.h"
 
 
 inline std::string argvalTypeToString(const ArgvalType type) {
@@ -308,4 +309,30 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
 
     Py_DECREF(instrIt);
     return result;
+}
+
+
+std::vector<ByteCodeModule> compilePython(const std::vector<std::string>& fileContents,
+                                          const std::vector<std::string>& fileNames) {
+    PythonInterpreter pyInterp; // Initializes Python via RAII
+    std::vector<CompiledModule> compiledModules;
+    compiledModules.reserve(fileContents.size());
+    for (size_t i = 0; i < fileContents.size(); i++)
+        try {
+            compiledModules.push_back(compilePythonSource(fileContents[0], fileNames[i], fileNames[i]));
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error("Error compiling Python file '" + fileNames[i] + "': " + e.what());
+        }
+
+    // Disassemble PyObjects into Python bytecode
+    std::vector<ByteCodeModule> bytecodeModules;
+    bytecodeModules.reserve(compiledModules.size());
+    for (size_t i = 0; i < compiledModules.size(); i++)
+        try {
+            bytecodeModules.push_back(generatePythonBytecode(compiledModules[i]));
+        } catch (const std::runtime_error& e) {
+            throw std::runtime_error("Error generating bytecode for Python file '" + fileNames[i] + "': " + e.what());
+        }
+
+    return bytecodeModules;
 }

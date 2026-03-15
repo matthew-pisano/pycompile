@@ -78,32 +78,6 @@ void exportLLVMIR(const std::unique_ptr<llvm::Module>& llvmModule, const std::st
 }
 
 
-std::vector<ByteCodeModule> compilePython(const std::vector<std::string>& fileContents,
-                                          const std::vector<std::string>& fileNames) {
-    PythonInterpreter pyInterp; // Initializes Python via RAII
-    std::vector<CompiledModule> compiledModules;
-    compiledModules.reserve(fileContents.size());
-    for (size_t i = 0; i < fileContents.size(); i++)
-        try {
-            compiledModules.push_back(compilePythonSource(fileContents[0], fileNames[i], fileNames[i]));
-        } catch (const std::runtime_error& e) {
-            throw std::runtime_error("Error compiling Python file '" + fileNames[i] + "': " + e.what());
-        }
-
-    // Disassemble PyObjects into Python bytecode
-    std::vector<ByteCodeModule> bytecodeModules;
-    bytecodeModules.reserve(compiledModules.size());
-    for (size_t i = 0; i < compiledModules.size(); i++)
-        try {
-            bytecodeModules.push_back(generatePythonBytecode(compiledModules[i]));
-        } catch (const std::runtime_error& e) {
-            throw std::runtime_error("Error generating bytecode for Python file '" + fileNames[i] + "': " + e.what());
-        }
-
-    return bytecodeModules;
-}
-
-
 int main(const int argc, char* argv[]) {
     const std::string name = "pycompile";
     const std::string version = name + " " + Version::VERSION;

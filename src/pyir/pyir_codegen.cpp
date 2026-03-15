@@ -192,14 +192,14 @@ namespace pyir {
                 }
 
                 case PythonOpcode::BINARY_OP: {
-                    const std::string* opStr = std::get_if<std::string>(&instr.argval);
-                    if (!opStr)
+                    const std::string opStr = instr.argrepr;
+                    if (opStr.empty())
                         throw std::runtime_error("BINARY_OP must have a string argval");
                     mlir::Value rhs = stack.back();
                     stack.pop_back();
                     mlir::Value lhs = stack.back();
                     stack.pop_back();
-                    stack.push_back(builder.create<BinaryOp>(loc, pyType, *opStr, lhs, rhs).getResult());
+                    stack.push_back(builder.create<BinaryOp>(loc, pyType, opStr, lhs, rhs).getResult());
                     break;
                 }
 

@@ -137,6 +137,60 @@ struct PyIROpConversion : mlir::ConversionPattern {
 
 
 /**
+ * Lowers pyir.binary_op to a call to the appropriate runtime binary operator function.
+ *
+ * The operator string is mapped to a runtime function at compile time. Both operands are heap-allocated Value*
+ * pointers. The runtime performs the operation and returns a new heap-allocated Value*.
+ *
+ * pyir.binary_op "+", %lhs, %rhs
+ *     %result = llvm.call @pyir_add(%lhs, %rhs)
+ */
+struct BinaryOpLowering : PyIROpConversion {
+    BinaryOpLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::BinaryOp::getOperationName(), tc, ctx) {
+    }
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override {
+        pyir::BinaryOp binaryOp = mlir::cast<pyir::BinaryOp>(op);
+        mlir::MLIRContext* ctx = op->getContext();
+        const mlir::ModuleOp module = getModule(op);
+        const mlir::Location loc = op->getLoc();
+
+        // Map operator string to runtime function name
+        static const std::unordered_map<std::string, std::string> opToFn = {
+                {"+", "pyir_add"},
+                {"-", "pyir_sub"},
+                {"*", "pyir_mul"},
+                {"/", "pyir_div"},
+                {"==", "pyir_eq"},
+                {"!=", "pyir_ne"},
+                {"<", "pyir_lt"},
+                {"<=", "pyir_le"},
+                {">", "pyir_gt"},
+                {">=", "pyir_ge"},
+        };
+
+        const std::string opStr = binaryOp.getOp().str();
+        const auto it = opToFn.find(opStr);
+        if (it == opToFn.end())
+            return op->emitError("unsupported binary operator: ") << opStr;
+
+        // declare: extern Value* pyir_add(Value* lhs, Value* rhs) (and siblings)
+        const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
+                ptrType(ctx), {ptrType(ctx), ptrType(ctx)});
+        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, it->second, fnType);
+
+        mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(
+                loc, fn, mlir::ValueRange{operands[0], operands[1]});
+
+        rewriter.replaceOp(op, call.getResult());
+        return mlir::success();
+    }
+};
+
+
+/**
  * Lowers pyir.load_name to a call to the runtime function pyir_load_name.
  *
  * The name string is stored as a global constant and passed as a const char* pointer. The runtime resolves the name
@@ -193,7 +247,7 @@ struct StoreNameLowering : PyIROpConversion {
         PyIROpConversion(pyir::StoreName::getOperationName(), tc, ctx) {
     }
 
-    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override {
         pyir::StoreName storeName = mlir::cast<pyir::StoreName>(op);
         mlir::MLIRContext* ctx = op->getContext();
@@ -367,7 +421,7 @@ struct PopTopLowering : PyIROpConversion {
         PyIROpConversion(pyir::PopTop::getOperationName(), tc, ctx) {
     }
 
-    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override {
         mlir::MLIRContext* ctx = op->getContext();
         const mlir::ModuleOp module = getModule(op);
@@ -427,6 +481,7 @@ void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns,
                                 mlir::LLVMTypeConverter& typeConverter) {
     mlir::MLIRContext* ctx = patterns.getContext();
     patterns.add<
+        BinaryOpLowering,
         LoadNameLowering,
         StoreNameLowering,
         LoadConstLowering,

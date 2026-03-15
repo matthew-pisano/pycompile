@@ -168,4 +168,13 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, int 
 std::vector<ByteCodeModule> compilePython(const std::vector<std::string>& fileContents,
                                           const std::vector<std::string>& fileNames);
 
+
+/**
+ * Compiles a string of Python code down into Python bytecode
+ * @param fileContent The string of Python code to compile
+ * @param fileName The file name corresponding to the Python module
+ * @return A compiled bytecode module
+ */
+ByteCodeModule compilePython(const std::string& fileContent, const std::string& fileName);
+
 #endif //PYCOMPILE_BYTECODE_H

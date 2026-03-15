@@ -336,3 +336,11 @@ std::vector<ByteCodeModule> compilePython(const std::vector<std::string>& fileCo
 
     return bytecodeModules;
 }
+
+
+ByteCodeModule compilePython(const std::string& fileContent, const std::string& fileName) {
+    const std::vector fileContents = {fileContent};
+    const std::vector fileNames = {fileName};
+    const std::vector<ByteCodeModule> bytecodeModules = compilePython(fileContents, fileNames);
+    return bytecodeModules[0];
+}

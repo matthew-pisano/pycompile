@@ -143,6 +143,16 @@ namespace pyir {
                     break;
                 }
 
+                case PythonOpcode::STORE_NAME: {
+                    const std::string* name = std::get_if<std::string>(&instr.argval);
+                    if (!name)
+                        throw std::runtime_error("STORE_FAST must have a string argval");
+                    mlir::Value val = stack.back();
+                    stack.pop_back();
+                    builder.create<StoreName>(loc, *name, val);
+                    break;
+                }
+
                 case PythonOpcode::LOAD_FAST: {
                     const std::string* name = std::get_if<std::string>(&instr.argval);
                     if (!name)
@@ -261,6 +271,15 @@ namespace pyir {
                     mlir::Block* trueBlock = fn.addBlock(); // fall-through block
                     builder.create<mlir::cf::CondBranchOp>(loc, cond, trueBlock, falseBlock);
                     builder.setInsertionPointToStart(trueBlock);
+                    break;
+                }
+
+                case PythonOpcode::LOAD_SMALL_INT: {
+                    const int* target = std::get_if<int>(&instr.argval);
+                    if (!target)
+                        throw std::runtime_error("LOAD_SMALL_INT must have an int argval");
+                    mlir::Attribute attr = builder.getI64IntegerAttr(*target);
+                    stack.push_back(builder.create<LoadConst>(loc, pyType, attr).getResult());
                     break;
                 }
 

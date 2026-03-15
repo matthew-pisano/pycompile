@@ -51,6 +51,12 @@ def PyIR_LoadName : PyIR_Op<"load_name"> {
     let assemblyFormat = "$var_name attr-dict";
 }
 
+def PyIR_StoreName : PyIR_Op<"store_name"> {
+    let summary = "Store a value into a current scope name";
+    let arguments = (ins StrAttr:$var_name, ByteCodeObject_Type:$value);
+    let assemblyFormat = "$var_name `,` $value attr-dict `:` type($value)";
+}
+
 def PyIR_Call : PyIR_Op<"call", [DeclareOpInterfaceMethods<MemoryEffectsOpInterface>]> {
     let summary = "Call a callable with arguments";
     let arguments = (ins ByteCodeObject_Type:$callee,

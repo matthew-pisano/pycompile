@@ -10,6 +10,16 @@
 
 
 extern "C" {
+static const std::unordered_map<std::string, Value::Fn> builtins = {
+        {"print", pyir_builtinPrint},
+        {"len", pyir_builtinLen},
+        {"int", pyir_builtinInt},
+        {"float", pyir_builtinFloat},
+        {"str", pyir_builtinStr},
+        {"bool", pyir_builtinBool},
+};
+
+static std::unordered_map<std::string, Value*> moduleScope;
 
 static double toFloat(const Value* v) {
     // Promote int to float if either operand is a float
@@ -190,17 +200,22 @@ Value* pyir_builtinBool(Value** args, const int64_t argc) {
 }
 
 Value* pyir_load_name(const char* name) {
-    static const std::unordered_map<std::string, Value::Fn> builtins = {
-            {"print", pyir_builtinPrint},
-            {"len", pyir_builtinLen},
-            {"int", pyir_builtinInt},
-            {"float", pyir_builtinFloat},
-            {"str", pyir_builtinStr},
-            {"bool", pyir_builtinBool},
-    };
+    // Check for builtins
     if (const auto it = builtins.find(name); it != builtins.end())
         return new Value(it->second);
+    // Check for names in module scope
+    if (const auto it = moduleScope.find(name); it != moduleScope.end()) {
+        it->second->incref();
+        return it->second;
+    }
     throw std::runtime_error(std::string("name '") + name + "' is not defined");
+}
+
+void pyir_store_name(const char* name, Value* val) {
+    if (const auto it = moduleScope.find(name); it != moduleScope.end())
+        it->second->decref(); // Release old value
+    val->incref();
+    moduleScope[name] = val;
 }
 
 Value* pyir_load_const_str(const char* str) {

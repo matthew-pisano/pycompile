@@ -137,6 +137,39 @@ struct PyIROpConversion : mlir::ConversionPattern {
 
 
 /**
+ * Lowers pyir.to_bool to a call to the runtime function pyir_to_bool.
+ *
+ * Coerces a heap-allocated Value* to a boolean Value* by delegating to the runtime toBool helper. The result is a
+ * freshly allocated Value(bool).
+ *
+ * pyir.to_bool %val : !pyir.object
+ *     %result = llvm.call @pyir_to_bool(%val)
+ */
+struct ToBoolLowering : PyIROpConversion {
+    ToBoolLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::ToBool::getOperationName(), tc, ctx) {
+    }
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override {
+        mlir::MLIRContext* ctx = op->getContext();
+        const mlir::ModuleOp module = getModule(op);
+        const mlir::Location loc = op->getLoc();
+
+        const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
+                ptrType(ctx), {ptrType(ctx)});
+        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_to_bool", fnType);
+
+        mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(
+                loc, fn, mlir::ValueRange{operands[0]});
+
+        rewriter.replaceOp(op, call.getResult());
+        return mlir::success();
+    }
+};
+
+
+/**
  * Lowers pyir.binary_op to a call to the appropriate runtime binary operator function.
  *
  * The operator string is mapped to a runtime function at compile time. Both operands are heap-allocated Value*
@@ -481,6 +514,7 @@ void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns,
                                 mlir::LLVMTypeConverter& typeConverter) {
     mlir::MLIRContext* ctx = patterns.getContext();
     patterns.add<
+        ToBoolLowering,
         BinaryOpLowering,
         LoadNameLowering,
         StoreNameLowering,

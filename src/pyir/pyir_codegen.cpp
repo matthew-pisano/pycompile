@@ -283,6 +283,13 @@ namespace pyir {
                     break;
                 }
 
+                case PythonOpcode::TO_BOOL: {
+                    mlir::Value toConvert = stack.back();
+                    stack.pop_back(); // Replace value
+                    stack.push_back(builder.create<ToBool>(loc, pyType, toConvert).getResult());
+                    break;
+                }
+
                 case PythonOpcode::UNKNOWN:
                 default:
                     throw std::runtime_error(

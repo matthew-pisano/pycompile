@@ -49,6 +49,25 @@ static std::string toString(const Value* v) {
     }, v->data);
 }
 
+static bool toBool(const Value* val) {
+    return std::visit([]<typename T>(const T& x) -> bool {
+        using ValType = std::decay_t<T>;
+        if constexpr (std::is_same_v<ValType, NoneType>)
+            return false;
+        if constexpr (std::is_same_v<ValType, bool>)
+            return x;
+        if constexpr (std::is_same_v<ValType, int64_t>)
+            return x != 0;
+        if constexpr (std::is_same_v<ValType, double>)
+            return x != 0.0;
+        if constexpr (std::is_same_v<ValType, std::string>)
+            return !x.empty();
+        if constexpr (std::is_same_v<ValType, Value::Fn>)
+            return true;
+        return false;
+    }, val->data);
+}
+
 Value* pyir_add(const Value* lhs, const Value* rhs) {
     if (lhs->isInt() && rhs->isInt())
         return new Value(std::get<int64_t>(lhs->data) + std::get<int64_t>(rhs->data));
@@ -116,25 +135,6 @@ Value* pyir_le(const Value* lhs, const Value* rhs) {
 Value* pyir_gt(const Value* lhs, const Value* rhs) { return pyir_lt(rhs, lhs); }
 Value* pyir_ge(const Value* lhs, const Value* rhs) { return pyir_le(rhs, lhs); }
 
-bool pyir_toBool(Value val) {
-    return std::visit([]<typename T>(const T& x) -> bool {
-        using ValType = std::decay_t<T>;
-        if constexpr (std::is_same_v<ValType, NoneType>)
-            return false;
-        if constexpr (std::is_same_v<ValType, bool>)
-            return x;
-        if constexpr (std::is_same_v<ValType, int64_t>)
-            return x != 0;
-        if constexpr (std::is_same_v<ValType, double>)
-            return x != 0.0;
-        if constexpr (std::is_same_v<ValType, std::string>)
-            return !x.empty();
-        if constexpr (std::is_same_v<ValType, Value::Fn>)
-            return true;
-        return false;
-    }, val.data);
-}
-
 Value* pyir_builtinPrint(Value** args, const int64_t argc) {
     for (int64_t i = 0; i < argc; i++) {
         if (i > 0)
@@ -196,7 +196,11 @@ Value* pyir_builtinStr(Value** args, const int64_t argc) {
 Value* pyir_builtinBool(Value** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("Too many arguments for bool()");
-    return new Value(pyir_toBool(Value(args[0])));
+    return new Value(toBool(args[0]));
+}
+
+Value* pyir_to_bool(const Value* val) {
+    return new Value(toBool(val));
 }
 
 Value* pyir_load_name(const char* name) {

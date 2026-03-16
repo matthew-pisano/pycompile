@@ -81,6 +81,14 @@ def PyIR_StoreFast : PyIR_Op<"store_fast"> {
 }
 
 
+def PyIR_ToBool : PyIR_Op<"to_bool", [Pure]> {
+    let summary = "Coerce a Python object to a boolean";
+    let arguments = (ins ByteCodeObject_Type:$value);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$value attr-dict `:` type($value)";
+}
+
+
 def PyIR_BinaryOp : PyIR_Op<"binary_op"> {
     let summary = "Binary operation on two Python objects";
     let arguments = (ins StrAttr:$op, ByteCodeObject_Type:$lhs, ByteCodeObject_Type:$rhs);

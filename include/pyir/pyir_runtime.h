@@ -51,7 +51,7 @@ Value* pyir_load_const_str(const char* str);
 Value* pyir_load_const_int(int64_t val);
 
 // truthiness, used by conditional jumps
-bool pyir_toBool(Value val);
+Value* pyir_to_bool(const Value* val);
 
 // builtins
 Value* pyir_builtinPrint(Value** args, int64_t argc);

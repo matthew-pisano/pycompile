@@ -89,8 +89,40 @@ def PyIR_ToBool : PyIR_Op<"to_bool", [Pure]> {
 }
 
 
+def PyIR_UnaryNot : PyIR_Op<"unary_not", [Pure]> {
+    let summary = "Negates a boolean";
+    let arguments = (ins ByteCodeObject_Type:$value);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$value attr-dict `:` type($value)";
+}
+
+
+def PyIR_UnaryNegative : PyIR_Op<"unary_negative", [Pure]> {
+    let summary = "Negates a number";
+    let arguments = (ins ByteCodeObject_Type:$value);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$value attr-dict `:` type($value)";
+}
+
+
+def PyIR_UnaryInvert : PyIR_Op<"unary_invert", [Pure]> {
+    let summary = "Inverts a binary sequence";
+    let arguments = (ins ByteCodeObject_Type:$value);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$value attr-dict `:` type($value)";
+}
+
+
 def PyIR_BinaryOp : PyIR_Op<"binary_op"> {
     let summary = "Binary operation on two Python objects";
+    let arguments = (ins StrAttr:$op, ByteCodeObject_Type:$lhs, ByteCodeObject_Type:$rhs);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$op `,` $lhs `,` $rhs attr-dict `:` type($lhs)";
+}
+
+
+def PyIR_CompareOp : PyIR_Op<"compare_op"> {
+    let summary = "Comparison operation on two Python objects";
     let arguments = (ins StrAttr:$op, ByteCodeObject_Type:$lhs, ByteCodeObject_Type:$rhs);
     let results   = (outs ByteCodeObject_Type:$result);
     let assemblyFormat = "$op `,` $lhs `,` $rhs attr-dict `:` type($lhs)";

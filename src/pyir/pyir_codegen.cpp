@@ -203,6 +203,18 @@ namespace pyir {
                     break;
                 }
 
+                case PythonOpcode::COMPARE_OP: {
+                    const std::string opStr = instr.argrepr;
+                    if (opStr.empty())
+                        throw std::runtime_error("COMPARE_OP must have a string argval");
+                    mlir::Value rhs = stack.back();
+                    stack.pop_back();
+                    mlir::Value lhs = stack.back();
+                    stack.pop_back();
+                    stack.push_back(builder.create<CompareOp>(loc, pyType, opStr, lhs, rhs).getResult());
+                    break;
+                }
+
                 case PythonOpcode::PUSH_NULL:
                     // Push a null sentinel onto the stack for the call convention.
                     stack.push_back(builder.create<PushNull>(loc, pyType).getResult());
@@ -287,6 +299,26 @@ namespace pyir {
                     mlir::Value toConvert = stack.back();
                     stack.pop_back(); // Replace value
                     stack.push_back(builder.create<ToBool>(loc, pyType, toConvert).getResult());
+                    break;
+                }
+
+                case PythonOpcode::UNARY_NOT: {
+                    mlir::Value value = stack.back();
+                    stack.pop_back();
+                    stack.push_back(builder.create<UnaryNot>(loc, pyType, value).getResult());
+                    break;
+                }
+                case PythonOpcode::UNARY_NEGATIVE: {
+                    mlir::Value value = stack.back();
+                    stack.pop_back();
+                    stack.push_back(builder.create<UnaryNegative>(loc, pyType, value).getResult());
+                    break;
+                }
+
+                case PythonOpcode::UNARY_INVERT: {
+                    mlir::Value value = stack.back();
+                    stack.pop_back();
+                    stack.push_back(builder.create<UnaryInvert>(loc, pyType, value).getResult());
                     break;
                 }
 

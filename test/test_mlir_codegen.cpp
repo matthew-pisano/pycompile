@@ -117,6 +117,20 @@ TEST_CASE_METHOD(MLIRFixture, "Test Arithmetic Operators MLIR") {
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "%");
     }
+
+    SECTION("Test Integer Negation") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = True\nb = -a");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+        pyir::UnaryNegative unaryOp = mlir::dyn_cast<pyir::UnaryNegative>(getOp(fn, 3));
+        REQUIRE(unaryOp);
+    }
+
+    SECTION("Test Binary Negation") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = ~a");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+        pyir::UnaryInvert unaryOp = mlir::dyn_cast<pyir::UnaryInvert>(getOp(fn, 3));
+        REQUIRE(unaryOp);
+    }
 }
 
 
@@ -124,23 +138,14 @@ TEST_CASE_METHOD(MLIRFixture, "Test Boolean Operators MLIR") {
     SECTION("Test Boolean Negation") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = True\nb = not a");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp unaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 3));
+        pyir::UnaryNot unaryOp = mlir::dyn_cast<pyir::UnaryNot>(getOp(fn, 4));
         REQUIRE(unaryOp);
-        REQUIRE(unaryOp.getOp() == "!");
-    }
-
-    SECTION("Test Integer Negation") {
-        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = True\nb = -a");
-        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp unaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 3));
-        REQUIRE(unaryOp);
-        REQUIRE(unaryOp.getOp() == "-");
     }
 
     SECTION("Test Boolean Equality") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = True\nb = True\nc = a == b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "==");
     }
@@ -148,7 +153,23 @@ TEST_CASE_METHOD(MLIRFixture, "Test Boolean Operators MLIR") {
     SECTION("Test Integer Equality") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a == b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
+        REQUIRE(binaryOp);
+        REQUIRE(binaryOp.getOp() == "==");
+    }
+
+    SECTION("Test Float Equality") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2.1\nb = 2.1\nc = a == b");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
+        REQUIRE(binaryOp);
+        REQUIRE(binaryOp.getOp() == "==");
+    }
+
+    SECTION("Test String Equality") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 'g'\nb = 'g'\nc = a == b");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "==");
     }
@@ -156,7 +177,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Boolean Operators MLIR") {
     SECTION("Test Negative Equality") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = True\nb = True\nc = a != b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "!=");
     }
@@ -164,14 +185,14 @@ TEST_CASE_METHOD(MLIRFixture, "Test Boolean Operators MLIR") {
     SECTION("Test Less Than") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a < b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "<");
     }
     SECTION("Test Less Than Equal") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a <= b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "<=");
     }
@@ -179,7 +200,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Boolean Operators MLIR") {
     SECTION("Test Greater Than") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a > b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == ">");
     }
@@ -187,7 +208,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Boolean Operators MLIR") {
     SECTION("Test Greater Than Equal") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a >= b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == ">=");
     }

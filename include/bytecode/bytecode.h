@@ -74,6 +74,7 @@ struct CodeInfo {
 enum class ArgvalType {
     None,
     Int,
+    Float,
     Str,
     TupleStr,
     Code
@@ -98,10 +99,11 @@ struct ArgvalNone {
 struct ByteCodeInstruction; // Forward declaration of Instruction struct.
 
 /**
- * A variant type to represent the possible types of instruction arguments, which can be ArgvalNone, an int, a string,
- * a tuple of strings, or a nested code object (represented as a vector of Instructions).
+ * A variant type to represent the possible types of instruction arguments, which can be ArgvalNone, an int64_t,
+ * a double_t, a string, a tuple of strings, or a nested code object (represented as a vector of Instructions).
  */
-using Argval = std::variant<ArgvalNone, int, std::string, std::vector<std::string>, std::vector<ByteCodeInstruction> >;
+using Argval = std::variant<ArgvalNone, int64_t, double_t, std::string, std::vector<std::string>, std::vector<
+                                ByteCodeInstruction> >;
 
 
 /**

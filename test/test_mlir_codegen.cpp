@@ -71,6 +71,14 @@ TEST_CASE_METHOD(MLIRFixture, "Test Arithmetic Operators MLIR") {
         REQUIRE(binaryOp.getOp() == "+");
     }
 
+    SECTION("Test Float Addition") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2.1\nb = 2.1\nc = a + b");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        REQUIRE(binaryOp);
+        REQUIRE(binaryOp.getOp() == "+");
+    }
+
     SECTION("Test Subtraction") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a - b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();

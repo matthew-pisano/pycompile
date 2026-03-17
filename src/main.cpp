@@ -121,7 +121,7 @@ int main(const int argc, char* argv[]) {
     for (const std::string& fileName : inputFileNames) {
         try {
             fileContents.push_back(readFileString(fileName));
-        } catch (const std::runtime_error& e) {
+        } catch (const std::exception& e) {
             std::cerr << "Error reading file '" + fileName + "': " + e.what() << std::endl;
             return 1;
         }
@@ -131,7 +131,7 @@ int main(const int argc, char* argv[]) {
     std::vector<ByteCodeModule> bytecodeModules;
     try {
         bytecodeModules = compilePython(fileContents, inputFileNames);
-    } catch (const std::runtime_error& e) {
+    } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return 1;
     }
@@ -147,8 +147,8 @@ int main(const int argc, char* argv[]) {
     for (const ByteCodeModule& module : bytecodeModules) {
         try {
             mlirModules.push_back(pyir::generatePyIR(context, module));
-        } catch (const std::runtime_error& e) {
-            std::cerr << "Error generating PyIR for file '" + module.filename + "': " + e.what() << std::endl;
+        } catch (const std::exception& e) {
+            std::cerr << e.what() << std::endl;
             return 1;
         }
     }
@@ -162,8 +162,8 @@ int main(const int argc, char* argv[]) {
     if (mlirModules.size() > 1)
         try {
             mergedMlirModule = pyir::mergePyIRModules(context, mlirModules);
-        } catch (const std::runtime_error& e) {
-            std::cerr << "Error merging PyIR modules: " << e.what() << std::endl;
+        } catch (const std::exception& e) {
+            std::cerr << e.what() << std::endl;
             return 1;
         }
     else
@@ -172,8 +172,8 @@ int main(const int argc, char* argv[]) {
     // Lower PYIR to an LLVM MLIR dialect
     try {
         lowerToLLVMDialect(context, mergedMlirModule);
-    } catch (const std::runtime_error& e) {
-        std::cerr << "Error lowering mlir module: " << e.what() << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
         return 1;
     }
 
@@ -181,8 +181,8 @@ int main(const int argc, char* argv[]) {
     std::unique_ptr<llvm::Module> llvmModule;
     try {
         llvmModule = translateToLLVMIR(llvmCtx, mergedMlirModule);
-    } catch (const std::runtime_error& e) {
-        std::cerr << "Error creating object file: " << e.what() << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
         return 1;
     }
     if (upToLower) {
@@ -196,16 +196,16 @@ int main(const int argc, char* argv[]) {
     const std::string moduleObjectPath = modulePath.replace_extension(".o");
     try {
         exportObjectFile(llvmModule, moduleObjectPath);
-    } catch (const std::runtime_error& e) {
-        std::cerr << "Error creating object file: " << e.what() << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
         return 1;
     }
 
     // Link object file into executable
     try {
         linkObjectFile(moduleObjectPath, outputFileName.empty() ? "a.out" : outputFileName);
-    } catch (const std::runtime_error& e) {
-        std::cerr << "Error linking executable: " << e.what() << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << std::endl;
         return 1;
     }
 

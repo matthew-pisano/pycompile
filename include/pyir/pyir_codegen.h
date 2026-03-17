@@ -13,6 +13,30 @@
 #include "pyir/pyir_ops.h"
 
 namespace pyir {
+    /**
+     * Error to signal failure to parse bytecode into PyIR.
+     */
+    class PyIRError : public std::exception {
+    public:
+        PyIRError(const std::string& msg, const std::string& moduleName, const size_t lineno, const size_t offset) {
+            this->msg = std::format("{}:{}:{}: error: {}", moduleName, lineno, offset, msg);
+        }
+
+        PyIRError(const std::string& msg, const std::string& moduleName, const std::optional<size_t> lineno,
+                  const size_t offset) {
+            size_t resolvedLineno = lineno.has_value() ? *lineno : 0;
+            this->msg = std::format("{}:{}:{}: error: {}", moduleName, resolvedLineno, offset, msg);
+        }
+
+        const char* what() const noexcept override {
+            return msg.c_str();
+        }
+
+    private:
+        std::string msg;
+    };
+
+
     // Wraps a single module into an mlir::ModuleOp containing one FuncOp
     mlir::OwningOpRef<mlir::ModuleOp> generatePyIR(mlir::MLIRContext& ctx, const ByteCodeModule& module);
 

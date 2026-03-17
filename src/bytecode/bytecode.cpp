@@ -7,6 +7,7 @@
 
 #include "bytecode/bytecode.h"
 
+#include <filesystem>
 #include <iomanip>
 #include <iostream>
 
@@ -327,7 +328,7 @@ std::vector<ByteCodeModule> compilePython(const std::vector<std::string>& fileCo
         try {
             compiledModules.push_back(compilePythonSource(fileContents[0], fileNames[i], fileNames[i]));
         } catch (const std::runtime_error& e) {
-            throw std::runtime_error("Error compiling Python file '" + fileNames[i] + "': " + e.what());
+            throw std::runtime_error(std::filesystem::path(fileNames[i]).filename().string() + ": " + e.what());
         }
 
     // Disassemble PyObjects into Python bytecode
@@ -337,7 +338,7 @@ std::vector<ByteCodeModule> compilePython(const std::vector<std::string>& fileCo
         try {
             bytecodeModules.push_back(generatePythonBytecode(compiledModules[i]));
         } catch (const std::runtime_error& e) {
-            throw std::runtime_error("Error generating bytecode for Python file '" + fileNames[i] + "': " + e.what());
+            throw std::runtime_error(std::filesystem::path(fileNames[i]).filename().string() + ": " + e.what());
         }
 
     return bytecodeModules;

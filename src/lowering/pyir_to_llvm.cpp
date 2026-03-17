@@ -4,6 +4,8 @@
 
 #include "lowering/pyir_to_llvm.h"
 
+#include <filesystem>
+
 #include "pyir/pyir_ops.h"
 #include "pyir/pyir_types.h"
 
@@ -18,6 +20,8 @@
 #include <mlir/Conversion/ArithToLLVM/ArithToLLVM.h>
 #include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Transforms/Passes.h>
+
+#include "utils.h"
 
 
 /**
@@ -150,7 +154,7 @@ struct ToBoolLowering : PyIROpConversion {
         PyIROpConversion(pyir::ToBool::getOperationName(), tc, ctx) {
     }
 
-    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override {
         mlir::MLIRContext* ctx = op->getContext();
         const mlir::ModuleOp module = getModule(op);
@@ -207,7 +211,7 @@ struct BinaryOpLowering : PyIROpConversion {
         const std::string opStr = binaryOp.getOp().str();
         const auto it = opToFn.find(opStr);
         if (it == opToFn.end())
-            return op->emitError("Unsupported binary operator: ") << opStr;
+            return mlir::failure();
 
         // declare: extern Value* pyir_add(Value* lhs, Value* rhs) (and siblings)
         const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
@@ -541,7 +545,26 @@ void lowerToLLVMDialect(mlir::MLIRContext& ctx, const mlir::OwningOpRef<mlir::Mo
     // lower PyIR to LLVM dialect
     pm.addPass(createPyIRToLLVMPass());
 
+    mlir::Location errorLoc = mlir::UnknownLoc::get(&ctx);
+    std::string errorMessage;
+    mlir::ScopedDiagnosticHandler handler(&ctx, [&](const mlir::Diagnostic& diag) {
+        if (diag.getSeverity() == mlir::DiagnosticSeverity::Error) {
+            errorMessage = diag.str();
+            errorLoc = diag.getLocation();
+        }
+        return mlir::success();
+    });
+
     const llvm::LogicalResult result = pm.run(module.get());
-    if (mlir::failed(result))
-        throw std::runtime_error("Failed to lower PYIR module");
+    if (mlir::failed(result)) {
+        size_t lineno = 0;
+        size_t offset = 0;
+        std::string moduleName = "<unknown>";
+        if (const mlir::FileLineColLoc fileLoc = mlir::dyn_cast<mlir::FileLineColLoc>(errorLoc)) {
+            moduleName = std::filesystem::path(fileLoc.getFilename().str()).filename();
+            lineno = fileLoc.getLine();
+            offset = fileLoc.getColumn();
+        }
+        throw std::runtime_error(std::format("{}:{}:{}: error: {}", moduleName, lineno, offset, errorMessage));
+    }
 }

@@ -51,6 +51,12 @@ def PyIR_LoadName : PyIR_Op<"load_name"> {
     let assemblyFormat = "$var_name attr-dict";
 }
 
+def PyIR_StoreName : PyIR_Op<"store_name"> {
+    let summary = "Store a value into a current scope name";
+    let arguments = (ins StrAttr:$var_name, ByteCodeObject_Type:$value);
+    let assemblyFormat = "$var_name `,` $value attr-dict `:` type($value)";
+}
+
 def PyIR_Call : PyIR_Op<"call", [DeclareOpInterfaceMethods<MemoryEffectsOpInterface>]> {
     let summary = "Call a callable with arguments";
     let arguments = (ins ByteCodeObject_Type:$callee,
@@ -75,8 +81,48 @@ def PyIR_StoreFast : PyIR_Op<"store_fast"> {
 }
 
 
+def PyIR_ToBool : PyIR_Op<"to_bool", [Pure]> {
+    let summary = "Coerce a Python object to a boolean";
+    let arguments = (ins ByteCodeObject_Type:$value);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$value attr-dict `:` type($value)";
+}
+
+
+def PyIR_UnaryNot : PyIR_Op<"unary_not", [Pure]> {
+    let summary = "Negates a boolean";
+    let arguments = (ins ByteCodeObject_Type:$value);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$value attr-dict `:` type($value)";
+}
+
+
+def PyIR_UnaryNegative : PyIR_Op<"unary_negative", [Pure]> {
+    let summary = "Negates a number";
+    let arguments = (ins ByteCodeObject_Type:$value);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$value attr-dict `:` type($value)";
+}
+
+
+def PyIR_UnaryInvert : PyIR_Op<"unary_invert", [Pure]> {
+    let summary = "Inverts a binary sequence";
+    let arguments = (ins ByteCodeObject_Type:$value);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$value attr-dict `:` type($value)";
+}
+
+
 def PyIR_BinaryOp : PyIR_Op<"binary_op"> {
     let summary = "Binary operation on two Python objects";
+    let arguments = (ins StrAttr:$op, ByteCodeObject_Type:$lhs, ByteCodeObject_Type:$rhs);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$op `,` $lhs `,` $rhs attr-dict `:` type($lhs)";
+}
+
+
+def PyIR_CompareOp : PyIR_Op<"compare_op"> {
+    let summary = "Comparison operation on two Python objects";
     let arguments = (ins StrAttr:$op, ByteCodeObject_Type:$lhs, ByteCodeObject_Type:$rhs);
     let results   = (outs ByteCodeObject_Type:$result);
     let assemblyFormat = "$op `,` $lhs `,` $rhs attr-dict `:` type($lhs)";

@@ -91,7 +91,7 @@ namespace pyir {
         // This must happen before emission so forward jumps can reference blocks that haven't been emitted yet.
         std::unordered_map<size_t, mlir::Block*> offsetToBlock;
         for (const ByteCodeInstruction& instr : module.instructions) {
-            const int* target = std::get_if<int>(&instr.argval);
+            const int64_t* target = std::get_if<int64_t>(&instr.argval);
             const bool isJumpTarget = instr.opcode == PythonOpcode::JUMP_FORWARD ||
                                       instr.opcode == PythonOpcode::POP_JUMP_IF_TRUE ||
                                       instr.opcode == PythonOpcode::POP_JUMP_IF_FALSE;
@@ -128,8 +128,10 @@ namespace pyir {
                     mlir::Attribute attr;
                     if (const std::string* s = std::get_if<std::string>(&instr.argval))
                         attr = builder.getStringAttr(*s);
-                    else if (const int* i = std::get_if<int>(&instr.argval))
+                    else if (const int64_t* i = std::get_if<int64_t>(&instr.argval))
                         attr = builder.getI64IntegerAttr(*i);
+                    else if (const double_t* f = std::get_if<double_t>(&instr.argval))
+                        attr = builder.getF64FloatAttr(*f);
 
                     stack.push_back(builder.create<LoadConst>(loc, pyType, attr).getResult());
                     break;
@@ -140,6 +142,16 @@ namespace pyir {
                     if (!name)
                         throw std::runtime_error("LOAD_NAME must have a string argval");
                     stack.push_back(builder.create<LoadName>(loc, pyType, *name).getResult());
+                    break;
+                }
+
+                case PythonOpcode::STORE_NAME: {
+                    const std::string* name = std::get_if<std::string>(&instr.argval);
+                    if (!name)
+                        throw std::runtime_error("STORE_FAST must have a string argval");
+                    mlir::Value val = stack.back();
+                    stack.pop_back();
+                    builder.create<StoreName>(loc, *name, val);
                     break;
                 }
 
@@ -162,7 +174,7 @@ namespace pyir {
                 }
 
                 case PythonOpcode::LOAD_DEREF: {
-                    const int* idx = std::get_if<int>(&instr.argval);
+                    const int64_t* idx = std::get_if<int64_t>(&instr.argval);
                     if (!idx)
                         throw std::runtime_error("LOAD_DEREF must have an int argval");
                     const std::string name = resolve_deref(module.info, *idx);
@@ -171,7 +183,7 @@ namespace pyir {
                 }
 
                 case PythonOpcode::STORE_DEREF: {
-                    const int* idx = std::get_if<int>(&instr.argval);
+                    const int64_t* idx = std::get_if<int64_t>(&instr.argval);
                     if (!idx)
                         throw std::runtime_error("STORE_DEREF must have an int argval");
                     const std::string name = resolve_deref(module.info, *idx);
@@ -182,14 +194,26 @@ namespace pyir {
                 }
 
                 case PythonOpcode::BINARY_OP: {
-                    const std::string* opStr = std::get_if<std::string>(&instr.argval);
-                    if (!opStr)
+                    const std::string opStr = instr.argrepr;
+                    if (opStr.empty())
                         throw std::runtime_error("BINARY_OP must have a string argval");
                     mlir::Value rhs = stack.back();
                     stack.pop_back();
                     mlir::Value lhs = stack.back();
                     stack.pop_back();
-                    stack.push_back(builder.create<BinaryOp>(loc, pyType, *opStr, lhs, rhs).getResult());
+                    stack.push_back(builder.create<BinaryOp>(loc, pyType, opStr, lhs, rhs).getResult());
+                    break;
+                }
+
+                case PythonOpcode::COMPARE_OP: {
+                    const std::string opStr = instr.argrepr;
+                    if (opStr.empty())
+                        throw std::runtime_error("COMPARE_OP must have a string argval");
+                    mlir::Value rhs = stack.back();
+                    stack.pop_back();
+                    mlir::Value lhs = stack.back();
+                    stack.pop_back();
+                    stack.push_back(builder.create<CompareOp>(loc, pyType, opStr, lhs, rhs).getResult());
                     break;
                 }
 
@@ -199,12 +223,12 @@ namespace pyir {
                     break;
 
                 case PythonOpcode::CALL: {
-                    const int* argc = std::get_if<int>(&instr.argval);
+                    const int64_t* argc = std::get_if<int64_t>(&instr.argval);
                     if (!argc)
                         throw std::runtime_error("CALL must have an int argval");
                     // Pop arguments in reverse order
                     std::vector<mlir::Value> args(*argc);
-                    for (int i = *argc - 1; i >= 0; i--) {
+                    for (int64_t i = *argc - 1; i >= 0; i--) {
                         args[i] = stack.back();
                         stack.pop_back();
                     }
@@ -230,7 +254,7 @@ namespace pyir {
                 }
 
                 case PythonOpcode::JUMP_FORWARD: {
-                    const int* target = std::get_if<int>(&instr.argval);
+                    const int64_t* target = std::get_if<int64_t>(&instr.argval);
                     if (!target)
                         throw std::runtime_error("JUMP_FORWARD must have an int argval");
                     mlir::Block* dest = offsetToBlock.at(*target);
@@ -239,7 +263,7 @@ namespace pyir {
                 }
 
                 case PythonOpcode::POP_JUMP_IF_TRUE: {
-                    const int* target = std::get_if<int>(&instr.argval);
+                    const int64_t* target = std::get_if<int64_t>(&instr.argval);
                     if (!target)
                         throw std::runtime_error("POP_JUMP_IF_TRUE must have an int argval");
                     mlir::Value cond = stack.back();
@@ -252,7 +276,7 @@ namespace pyir {
                 }
 
                 case PythonOpcode::POP_JUMP_IF_FALSE: {
-                    const int* target = std::get_if<int>(&instr.argval);
+                    const int64_t* target = std::get_if<int64_t>(&instr.argval);
                     if (!target)
                         throw std::runtime_error("POP_JUMP_IF_FALSE must have an int argval");
                     mlir::Value cond = stack.back();
@@ -261,6 +285,42 @@ namespace pyir {
                     mlir::Block* trueBlock = fn.addBlock(); // fall-through block
                     builder.create<mlir::cf::CondBranchOp>(loc, cond, trueBlock, falseBlock);
                     builder.setInsertionPointToStart(trueBlock);
+                    break;
+                }
+
+                case PythonOpcode::LOAD_SMALL_INT: {
+                    const int64_t* target = std::get_if<int64_t>(&instr.argval);
+                    if (!target)
+                        throw std::runtime_error("LOAD_SMALL_INT must have an int argval");
+                    mlir::Attribute attr = builder.getI64IntegerAttr(*target);
+                    stack.push_back(builder.create<LoadConst>(loc, pyType, attr).getResult());
+                    break;
+                }
+
+                case PythonOpcode::TO_BOOL: {
+                    mlir::Value toConvert = stack.back();
+                    stack.pop_back(); // Replace value
+                    stack.push_back(builder.create<ToBool>(loc, pyType, toConvert).getResult());
+                    break;
+                }
+
+                case PythonOpcode::UNARY_NOT: {
+                    mlir::Value value = stack.back();
+                    stack.pop_back();
+                    stack.push_back(builder.create<UnaryNot>(loc, pyType, value).getResult());
+                    break;
+                }
+                case PythonOpcode::UNARY_NEGATIVE: {
+                    mlir::Value value = stack.back();
+                    stack.pop_back();
+                    stack.push_back(builder.create<UnaryNegative>(loc, pyType, value).getResult());
+                    break;
+                }
+
+                case PythonOpcode::UNARY_INVERT: {
+                    mlir::Value value = stack.back();
+                    stack.pop_back();
+                    stack.push_back(builder.create<UnaryInvert>(loc, pyType, value).getResult());
                     break;
                 }
 

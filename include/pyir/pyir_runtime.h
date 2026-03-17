@@ -34,6 +34,9 @@ Value* pyir_ge(const Value* lhs, const Value* rhs);
 // name resolution, returns a builtin Fn or None
 Value* pyir_load_name(const char* name);
 
+// name storage in addition to builtins
+void pyir_store_name(const char* name, Value* val);
+
 // call dispatch
 Value* pyir_call(const Value* callee, Value** args, int64_t argc);
 
@@ -45,10 +48,10 @@ void pyir_decref(Value* v);
 
 Value* pyir_load_const_str(const char* str);
 
-Value* pyir_load_const_int(const int64_t val);
+Value* pyir_load_const_int(int64_t val);
 
 // truthiness, used by conditional jumps
-bool pyir_toBool(Value val);
+Value* pyir_to_bool(const Value* val);
 
 // builtins
 Value* pyir_builtinPrint(Value** args, int64_t argc);

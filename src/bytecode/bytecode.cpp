@@ -20,6 +20,8 @@ inline std::string argvalTypeToString(const ArgvalType type) {
             return "None";
         case ArgvalType::Int:
             return "Int";
+        case ArgvalType::Float:
+            return "Float";
         case ArgvalType::Str:
             return "Str";
         case ArgvalType::TupleStr:
@@ -136,7 +138,9 @@ void serializeInstruction(const ByteCodeInstruction& instr, std::ostream& os, co
     if (!instr.argrepr.empty())
         instRepr = instr.argrepr;
     else if (instr.argvalType == ArgvalType::Int)
-        instRepr = std::to_string(std::get<int>(instr.argval));
+        instRepr = std::to_string(std::get<int64_t>(instr.argval));
+    else if (instr.argvalType == ArgvalType::Float)
+        instRepr = std::to_string(std::get<double_t>(instr.argval));
     else if (instr.argvalType == ArgvalType::Str)
         instRepr = std::get<std::string>(instr.argval);
     else if (instr.argvalType == ArgvalType::TupleStr) {
@@ -272,11 +276,14 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
         // Fallback for older Python versions or if positions unavailable
             Py_XDECREF(linenoAttr);
 
-        // argval: int | str | tuple | code object | other
+        // argval: int | float | str | tuple | code object | other
         PyObject* argval = PyObject_GetAttrString(item, "argval"); // borrowed reference
         if (PyLong_Check(argval)) {
             instr.argvalType = ArgvalType::Int;
-            instr.argval = PyLong_AsInt(argval);
+            instr.argval = PyLong_AsLong(argval);
+        } else if (PyFloat_Check(argval)) {
+            instr.argvalType = ArgvalType::Float;
+            instr.argval = PyFloat_AsDouble(argval);
         } else if (PyUnicode_Check(argval)) {
             instr.argvalType = ArgvalType::Str;
             instr.argval = PyUnicode_AsUTF8(argval);
@@ -292,13 +299,12 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
             instr.argval = std::move(tupleStrs);
         } else if (PyCode_Check(argval)) {
             instr.argvalType = ArgvalType::Code;
-            // Increment refcount so the temporary CompiledModule owns the code object and will decref it when
-            // destroyed.
+            // Increment refcount so the temporary CompiledModule owns the code object and will decref it when destroyed
             Py_XINCREF(argval);
             CompiledModule nested{compiledModule.filename, compiledModule.module_name, argval};
             instr.argval = generatePythonBytecode(nested, depth + 1).instructions;
         } else {
-            instr.argvalType = ArgvalType::None; // for any other types, we just treat it as None
+            instr.argvalType = ArgvalType::None; // For any other types, just treat it as None
             instr.argval = ArgvalNone{};
         }
 

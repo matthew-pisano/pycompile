@@ -7,6 +7,32 @@
 #include <string>
 #include <mlir/IR/BuiltinOps.h>
 
+
+/**
+ * Error with included location information.
+ */
+class PyCompileError : public std::exception {
+public:
+    PyCompileError(const std::string& msg, const std::string& moduleName, const size_t lineno = 0,
+                   const size_t offset = 0) {
+        this->msg = std::format("{}:{}:{}: error: {}", moduleName, lineno, offset, msg);
+    }
+
+    PyCompileError(const std::string& msg, const std::string& moduleName, const std::optional<size_t> lineno,
+                   const size_t offset = 0) {
+        size_t resolvedLineno = lineno.has_value() ? *lineno : 0;
+        this->msg = std::format("{}:{}:{}: error: {}", moduleName, resolvedLineno, offset, msg);
+    }
+
+    [[nodiscard]] const char* what() const noexcept override {
+        return msg.c_str();
+    }
+
+private:
+    std::string msg;
+};
+
+
 /**
  * Helper function to read the contents of a file into a string.
  * @param filename The path to the file to read.

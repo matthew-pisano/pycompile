@@ -11,6 +11,7 @@
 #include <mlir/Dialect/ControlFlow/IR/ControlFlowOps.h>
 #include <mlir/Dialect/Arith/IR/Arith.h>
 
+#include "utils.h"
 #include "pyir/pyir_ops.h"
 
 namespace pyir {
@@ -69,7 +70,7 @@ namespace pyir {
      * @param ctx The MLIR Context
      * @param module The original ByteCodeModule
      * @param moduleName The name to give the MLIR module
-     * @throw PyIRError For unknown or malformed ops
+     * @throw PyCompileError For unknown or malformed ops
      */
     void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ByteCodeModule& module,
                          const std::string& moduleName) {
@@ -140,9 +141,9 @@ namespace pyir {
                 case PythonOpcode::LOAD_NAME: {
                     const std::string* name = std::get_if<std::string>(&instr.argval);
                     if (!name)
-                        throw PyIRError("LOAD_NAME must have a string argval",
-                                        std::filesystem::path(module.filename).filename(),
-                                        instr.lineno, instr.offset);
+                        throw PyCompileError("LOAD_NAME must have a string argval",
+                                             std::filesystem::path(module.filename).filename(),
+                                             instr.lineno, instr.offset);
                     stack.push_back(builder.create<LoadName>(loc, pyType, *name).getResult());
                     break;
                 }
@@ -150,9 +151,9 @@ namespace pyir {
                 case PythonOpcode::STORE_NAME: {
                     const std::string* name = std::get_if<std::string>(&instr.argval);
                     if (!name)
-                        throw PyIRError("STORE_NAME must have a string argval",
-                                        std::filesystem::path(module.filename).filename(),
-                                        instr.lineno, instr.offset);
+                        throw PyCompileError("STORE_NAME must have a string argval",
+                                             std::filesystem::path(module.filename).filename(),
+                                             instr.lineno, instr.offset);
                     mlir::Value val = stack.back();
                     stack.pop_back();
                     builder.create<StoreName>(loc, *name, val);
@@ -162,9 +163,9 @@ namespace pyir {
                 case PythonOpcode::LOAD_FAST: {
                     const std::string* name = std::get_if<std::string>(&instr.argval);
                     if (!name)
-                        throw PyIRError("LOAD_FAST must have a string argvall",
-                                        std::filesystem::path(module.filename).filename(),
-                                        instr.lineno, instr.offset);
+                        throw PyCompileError("LOAD_FAST must have a string argvall",
+                                             std::filesystem::path(module.filename).filename(),
+                                             instr.lineno, instr.offset);
                     stack.push_back(builder.create<LoadFast>(loc, pyType, *name).getResult());
                     break;
                 }
@@ -172,9 +173,9 @@ namespace pyir {
                 case PythonOpcode::STORE_FAST: {
                     const std::string* name = std::get_if<std::string>(&instr.argval);
                     if (!name)
-                        throw PyIRError("STORE_FAST must have a string argval",
-                                        std::filesystem::path(module.filename).filename(),
-                                        instr.lineno, instr.offset);
+                        throw PyCompileError("STORE_FAST must have a string argval",
+                                             std::filesystem::path(module.filename).filename(),
+                                             instr.lineno, instr.offset);
                     mlir::Value val = stack.back();
                     stack.pop_back();
                     builder.create<StoreFast>(loc, *name, val);
@@ -184,9 +185,9 @@ namespace pyir {
                 case PythonOpcode::LOAD_DEREF: {
                     const int64_t* idx = std::get_if<int64_t>(&instr.argval);
                     if (!idx)
-                        throw PyIRError("LOAD_DEREF must have an int argval",
-                                        std::filesystem::path(module.filename).filename(),
-                                        instr.lineno, instr.offset);
+                        throw PyCompileError("LOAD_DEREF must have an int argval",
+                                             std::filesystem::path(module.filename).filename(),
+                                             instr.lineno, instr.offset);
                     const std::string name = resolve_deref(module.info, *idx);
                     stack.push_back(builder.create<LoadDeref>(loc, pyType, name).getResult());
                     break;
@@ -195,9 +196,9 @@ namespace pyir {
                 case PythonOpcode::STORE_DEREF: {
                     const int64_t* idx = std::get_if<int64_t>(&instr.argval);
                     if (!idx)
-                        throw PyIRError("STORE_DEREF must have an int argval",
-                                        std::filesystem::path(module.filename).filename(),
-                                        instr.lineno, instr.offset);
+                        throw PyCompileError("STORE_DEREF must have an int argval",
+                                             std::filesystem::path(module.filename).filename(),
+                                             instr.lineno, instr.offset);
                     const std::string name = resolve_deref(module.info, *idx);
                     mlir::Value val = stack.back();
                     stack.pop_back();
@@ -208,9 +209,9 @@ namespace pyir {
                 case PythonOpcode::BINARY_OP: {
                     const std::string opStr = instr.argrepr;
                     if (opStr.empty())
-                        throw PyIRError("BINARY_OP must have a string argval",
-                                        std::filesystem::path(module.filename).filename(),
-                                        instr.lineno, instr.offset);
+                        throw PyCompileError("BINARY_OP must have a string argval",
+                                             std::filesystem::path(module.filename).filename(),
+                                             instr.lineno, instr.offset);
                     mlir::Value rhs = stack.back();
                     stack.pop_back();
                     mlir::Value lhs = stack.back();
@@ -222,9 +223,9 @@ namespace pyir {
                 case PythonOpcode::COMPARE_OP: {
                     const std::string opStr = instr.argrepr;
                     if (opStr.empty())
-                        throw PyIRError("COMPARE_OP must have a string argval",
-                                        std::filesystem::path(module.filename).filename(),
-                                        instr.lineno, instr.offset);
+                        throw PyCompileError("COMPARE_OP must have a string argval",
+                                             std::filesystem::path(module.filename).filename(),
+                                             instr.lineno, instr.offset);
                     mlir::Value rhs = stack.back();
                     stack.pop_back();
                     mlir::Value lhs = stack.back();
@@ -241,9 +242,9 @@ namespace pyir {
                 case PythonOpcode::CALL: {
                     const int64_t* argc = std::get_if<int64_t>(&instr.argval);
                     if (!argc)
-                        throw PyIRError("CALL must have an int argval",
-                                        std::filesystem::path(module.filename).filename(),
-                                        instr.lineno, instr.offset);
+                        throw PyCompileError("CALL must have an int argval",
+                                             std::filesystem::path(module.filename).filename(),
+                                             instr.lineno, instr.offset);
                     // Pop arguments in reverse order
                     std::vector<mlir::Value> args(*argc);
                     for (int64_t i = *argc - 1; i >= 0; i--) {
@@ -274,9 +275,9 @@ namespace pyir {
                 case PythonOpcode::JUMP_FORWARD: {
                     const int64_t* target = std::get_if<int64_t>(&instr.argval);
                     if (!target)
-                        throw PyIRError("JUMP_FORWARD must have an int argval",
-                                        std::filesystem::path(module.filename).filename(),
-                                        instr.lineno, instr.offset);
+                        throw PyCompileError("JUMP_FORWARD must have an int argval",
+                                             std::filesystem::path(module.filename).filename(),
+                                             instr.lineno, instr.offset);
                     mlir::Block* dest = offsetToBlock.at(*target);
                     builder.create<mlir::cf::BranchOp>(loc, dest);
                     break;
@@ -285,9 +286,9 @@ namespace pyir {
                 case PythonOpcode::POP_JUMP_IF_TRUE: {
                     const int64_t* target = std::get_if<int64_t>(&instr.argval);
                     if (!target)
-                        throw PyIRError("POP_JUMP_IF_TRUE must have an int argval",
-                                        std::filesystem::path(module.filename).filename(),
-                                        instr.lineno, instr.offset);
+                        throw PyCompileError("POP_JUMP_IF_TRUE must have an int argval",
+                                             std::filesystem::path(module.filename).filename(),
+                                             instr.lineno, instr.offset);
                     mlir::Value cond = stack.back();
                     stack.pop_back();
                     mlir::Block* trueBlock = offsetToBlock.at(*target);
@@ -300,9 +301,9 @@ namespace pyir {
                 case PythonOpcode::POP_JUMP_IF_FALSE: {
                     const int64_t* target = std::get_if<int64_t>(&instr.argval);
                     if (!target)
-                        throw PyIRError("POP_JUMP_IF_FALSE must have an int argval",
-                                        std::filesystem::path(module.filename).filename(),
-                                        instr.lineno, instr.offset);
+                        throw PyCompileError("POP_JUMP_IF_FALSE must have an int argval",
+                                             std::filesystem::path(module.filename).filename(),
+                                             instr.lineno, instr.offset);
                     mlir::Value cond = stack.back();
                     stack.pop_back();
                     mlir::Block* falseBlock = offsetToBlock.at(*target);
@@ -315,9 +316,9 @@ namespace pyir {
                 case PythonOpcode::LOAD_SMALL_INT: {
                     const int64_t* target = std::get_if<int64_t>(&instr.argval);
                     if (!target)
-                        throw PyIRError("LOAD_SMALL_INT must have an int argval",
-                                        std::filesystem::path(module.filename).filename(),
-                                        instr.lineno, instr.offset);
+                        throw PyCompileError("LOAD_SMALL_INT must have an int argval",
+                                             std::filesystem::path(module.filename).filename(),
+                                             instr.lineno, instr.offset);
                     mlir::Attribute attr = builder.getI64IntegerAttr(*target);
                     stack.push_back(builder.create<LoadConst>(loc, pyType, attr).getResult());
                     break;
@@ -352,9 +353,9 @@ namespace pyir {
 
                 case PythonOpcode::UNKNOWN:
                 default: {
-                    throw PyIRError("Unsupported opcode '" + pythonOpcodeToString(instr.opcode) + "'",
-                                    std::filesystem::path(module.filename).filename(),
-                                    instr.lineno, instr.offset);
+                    throw PyCompileError("Unsupported opcode '" + pythonOpcodeToString(instr.opcode) + "'",
+                                         std::filesystem::path(module.filename).filename(),
+                                         instr.lineno, instr.offset);
                 }
             }
         }

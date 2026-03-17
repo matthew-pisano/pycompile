@@ -565,6 +565,6 @@ void lowerToLLVMDialect(mlir::MLIRContext& ctx, const mlir::OwningOpRef<mlir::Mo
             lineno = fileLoc.getLine();
             offset = fileLoc.getColumn();
         }
-        throw std::runtime_error(std::format("{}:{}:{}: error: {}", moduleName, lineno, offset, errorMessage));
+        throw PyCompileError(errorMessage, moduleName, lineno, offset);
     }
 }

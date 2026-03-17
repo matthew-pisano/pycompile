@@ -117,12 +117,22 @@ int main(const int argc, char* argv[]) {
         return app.exit(e);
     }
 
+    // Ensure the directory of the output file exists
+    if (!outputFileName.empty()) {
+        std::filesystem::path outputFilePath(outputFileName);
+        std::string outputDirName = std::filesystem::absolute(outputFilePath).parent_path();
+        if (!std::filesystem::is_directory(outputDirName)) {
+            std::cerr << "error: Could not find directory '" << outputDirName << "'" << std::endl;
+            return 1;
+        }
+    }
+
     std::vector<std::string> fileContents;
     for (const std::string& fileName : inputFileNames) {
         try {
             fileContents.push_back(readFileString(fileName));
         } catch (const std::exception& e) {
-            std::cerr << "Error reading file '" + fileName + "': " + e.what() << std::endl;
+            std::cerr << "error: " << e.what() << std::endl;
             return 1;
         }
     }
@@ -213,11 +223,11 @@ int main(const int argc, char* argv[]) {
     if (!upToLower)
         try {
             if (!std::filesystem::remove(moduleObjectPath)) {
-                std::cerr << "Error deleting object file: " << moduleObjectPath << std::endl;
+                std::cerr << "error: Failed to delete object file '" << moduleObjectPath << "'" << std::endl;
                 return 1;
             }
         } catch (const std::filesystem::filesystem_error& ex) {
-            std::cerr << "Filesystem error: " << ex.what() << std::endl;
+            std::cerr << "error: Failed to delete object file: " << ex.what() << std::endl;
             return 1;
         }
 

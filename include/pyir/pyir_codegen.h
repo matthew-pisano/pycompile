@@ -13,6 +13,7 @@
 #include "pyir/pyir_ops.h"
 
 namespace pyir {
+
     // Wraps a single module into an mlir::ModuleOp containing one FuncOp
     mlir::OwningOpRef<mlir::ModuleOp> generatePyIR(mlir::MLIRContext& ctx, const ByteCodeModule& module);
 

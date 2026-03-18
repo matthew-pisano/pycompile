@@ -180,11 +180,43 @@ struct ToBoolLowering : PyIROpConversion {
 
 
 /**
+ * Lowers pyir.pyir_unary_invert to a call to the runtime function pyir_unary_invert.
+ *
+ * Inverts a heap-allocated Value* and returns a new heap-allocated Value*.
+ *
+ * pyir.pyir_unary_invert %val : !pyir.object
+ *     %result = llvm.call @pyir_unary_invert(%val)
+ */
+struct UnaryInvertLowering : PyIROpConversion {
+    UnaryInvertLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::UnaryInvert::getOperationName(), tc, ctx) {
+    }
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override {
+        mlir::MLIRContext* ctx = op->getContext();
+        const mlir::ModuleOp module = getModule(op);
+        const mlir::Location loc = op->getLoc();
+
+        const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
+                ptrType(ctx), {ptrType(ctx)});
+        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_unary_invert", fnType);
+
+        mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(
+                loc, fn, mlir::ValueRange{operands[0]});
+
+        rewriter.replaceOp(op, call.getResult());
+        return mlir::success();
+    }
+};
+
+
+/**
  * Lowers pyir.pyir_unary_negative to a call to the runtime function pyir_unary_negative.
  *
  * Negates a heap-allocated Value* and returns a new heap-allocated Value*.
  *
- * pyir.unary_neg %val : !pyir.object
+ * pyir.pyir_unary_negative %val : !pyir.object
  *     %result = llvm.call @pyir_unary_negative(%val)
  */
 struct UnaryNegativeLowering : PyIROpConversion {
@@ -192,7 +224,7 @@ struct UnaryNegativeLowering : PyIROpConversion {
         PyIROpConversion(pyir::UnaryNegative::getOperationName(), tc, ctx) {
     }
 
-    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override {
         mlir::MLIRContext* ctx = op->getContext();
         const mlir::ModuleOp module = getModule(op);
@@ -610,6 +642,7 @@ void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns,
     patterns.add<
         ToBoolLowering,
         UnaryNegativeLowering,
+        UnaryInvertLowering,
         BinaryOpLowering,
         CompareOpLowering,
         LoadNameLowering,

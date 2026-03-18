@@ -35,6 +35,8 @@ Value* pyir_ge(const Value* lhs, const Value* rhs);
 
 Value* pyir_unary_negative(const Value* val);
 
+Value* pyir_unary_invert(const Value* val);
+
 // name resolution, returns a builtin Fn or None
 Value* pyir_load_name(const char* name);
 

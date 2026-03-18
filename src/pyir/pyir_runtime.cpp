@@ -143,6 +143,12 @@ Value* pyir_unary_negative(const Value* val) {
     throw std::runtime_error("Unsupported operand type for unary -");
 }
 
+Value* pyir_unary_invert(const Value* val) {
+    if (val->isInt())
+        return new Value(~std::get<int64_t>(val->data));
+    throw std::runtime_error("Unsupported operand type for unary ~");
+}
+
 Value* pyir_builtinPrint(Value** args, const int64_t argc) {
     for (int64_t i = 0; i < argc; i++) {
         if (i > 0)

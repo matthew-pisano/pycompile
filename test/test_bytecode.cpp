@@ -20,9 +20,7 @@ std::vector<PythonOpcode> extractInstructionOpcodes(const std::vector<ByteCodeIn
     return opcodes;
 }
 
-TEST_CASE(
-        "Test Empty Bytecode"
-        ) {
+TEST_CASE("Test Empty Bytecode") {
     const std::string source; // Blank source
     const std::vector expectedOpcodes = {PythonOpcode::RESUME, PythonOpcode::LOAD_CONST, PythonOpcode::RETURN_VALUE};
     const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
@@ -32,9 +30,7 @@ TEST_CASE(
 }
 
 
-TEST_CASE(
-        "Test Integer Assign Bytecode"
-        ) {
+TEST_CASE("Test Integer Assign Bytecode") {
     SECTION("Test Small Integer") {
         const std::string source = "x = 42";
         const std::vector expectedOpcodes = {PythonOpcode::RESUME, PythonOpcode::LOAD_SMALL_INT,
@@ -67,9 +63,7 @@ TEST_CASE(
 }
 
 
-TEST_CASE(
-        "Test Function Bytecode"
-        ) {
+TEST_CASE("Test Function Bytecode") {
     const std::string source = "def func(x): return x + 1\nfunc(2)";
     const std::vector expectedOpcodes = {PythonOpcode::RESUME, PythonOpcode::LOAD_CONST, PythonOpcode::MAKE_FUNCTION,
                                          PythonOpcode::STORE_NAME, PythonOpcode::LOAD_NAME, PythonOpcode::PUSH_NULL,
@@ -87,9 +81,7 @@ TEST_CASE(
 }
 
 
-TEST_CASE(
-        "Test Builtin Bytecode"
-        ) {
+TEST_CASE("Test Builtin Bytecode") {
     SECTION("Test Print Builtin") {
         const std::string source = "print('hello')";
         const std::vector expectedOpcodes = {PythonOpcode::RESUME, PythonOpcode::LOAD_NAME,
@@ -119,9 +111,7 @@ TEST_CASE(
 }
 
 
-TEST_CASE(
-        "Test List Comprehension Bytecode"
-        ) {
+TEST_CASE("Test List Comprehension Bytecode") {
     const std::string source = "list1 = [1, 2, 3]\nlistnew = [x for x in list1 if x < 3]";
     const std::vector expectedOpcodes = {PythonOpcode::RESUME, PythonOpcode::BUILD_LIST, PythonOpcode::LOAD_CONST,
                                          PythonOpcode::LIST_EXTEND, PythonOpcode::STORE_NAME, PythonOpcode::LOAD_NAME,
@@ -150,9 +140,7 @@ TEST_CASE(
 }
 
 
-TEST_CASE(
-        "Test Simple Arithmetic Bytecode"
-        ) {
+TEST_CASE("Test Simple Arithmetic Bytecode") {
     const std::string source = "a = 1\nb = 2\nsummed = a + b\nprint(summed)";
     const std::vector expectedOpcodes = {PythonOpcode::RESUME, PythonOpcode::LOAD_SMALL_INT, PythonOpcode::STORE_NAME,
                                          PythonOpcode::LOAD_SMALL_INT, PythonOpcode::STORE_NAME,

@@ -151,6 +151,42 @@ struct PyIROpConversion : mlir::ConversionPattern {
     static mlir::ModuleOp getModule(mlir::Operation* op) {
         return op->getParentOfType<mlir::ModuleOp>();
     }
+
+    /**
+     * A helper function for directly linking ops to functions in the runtime standard library
+     * @param func The name of the runtime function to link to
+     * @param op The operation to be linked
+     * @param operands The operands for the function
+     * @param rewriter The MLIR rewriter
+     * @param argc The number of arguments the op takes (e.g. binary or unary)
+     * @return The status result
+     */
+    static mlir::LogicalResult linkOpToRuntimeFunc(const std::string& func, mlir::Operation* op,
+                                                   const mlir::ArrayRef<mlir::Value> operands,
+                                                   mlir::ConversionPatternRewriter& rewriter, const size_t argc) {
+        mlir::MLIRContext* ctx = op->getContext();
+        const mlir::ModuleOp module = getModule(op);
+        const mlir::Location loc = op->getLoc();
+
+        mlir::LLVM::LLVMFunctionType fnType;
+        if (argc == 1)
+            fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
+        else if (argc == 2)
+            fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), ptrType(ctx)});
+        else
+            throw std::runtime_error("Unsupported number of args in runtime function link");
+
+        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, func, fnType);
+
+        mlir::LLVM::CallOp call;
+        if (argc == 1)
+            call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{operands[0]});
+        else
+            call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{operands[0], operands[1]});
+
+        rewriter.replaceOp(op, call.getResult());
+        return mlir::success();
+    }
 };
 
 
@@ -170,19 +206,7 @@ struct ToBoolLowering : PyIROpConversion {
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override {
-        mlir::MLIRContext* ctx = op->getContext();
-        const mlir::ModuleOp module = getModule(op);
-        const mlir::Location loc = op->getLoc();
-
-        const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
-                ptrType(ctx), {ptrType(ctx)});
-        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_to_bool", fnType);
-
-        mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(
-                loc, fn, mlir::ValueRange{operands[0]});
-
-        rewriter.replaceOp(op, call.getResult());
-        return mlir::success();
+        return linkOpToRuntimeFunc("pyir_to_bool", op, operands, rewriter, 1);
     }
 };
 
@@ -202,19 +226,7 @@ struct UnaryInvertLowering : PyIROpConversion {
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override {
-        mlir::MLIRContext* ctx = op->getContext();
-        const mlir::ModuleOp module = getModule(op);
-        const mlir::Location loc = op->getLoc();
-
-        const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
-                ptrType(ctx), {ptrType(ctx)});
-        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_unary_invert", fnType);
-
-        mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(
-                loc, fn, mlir::ValueRange{operands[0]});
-
-        rewriter.replaceOp(op, call.getResult());
-        return mlir::success();
+        return linkOpToRuntimeFunc("pyir_unary_invert", op, operands, rewriter, 1);
     }
 };
 
@@ -234,19 +246,7 @@ struct UnaryNegativeLowering : PyIROpConversion {
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override {
-        mlir::MLIRContext* ctx = op->getContext();
-        const mlir::ModuleOp module = getModule(op);
-        const mlir::Location loc = op->getLoc();
-
-        const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
-                ptrType(ctx), {ptrType(ctx)});
-        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_unary_negative", fnType);
-
-        mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(
-                loc, fn, mlir::ValueRange{operands[0]});
-
-        rewriter.replaceOp(op, call.getResult());
-        return mlir::success();
+        return linkOpToRuntimeFunc("pyir_unary_negative", op, operands, rewriter, 1);
     }
 };
 
@@ -266,19 +266,7 @@ struct UnaryNotLowering : PyIROpConversion {
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override {
-        mlir::MLIRContext* ctx = op->getContext();
-        const mlir::ModuleOp module = getModule(op);
-        const mlir::Location loc = op->getLoc();
-
-        const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
-                ptrType(ctx), {ptrType(ctx)});
-        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_unary_not", fnType);
-
-        mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(
-                loc, fn, mlir::ValueRange{operands[0]});
-
-        rewriter.replaceOp(op, call.getResult());
-        return mlir::success();
+        return linkOpToRuntimeFunc("pyir_unary_not", op, operands, rewriter, 1);
     }
 };
 
@@ -300,9 +288,6 @@ struct BinaryOpLowering : PyIROpConversion {
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override {
         pyir::BinaryOp binaryOp = mlir::cast<pyir::BinaryOp>(op);
-        mlir::MLIRContext* ctx = op->getContext();
-        const mlir::ModuleOp module = getModule(op);
-        const mlir::Location loc = op->getLoc();
 
         // Map operator string to runtime function name
         static const std::unordered_map<std::string, std::string> opToFn = {
@@ -317,16 +302,7 @@ struct BinaryOpLowering : PyIROpConversion {
         if (it == opToFn.end())
             return mlir::failure();
 
-        // declare: extern Value* pyir_add(Value* lhs, Value* rhs) (and siblings)
-        const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
-                ptrType(ctx), {ptrType(ctx), ptrType(ctx)});
-        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, it->second, fnType);
-
-        mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(
-                loc, fn, mlir::ValueRange{operands[0], operands[1]});
-
-        rewriter.replaceOp(op, call.getResult());
-        return mlir::success();
+        return linkOpToRuntimeFunc(it->second, op, operands, rewriter, 2);
     }
 };
 
@@ -348,9 +324,6 @@ struct CompareOpLowering : PyIROpConversion {
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override {
         pyir::CompareOp compareOp = mlir::cast<pyir::CompareOp>(op);
-        mlir::MLIRContext* ctx = op->getContext();
-        const mlir::ModuleOp module = getModule(op);
-        const mlir::Location loc = op->getLoc();
 
         // Map operator string to runtime function name
         static const std::unordered_map<std::string, std::string> opToFn = {
@@ -367,16 +340,7 @@ struct CompareOpLowering : PyIROpConversion {
         if (it == opToFn.end())
             return mlir::failure();
 
-        // declare: extern Value* pyir_eq(Value* lhs, Value* rhs) (and siblings)
-        const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
-                ptrType(ctx), {ptrType(ctx), ptrType(ctx)});
-        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, it->second, fnType);
-
-        mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(
-                loc, fn, mlir::ValueRange{operands[0], operands[1]});
-
-        rewriter.replaceOp(op, call.getResult());
-        return mlir::success();
+        return linkOpToRuntimeFunc(it->second, op, operands, rewriter, 2);
     }
 };
 
@@ -483,6 +447,7 @@ struct LoadConstLowering : PyIROpConversion {
 
         mlir::Value result;
 
+        // String constant type
         if (const mlir::StringAttr strAttr = mlir::dyn_cast<mlir::StringAttr>(loadConst.getValue())) {
             // declare: extern Value* pyir_load_const_str(const char* str)
             const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
@@ -494,8 +459,9 @@ struct LoadConstLowering : PyIROpConversion {
             const mlir::Value strPtr = getOrInsertStringConstant(rewriter, module, loc, gName, str);
             mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{strPtr});
             result = call.getResult();
-
-        } else if (const mlir::BoolAttr boolAttr = mlir::dyn_cast<mlir::BoolAttr>(loadConst.getValue())) {
+        }
+        // Bool constant type
+        else if (const mlir::BoolAttr boolAttr = mlir::dyn_cast<mlir::BoolAttr>(loadConst.getValue())) {
             // declare: extern Value* pyir_load_const_bool(int_8 val)
             const mlir::LLVM::LLVMFunctionType fnType =
                     mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {boolType(ctx)});
@@ -504,7 +470,9 @@ struct LoadConstLowering : PyIROpConversion {
                     loc, boolType(ctx), rewriter.getI8IntegerAttr(boolAttr.getValue() ? 1 : 0));
             mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{boolVal});
             result = call.getResult();
-        } else if (const mlir::IntegerAttr intAttr = mlir::dyn_cast<mlir::IntegerAttr>(loadConst.getValue())) {
+        }
+        // Int constant type
+        else if (const mlir::IntegerAttr intAttr = mlir::dyn_cast<mlir::IntegerAttr>(loadConst.getValue())) {
             // declare: extern Value* pyir_load_const_int(int64_t val)
             const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {i64Type(ctx)});
             mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_load_const_int", fnType);
@@ -512,7 +480,9 @@ struct LoadConstLowering : PyIROpConversion {
                     loc, i64Type(ctx), rewriter.getI64IntegerAttr(intAttr.getInt()));
             mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{intVal});
             result = call.getResult();
-        } else if (const mlir::FloatAttr floatAttr = mlir::dyn_cast<mlir::FloatAttr>(loadConst.getValue())) {
+        }
+        // Float constant type
+        else if (const mlir::FloatAttr floatAttr = mlir::dyn_cast<mlir::FloatAttr>(loadConst.getValue())) {
             // declare: extern Value* pyir_load_const_float(double_t val)
             const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {f64Type(ctx)});
             mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_load_const_float", fnType);
@@ -520,8 +490,10 @@ struct LoadConstLowering : PyIROpConversion {
                     loc, f64Type(ctx), rewriter.getF64FloatAttr(floatAttr.getValueAsDouble()));
             mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{floatVal});
             result = call.getResult();
-        } else
-            return mlir::failure(); // unhandled constant type
+        }
+        // Unhandled constant type
+        else
+            return mlir::failure();
 
         rewriter.replaceOp(op, result);
         return mlir::success();

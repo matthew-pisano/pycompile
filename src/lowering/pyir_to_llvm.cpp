@@ -49,6 +49,14 @@ static mlir::LLVM::LLVMPointerType ptrType(mlir::MLIRContext* ctx) {
 
 
 /**
+ * Returns a bool (8-bit integer for LLVM) type in the given context.
+ */
+static mlir::Type boolType(mlir::MLIRContext* ctx) {
+    return mlir::IntegerType::get(ctx, 8);
+}
+
+
+/**
  * Returns a 64-bit integer type in the given context.
  */
 static mlir::Type i64Type(mlir::MLIRContext* ctx) {
@@ -455,6 +463,15 @@ struct LoadConstLowering : PyIROpConversion {
             mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{strPtr});
             result = call.getResult();
 
+        } else if (const mlir::BoolAttr boolAttr = mlir::dyn_cast<mlir::BoolAttr>(loadConst.getValue())) {
+            // declare: extern Value* pyir_load_const_bool(int_8 val)
+            const mlir::LLVM::LLVMFunctionType fnType =
+                    mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {boolType(ctx)});
+            mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_load_const_bool", fnType);
+            mlir::LLVM::ConstantOp boolVal = rewriter.create<mlir::LLVM::ConstantOp>(
+                    loc, boolType(ctx), rewriter.getI8IntegerAttr(boolAttr.getValue() ? 1 : 0));
+            mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{boolVal});
+            result = call.getResult();
         } else if (const mlir::IntegerAttr intAttr = mlir::dyn_cast<mlir::IntegerAttr>(loadConst.getValue())) {
             // declare: extern Value* pyir_load_const_int(int64_t val)
             const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {i64Type(ctx)});

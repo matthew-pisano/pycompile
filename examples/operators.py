@@ -1,23 +1,23 @@
-print(1 + 2)
+print("Addition:", 1 + 2)
 
-print(4.2 / 2)
+print("Division:", 4.2 / 2)
 
-print(2 ** 4)
+print("Exponentiation:", 2 ** 4)
 
-print(4 % 3)
+print("Modulo:", 4 % 3)
 
-print(11 == 11)
+print("Integer Equality:", 11 == 11)
 
-print(1.2 == 1.2)
+print("Float Equality:", 1.2 == 1.2)
 
-print("Hello" == "Hello")
+print("String Equality:", "Hello" == "Hello")
 
-print(1 < 2)
+print("Less Than:", 1 < 2)
 
-print(not True)
+print("Boolean Negation:", not True)
 
 a = 1  # Used to prevent interpreter inlining
 
-print(-a)
+print("Integer Negation:", -a)
 
-print(~a)
+print("Binary Inversion:", ~a)

@@ -230,6 +230,10 @@ Value* pyir_load_const_int(const int64_t val) {
     return new Value(val);
 }
 
+Value* pyir_load_const_float(const double_t val) {
+    return new Value(val);
+}
+
 Value* pyir_call(const Value* callee, Value** args, const int64_t argc) {
     if (!callee->isFn())
         throw std::runtime_error("object is not callable");

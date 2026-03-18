@@ -5,6 +5,8 @@
 #ifndef PYCOMPILE_PYIR_RUNTIME_H
 #define PYCOMPILE_PYIR_RUNTIME_H
 
+#include <cmath>
+
 #include "pyir/pyir_value.h"
 
 extern "C" {
@@ -49,6 +51,8 @@ void pyir_decref(Value* v);
 Value* pyir_load_const_str(const char* str);
 
 Value* pyir_load_const_int(int64_t val);
+
+Value* pyir_load_const_float(double_t val);
 
 // truthiness, used by conditional jumps
 Value* pyir_to_bool(const Value* val);

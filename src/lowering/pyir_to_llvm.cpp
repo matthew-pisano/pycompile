@@ -50,7 +50,6 @@ static mlir::LLVM::LLVMPointerType ptrType(mlir::MLIRContext* ctx) {
 
 /**
  * Returns a 64-bit integer type in the given context.
- * Used for argument counts and integer constants.
  */
 static mlir::Type i64Type(mlir::MLIRContext* ctx) {
     return mlir::IntegerType::get(ctx, 64);
@@ -59,10 +58,17 @@ static mlir::Type i64Type(mlir::MLIRContext* ctx) {
 
 /**
  * Returns an 8-bit integer type in the given context.
- * Used as the element type for string constant arrays.
  */
 static mlir::Type i8Type(mlir::MLIRContext* ctx) {
     return mlir::IntegerType::get(ctx, 8);
+}
+
+
+/**
+ * Returns a 64-bit float type in the given context.
+ */
+static mlir::Type f64Type(mlir::MLIRContext* ctx) {
+    return mlir::Float64Type::get(ctx);
 }
 
 
@@ -200,12 +206,6 @@ struct BinaryOpLowering : PyIROpConversion {
                 {"-", "pyir_sub"},
                 {"*", "pyir_mul"},
                 {"/", "pyir_div"},
-                {"==", "pyir_eq"},
-                {"!=", "pyir_ne"},
-                {"<", "pyir_lt"},
-                {"<=", "pyir_le"},
-                {">", "pyir_gt"},
-                {">=", "pyir_ge"},
         };
 
         const std::string opStr = binaryOp.getOp().str();
@@ -214,6 +214,56 @@ struct BinaryOpLowering : PyIROpConversion {
             return mlir::failure();
 
         // declare: extern Value* pyir_add(Value* lhs, Value* rhs) (and siblings)
+        const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
+                ptrType(ctx), {ptrType(ctx), ptrType(ctx)});
+        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, it->second, fnType);
+
+        mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(
+                loc, fn, mlir::ValueRange{operands[0], operands[1]});
+
+        rewriter.replaceOp(op, call.getResult());
+        return mlir::success();
+    }
+};
+
+
+/**
+ * Lowers pyir.compare_op to a call to the appropriate runtime compare operator function.
+ *
+ * The operator string is mapped to a runtime function at compile time. Both operands are heap-allocated Value*
+ * pointers. The runtime performs the operation and returns a new heap-allocated Value*.
+ *
+ * pyir.compare_op "==", %lhs, %rhs
+ *     %result = llvm.call @pyir_eq(%lhs, %rhs)
+ */
+struct CompareOpLowering : PyIROpConversion {
+    CompareOpLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::CompareOp::getOperationName(), tc, ctx) {
+    }
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override {
+        pyir::CompareOp compareOp = mlir::cast<pyir::CompareOp>(op);
+        mlir::MLIRContext* ctx = op->getContext();
+        const mlir::ModuleOp module = getModule(op);
+        const mlir::Location loc = op->getLoc();
+
+        // Map operator string to runtime function name
+        static const std::unordered_map<std::string, std::string> opToFn = {
+                {"==", "pyir_eq"},
+                {"!=", "pyir_ne"},
+                {"<", "pyir_lt"},
+                {"<=", "pyir_le"},
+                {">", "pyir_gt"},
+                {">=", "pyir_ge"},
+        };
+
+        const std::string opStr = compareOp.getOp().str();
+        const auto it = opToFn.find(opStr);
+        if (it == opToFn.end())
+            return mlir::failure();
+
+        // declare: extern Value* pyir_eq(Value* lhs, Value* rhs) (and siblings)
         const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
                 ptrType(ctx), {ptrType(ctx), ptrType(ctx)});
         mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, it->second, fnType);
@@ -348,6 +398,14 @@ struct LoadConstLowering : PyIROpConversion {
             mlir::LLVM::ConstantOp intVal = rewriter.create<mlir::LLVM::ConstantOp>(
                     loc, i64Type(ctx), rewriter.getI64IntegerAttr(intAttr.getInt()));
             mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{intVal});
+            result = call.getResult();
+        } else if (const mlir::FloatAttr floatAttr = mlir::dyn_cast<mlir::FloatAttr>(loadConst.getValue())) {
+            // declare: extern Value* pyir_load_const_float(double_t val)
+            const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {f64Type(ctx)});
+            mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_load_const_float", fnType);
+            mlir::LLVM::ConstantOp floatVal = rewriter.create<mlir::LLVM::ConstantOp>(
+                    loc, f64Type(ctx), rewriter.getF64FloatAttr(floatAttr.getValueAsDouble()));
+            mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{floatVal});
             result = call.getResult();
         } else
             return mlir::failure(); // unhandled constant type
@@ -520,6 +578,7 @@ void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns,
     patterns.add<
         ToBoolLowering,
         BinaryOpLowering,
+        CompareOpLowering,
         LoadNameLowering,
         StoreNameLowering,
         LoadConstLowering,

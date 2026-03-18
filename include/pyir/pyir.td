@@ -89,6 +89,14 @@ def PyIR_ToBool : PyIR_Op<"to_bool", [Pure]> {
 }
 
 
+def PyIR_IsTruthy : PyIR_Op<"is_truthy", [Pure]> {
+    let summary = "Extract a native i1 boolean from a Python object";
+    let arguments = (ins ByteCodeObject_Type:$value);
+    let results   = (outs I1:$result);
+    let assemblyFormat = "$value attr-dict `:` type($value)";
+}
+
+
 def PyIR_UnaryNot : PyIR_Op<"unary_not", [Pure]> {
     let summary = "Negates a boolean";
     let arguments = (ins ByteCodeObject_Type:$value);

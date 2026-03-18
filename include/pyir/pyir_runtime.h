@@ -33,7 +33,10 @@ Value* pyir_gt(const Value* lhs, const Value* rhs);
 
 Value* pyir_ge(const Value* lhs, const Value* rhs);
 
+// unary operations
 Value* pyir_unary_negative(const Value* val);
+
+Value* pyir_unary_not(const Value* val);
 
 Value* pyir_unary_invert(const Value* val);
 

@@ -119,7 +119,8 @@ namespace pyir {
 
             switch (instr.opcode) {
                 case PythonOpcode::RESUME:
-                    // Bookkeeping instruction, no MLIR equivalent needed.
+                case PythonOpcode::NOT_TAKEN:
+                    // Bookkeeping instructions, no MLIR equivalent needed.
                     break;
 
                 case PythonOpcode::LOAD_CONST: {
@@ -291,9 +292,12 @@ namespace pyir {
                                              instr.lineno, instr.offset);
                     mlir::Value cond = stack.back();
                     stack.pop_back();
+
+                    // unbox !pyir.object -> i1
+                    mlir::Value i1cond = builder.create<IsTruthy>(loc, builder.getI1Type(), cond).getResult();
                     mlir::Block* trueBlock = offsetToBlock.at(*target);
                     mlir::Block* falseBlock = fn.addBlock(); // fall-through block
-                    builder.create<mlir::cf::CondBranchOp>(loc, cond, trueBlock, falseBlock);
+                    builder.create<mlir::cf::CondBranchOp>(loc, i1cond, trueBlock, falseBlock);
                     builder.setInsertionPointToStart(falseBlock);
                     break;
                 }
@@ -306,9 +310,12 @@ namespace pyir {
                                              instr.lineno, instr.offset);
                     mlir::Value cond = stack.back();
                     stack.pop_back();
+
+                    // unbox !pyir.object -> i1
+                    mlir::Value i1cond = builder.create<IsTruthy>(loc, builder.getI1Type(), cond).getResult();
                     mlir::Block* falseBlock = offsetToBlock.at(*target);
                     mlir::Block* trueBlock = fn.addBlock(); // fall-through block
-                    builder.create<mlir::cf::CondBranchOp>(loc, cond, trueBlock, falseBlock);
+                    builder.create<mlir::cf::CondBranchOp>(loc, i1cond, trueBlock, falseBlock);
                     builder.setInsertionPointToStart(trueBlock);
                     break;
                 }
@@ -402,10 +409,8 @@ namespace pyir {
         insertMainEntryPoint(builder, ctx, mlirModuleName);
 
         // Verify the module is well-formed before returning
-        if (mlir::failed(mlir::verify(mlirModule))) {
-            mlirModule.emitError("Generated module failed verification");
+        if (mlir::failed(mlir::verify(mlirModule)))
             throw std::runtime_error(module.moduleName + ": error: MLIR module verification failed");
-        }
 
         return mlirModule;
     }

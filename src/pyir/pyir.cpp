@@ -11,7 +11,7 @@
 
 namespace pyir {
     void PyIRDialect::initialize() {
-        addOperations<ToBool, BinaryOp, Call, LoadConst, LoadDeref, LoadFast, LoadName, StoreName, PopTop,
+        addOperations<ToBool, IsTruthy, BinaryOp, Call, LoadConst, LoadDeref, LoadFast, LoadName, StoreName, PopTop,
                       PushNull, Resume, ReturnValue, StoreFast, StoreDeref, UnaryNot, UnaryNegative, UnaryInvert,
                       CompareOp>();
 

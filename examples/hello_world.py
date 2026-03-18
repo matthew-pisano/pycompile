@@ -1,7 +1,6 @@
+a = True
 
-def main():
+if a:
     print("Hello, World!")
-
-
-if __name__ == "__main__":
-    main()
+else:
+    print("Hello There!")

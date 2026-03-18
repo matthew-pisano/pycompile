@@ -16,6 +16,8 @@ print(1 < 2)
 
 print(not True)
 
-print(-1)
+a = 1  # Used to prevent interpreter inlining
 
-print(~1)
+print(-a)
+
+print(~a)

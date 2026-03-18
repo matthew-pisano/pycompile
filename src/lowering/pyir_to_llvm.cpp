@@ -180,6 +180,38 @@ struct ToBoolLowering : PyIROpConversion {
 
 
 /**
+ * Lowers pyir.pyir_unary_negative to a call to the runtime function pyir_unary_negative.
+ *
+ * Negates a heap-allocated Value* and returns a new heap-allocated Value*.
+ *
+ * pyir.unary_neg %val : !pyir.object
+ *     %result = llvm.call @pyir_unary_negative(%val)
+ */
+struct UnaryNegativeLowering : PyIROpConversion {
+    UnaryNegativeLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::UnaryNegative::getOperationName(), tc, ctx) {
+    }
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override {
+        mlir::MLIRContext* ctx = op->getContext();
+        const mlir::ModuleOp module = getModule(op);
+        const mlir::Location loc = op->getLoc();
+
+        const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
+                ptrType(ctx), {ptrType(ctx)});
+        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_unary_negative", fnType);
+
+        mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(
+                loc, fn, mlir::ValueRange{operands[0]});
+
+        rewriter.replaceOp(op, call.getResult());
+        return mlir::success();
+    }
+};
+
+
+/**
  * Lowers pyir.binary_op to a call to the appropriate runtime binary operator function.
  *
  * The operator string is mapped to a runtime function at compile time. Both operands are heap-allocated Value*
@@ -577,6 +609,7 @@ void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns,
     mlir::MLIRContext* ctx = patterns.getContext();
     patterns.add<
         ToBoolLowering,
+        UnaryNegativeLowering,
         BinaryOpLowering,
         CompareOpLowering,
         LoadNameLowering,

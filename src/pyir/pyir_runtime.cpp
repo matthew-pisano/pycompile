@@ -5,6 +5,7 @@
 #include "pyir/pyir_runtime.h"
 
 #include <csignal>
+#include <format>
 #include <stdexcept>
 #include <unordered_map>
 
@@ -38,9 +39,9 @@ static std::string toString(const Value* v) {
         if constexpr (std::is_same_v<ValType, bool>)
             return x ? "True" : "False";
         if constexpr (std::is_same_v<ValType, int64_t>)
-            return std::to_string(x);
+            return std::format("{}", x);
         if constexpr (std::is_same_v<ValType, double_t>)
-            return std::to_string(x);
+            return std::format("{}", x);
         if constexpr (std::is_same_v<ValType, std::string>)
             return x;
         if constexpr (std::is_same_v<ValType, Value::Fn>)

@@ -62,12 +62,12 @@ struct Value {
             delete this;
     }
 
-    bool isNone() const { return std::holds_alternative<NoneType>(data); }
-    bool isBool() const { return std::holds_alternative<bool>(data); }
-    bool isInt() const { return std::holds_alternative<int64_t>(data); }
-    bool isFloat() const { return std::holds_alternative<double>(data); }
-    bool isStr() const { return std::holds_alternative<std::string>(data); }
-    bool isFn() const { return std::holds_alternative<Fn>(data); }
+    [[nodiscard]] bool isNone() const { return std::holds_alternative<NoneType>(data); }
+    [[nodiscard]] bool isBool() const { return std::holds_alternative<bool>(data); }
+    [[nodiscard]] bool isInt() const { return std::holds_alternative<int64_t>(data); }
+    [[nodiscard]] bool isFloat() const { return std::holds_alternative<double>(data); }
+    [[nodiscard]] bool isStr() const { return std::holds_alternative<std::string>(data); }
+    [[nodiscard]] bool isFn() const { return std::holds_alternative<Fn>(data); }
 };
 
 
@@ -82,7 +82,7 @@ struct ValueRef {
             ptr->decref();
     }
 
-    Value* get() const { return ptr; }
+    [[nodiscard]] Value* get() const { return ptr; }
 
     Value* release() {
         Value* p = ptr;

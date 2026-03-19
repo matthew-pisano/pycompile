@@ -134,6 +134,8 @@ namespace pyir {
                         attr = builder.getI64IntegerAttr(*i);
                     else if (const double_t* f = std::get_if<double_t>(&instr.argval))
                         attr = builder.getF64FloatAttr(*f);
+                    else if (const bool* b = std::get_if<bool>(&instr.argval))
+                        attr = builder.getBoolAttr(*b);
 
                     stack.push_back(builder.create<LoadConst>(loc, pyType, attr).getResult());
                     break;
@@ -384,7 +386,7 @@ namespace pyir {
         builder.create<mlir::func::CallOp>(loc, moduleFnName, mlir::TypeRange{});
 
         // return 0
-        auto zero = builder.create<mlir::arith::ConstantIntOp>(loc, 0, 32);
+        mlir::arith::ConstantIntOp zero = builder.create<mlir::arith::ConstantIntOp>(loc, 0, 32);
         builder.create<mlir::func::ReturnOp>(loc, mlir::ValueRange{zero});
     }
 

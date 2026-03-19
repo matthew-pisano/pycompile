@@ -5,6 +5,7 @@
 #include "pyir/pyir_runtime.h"
 
 #include <csignal>
+#include <format>
 #include <stdexcept>
 #include <unordered_map>
 
@@ -21,12 +22,12 @@ static const std::unordered_map<std::string, Value::Fn> builtins = {
 
 static std::unordered_map<std::string, Value*> moduleScope;
 
-static double toFloat(const Value* v) {
+static double_t toFloat(const Value* v) {
     // Promote int to float if either operand is a float
     if (v->isFloat())
-        return std::get<double>(v->data);
+        return std::get<double_t>(v->data);
     if (v->isInt())
-        return static_cast<double>(std::get<int64_t>(v->data));
+        return static_cast<double_t>(std::get<int64_t>(v->data));
     throw std::runtime_error("Cannot convert to float");
 }
 
@@ -38,9 +39,9 @@ static std::string toString(const Value* v) {
         if constexpr (std::is_same_v<ValType, bool>)
             return x ? "True" : "False";
         if constexpr (std::is_same_v<ValType, int64_t>)
-            return std::to_string(x);
-        if constexpr (std::is_same_v<ValType, double>)
-            return std::to_string(x);
+            return std::format("{}", x);
+        if constexpr (std::is_same_v<ValType, double_t>)
+            return std::format("{}", x);
         if constexpr (std::is_same_v<ValType, std::string>)
             return x;
         if constexpr (std::is_same_v<ValType, Value::Fn>)
@@ -58,7 +59,7 @@ static bool toBool(const Value* val) {
             return x;
         if constexpr (std::is_same_v<ValType, int64_t>)
             return x != 0;
-        if constexpr (std::is_same_v<ValType, double>)
+        if constexpr (std::is_same_v<ValType, double_t>)
             return x != 0.0;
         if constexpr (std::is_same_v<ValType, std::string>)
             return !x.empty();
@@ -74,7 +75,7 @@ Value* pyir_add(const Value* lhs, const Value* rhs) {
     if ((lhs->isFloat() || lhs->isInt()) && (rhs->isFloat() || rhs->isInt())) {
         const ValueRef l(new Value(toFloat(lhs))); // Temporary promoted float
         const ValueRef r(new Value(toFloat(rhs))); // If this throws, l is cleaned up
-        return new Value(std::get<double>(l.get()->data) + std::get<double>(r.get()->data));
+        return new Value(std::get<double_t>(l.get()->data) + std::get<double_t>(r.get()->data));
     }
     if (lhs->isStr() && rhs->isStr())
         return new Value(std::get<std::string>(lhs->data) + std::get<std::string>(rhs->data));
@@ -135,6 +136,26 @@ Value* pyir_le(const Value* lhs, const Value* rhs) {
 Value* pyir_gt(const Value* lhs, const Value* rhs) { return pyir_lt(rhs, lhs); }
 Value* pyir_ge(const Value* lhs, const Value* rhs) { return pyir_le(rhs, lhs); }
 
+Value* pyir_unary_negative(const Value* val) {
+    if (val->isInt())
+        return new Value(-std::get<int64_t>(val->data));
+    if (val->isFloat())
+        return new Value(-std::get<double_t>(val->data));
+    throw std::runtime_error("Unsupported operand type for unary -");
+}
+
+Value* pyir_unary_not(const Value* val) {
+    if (val->isBool())
+        return new Value(!std::get<bool>(val->data));
+    throw std::runtime_error("Unsupported operand type for unary not");
+}
+
+Value* pyir_unary_invert(const Value* val) {
+    if (val->isInt())
+        return new Value(~std::get<int64_t>(val->data));
+    throw std::runtime_error("Unsupported operand type for unary ~");
+}
+
 Value* pyir_builtinPrint(Value** args, const int64_t argc) {
     for (int64_t i = 0; i < argc; i++) {
         if (i > 0)
@@ -160,7 +181,7 @@ Value* pyir_builtinInt(Value** args, const int64_t argc) {
         using ValType = std::decay_t<T>;
         if constexpr (std::is_same_v<ValType, int64_t>)
             return new Value(x);
-        if constexpr (std::is_same_v<ValType, double>)
+        if constexpr (std::is_same_v<ValType, double_t>)
             return new Value(static_cast<int64_t>(x));
         if constexpr (std::is_same_v<ValType, bool>)
             return new Value(static_cast<int64_t>(x));
@@ -175,12 +196,12 @@ Value* pyir_builtinFloat(Value** args, const int64_t argc) {
         throw std::runtime_error("Too many arguments for float()");
     return std::visit([]<typename T>(const T& x) -> Value* {
         using ValType = std::decay_t<T>;
-        if constexpr (std::is_same_v<ValType, double>)
+        if constexpr (std::is_same_v<ValType, double_t>)
             return new Value(x);
         if constexpr (std::is_same_v<ValType, int64_t>)
-            return new Value(static_cast<double>(x));
+            return new Value(static_cast<double_t>(x));
         if constexpr (std::is_same_v<ValType, bool>)
-            return new Value(static_cast<double>(x));
+            return new Value(static_cast<double_t>(x));
         if constexpr (std::is_same_v<ValType, std::string>)
             return new Value(std::stod(x));
         throw std::runtime_error("cannot convert to float()");
@@ -228,6 +249,14 @@ Value* pyir_load_const_str(const char* str) {
 
 Value* pyir_load_const_int(const int64_t val) {
     return new Value(val);
+}
+
+Value* pyir_load_const_float(const double_t val) {
+    return new Value(val);
+}
+
+Value* pyir_load_const_bool(const int8_t val) {
+    return new Value(val == 1);
 }
 
 Value* pyir_call(const Value* callee, Value** args, const int64_t argc) {

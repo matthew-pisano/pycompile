@@ -19,6 +19,8 @@ inline std::string argvalTypeToString(const ArgvalType type) {
     switch (type) {
         case ArgvalType::None:
             return "None";
+        case ArgvalType::Bool:
+            return "Bool";
         case ArgvalType::Int:
             return "Int";
         case ArgvalType::Float:
@@ -277,9 +279,12 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
         // Fallback for older Python versions or if positions unavailable
             Py_XDECREF(linenoAttr);
 
-        // argval: int | float | str | tuple | code object | other
+        // argval: bool | int | float | str | tuple | code object | other
         PyObject* argval = PyObject_GetAttrString(item, "argval"); // borrowed reference
-        if (PyLong_Check(argval)) {
+        if (PyBool_Check(argval)) {
+            instr.argvalType = ArgvalType::Bool;
+            instr.argval = (argval == Py_True);
+        } else if (PyLong_Check(argval)) {
             instr.argvalType = ArgvalType::Int;
             instr.argval = PyLong_AsLong(argval);
         } else if (PyFloat_Check(argval)) {

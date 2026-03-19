@@ -1,4 +1,3 @@
-#include <csignal>
 #include <CLI/CLI.hpp>
 #include <Python.h>
 #include <iostream>
@@ -8,8 +7,6 @@
 #include <llvm/IR/Module.h>
 
 #include "bytecode/bytecode.h"
-#include "bytecode/pythoncode.h"
-#include "bytecode/python_raii.h"
 #include "utils.h"
 #include "version.h"
 #include "lowering/llvm_export.h"

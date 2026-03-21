@@ -150,7 +150,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Boolean Operators MLIR") {
         REQUIRE(unaryOp);
     }
 
-    SECTION("Test Boolean And") {
+    SECTION("Test Boolean AND") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = True\nb = True\nc = a and b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
         pyir::UnaryNot unaryOp = mlir::dyn_cast<pyir::UnaryNot>(getOp(fn, 4));

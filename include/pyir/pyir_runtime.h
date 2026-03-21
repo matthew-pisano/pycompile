@@ -42,6 +42,8 @@ Value* pyir_unary_not(const Value* val);
 
 Value* pyir_unary_invert(const Value* val);
 
+Value* pyir_xor(const Value* lhs, const Value* rhs);
+
 // name resolution, returns a builtin Fn or None
 Value* pyir_load_name(const char* name);
 

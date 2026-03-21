@@ -85,8 +85,9 @@ static std::unique_ptr<llvm::TargetMachine> createTargetMachine(const LLVMExport
  */
 static std::unique_ptr<llvm::Module> translateToLLVM(const mlir::OwningOpRef<mlir::ModuleOp>& mlirModule,
                                                      llvm::LLVMContext& llvmCtx) {
-    mlir::registerLLVMDialectTranslation(*mlirModule.get().getContext());
-    mlir::registerBuiltinDialectTranslation(*mlirModule.get().getContext());
+    mlir::MLIRContext* ctx = mlirModule.get().getContext();
+    mlir::registerLLVMDialectTranslation(*ctx);
+    mlir::registerBuiltinDialectTranslation(*ctx);
 
     std::unique_ptr<llvm::Module> llvmModule = mlir::translateModuleToLLVMIR(mlirModule.get(), llvmCtx);
     if (!llvmModule)

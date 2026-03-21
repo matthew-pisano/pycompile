@@ -19,7 +19,9 @@
 #include <mlir/Conversion/FuncToLLVM/ConvertFuncToLLVM.h>
 #include <mlir/Conversion/ArithToLLVM/ArithToLLVM.h>
 #include <mlir/Dialect/Arith/IR/Arith.h>
-#include <mlir/Dialect/ControlFlow/IR/ControlFlow.h>
+#include <mlir/Dialect/ControlFlow/IR/ControlFlowOps.h>
+#include <mlir/Conversion/ControlFlowToLLVM/ControlFlowToLLVM.h>
+
 #include <mlir/Transforms/Passes.h>
 
 #include "utils.h"
@@ -686,9 +688,9 @@ struct PyIRToLLVMPass : mlir::PassWrapper<PyIRToLLVMPass, mlir::OperationPass<ml
         target.addIllegalDialect<mlir::arith::ArithDialect>();
         target.addLegalDialect<mlir::LLVM::LLVMDialect>();
         target.addLegalOp<mlir::ModuleOp>();
+        target.addLegalOp<mlir::cf::CondBranchOp, mlir::cf::BranchOp>();
 
-        if (mlir::failed(mlir::applyFullConversion(
-                module, target, std::move(patterns))))
+        if (mlir::failed(mlir::applyFullConversion(module, target, std::move(patterns))))
             signalPassFailure();
     }
 };
@@ -726,9 +728,10 @@ void lowerToLLVMDialect(mlir::MLIRContext& ctx, const mlir::OwningOpRef<mlir::Mo
     mlir::PassManager pm(&ctx);
 
     pm.addPass(mlir::createCanonicalizerPass());
-
-    // lower PyIR to LLVM dialect
+    // Lower PyIR to LLVM dialect
     pm.addPass(createPyIRToLLVMPass());
+    // Lower control flow operations to LLVM dialect
+    pm.addPass(mlir::createConvertControlFlowToLLVMPass());
 
     mlir::Location errorLoc = mlir::UnknownLoc::get(&ctx);
     std::string errorMessage;

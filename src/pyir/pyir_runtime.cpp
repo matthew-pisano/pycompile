@@ -160,6 +160,12 @@ Value* pyir_unary_invert(const Value* val) {
     throw std::runtime_error("Unsupported operand type for unary ~");
 }
 
+Value* pyir_xor(const Value* lhs, const Value* rhs) {
+    if (lhs->isBool() && rhs->isBool())
+        return new Value((std::get<bool>(lhs->data) ^ std::get<bool>(rhs->data)) == 1);
+    throw std::runtime_error("Unsupported operand type for unary not");
+}
+
 Value* pyir_builtinPrint(Value** args, const int64_t argc) {
     for (int64_t i = 0; i < argc; i++) {
         if (i > 0)

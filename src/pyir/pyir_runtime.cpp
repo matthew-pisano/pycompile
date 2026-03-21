@@ -162,7 +162,7 @@ Value* pyir_unary_invert(const Value* val) {
 
 Value* pyir_xor(const Value* lhs, const Value* rhs) {
     if (lhs->isBool() && rhs->isBool())
-        return new Value(static_cast<int64_t>(std::get<bool>(lhs->data) ^ std::get<bool>(rhs->data)));
+        return new Value((std::get<bool>(lhs->data) ^ std::get<bool>(rhs->data)) == 1);
     throw std::runtime_error("Unsupported operand type for unary not");
 }
 

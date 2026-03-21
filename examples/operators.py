@@ -22,3 +22,6 @@ b = False
 print("Boolean AND:", a and b)
 print("Boolean OR:", a or b)
 print("Boolean XOR:", a ^ b)
+
+print("String Concatenation:", "Test Num: " + str(2))
+print("fString:", f"Formatted Num: <{3}>")

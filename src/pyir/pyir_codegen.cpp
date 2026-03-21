@@ -402,6 +402,26 @@ namespace pyir {
                     break;
                 }
 
+                case PythonOpcode::FORMAT_SIMPLE: {
+                    mlir::Value val = stack.back();
+                    stack.pop_back();
+                    stack.push_back(builder.create<pyir::FormatSimple>(loc, pyType, val).getResult());
+                    break;
+                }
+                case PythonOpcode::BUILD_STRING: {
+                    const int64_t* count = std::get_if<int64_t>(&instr.argval);
+                    if (!count)
+                        throw std::runtime_error("BUILD_STRING must have an int argval");
+
+                    std::vector<mlir::Value> parts(*count);
+                    for (int64_t i = *count - 1; i >= 0; i--) {
+                        parts[i] = stack.back();
+                        stack.pop_back();
+                    }
+                    stack.push_back(builder.create<pyir::BuildString>(loc, pyType, parts).getResult());
+                    break;
+                }
+
                 case PythonOpcode::UNKNOWN:
                 default: {
                     throw PyCompileError("Unsupported opcode '" + pythonOpcodeToString(instr.opcode) + "'",

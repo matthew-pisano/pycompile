@@ -286,4 +286,20 @@ Value* pyir_push_null() {
     return nullptr;
 }
 
+
+Value* pyir_format_simple(const Value* val) {
+    return new Value(toString(val));
+}
+
+
+Value* pyir_build_string(Value** parts, const int64_t count) {
+    std::string result;
+    for (int64_t i = 0; i < count; i++) {
+        if (!parts[i]->isStr())
+            throw std::runtime_error("BUILD_STRING: expected string part");
+        result += std::get<std::string>(parts[i]->data);
+    }
+    return new Value(result);
+}
+
 }

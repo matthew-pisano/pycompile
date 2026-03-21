@@ -659,6 +659,89 @@ struct PopTopLowering : PyIROpConversion {
 
 
 /**
+ * Lowers pyir.pyir_format_simple to a call to the runtime function pyir_format_simple.
+ *
+ * Formats a heap-allocated Value* as a string and returns a new heap-allocated Value*.
+ *
+ * pyir.pyir_format_simple %val : !pyir.object
+ *     %result = llvm.call @pyir_format_simple(%val)
+ */
+struct FormatSimpleLowering : PyIROpConversion {
+    FormatSimpleLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::FormatSimple::getOperationName(), tc, ctx) {
+    }
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override {
+        return linkOpToRuntimeFunc("pyir_format_simple", op, operands, rewriter, 1);
+    }
+};
+
+
+/**
+ * Lowers pyir.pyir_build_string to allocate memory and construct a new string using the runtime function pyir_build_string
+ *
+ * Parts are stack-allocated as a Value*[] array and passed by pointer along with the part count.
+ * The runtime concatenates all parts into a single string Value*.
+ *
+ * pyir.build_string %part0, %part1, ... : (!pyir.object, !pyir.object, ...) -> !pyir.object
+ *     %arr   = llvm.alloca [n x !llvm.ptr]
+ *     %gep0  = llvm.gep %arr[0]
+ *              llvm.store %part0, %gep0
+ *     %gep1  = llvm.gep %arr[1]
+ *              llvm.store %part1, %gep1
+ *     ...
+ *     %result = llvm.call @pyir_build_string(%arr, n)
+ */
+struct BuildStringLowering : PyIROpConversion {
+    BuildStringLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::BuildString::getOperationName(), tc, ctx) {
+    }
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override {
+        mlir::MLIRContext* ctx = op->getContext();
+        const mlir::ModuleOp module = getModule(op);
+        const mlir::Location loc = op->getLoc();
+
+        // declare: extern Value* pyir_build_string(Value** parts, int64_t count)
+        const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
+                ptrType(ctx), {ptrType(ctx), i64Type(ctx)});
+        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_build_string", fnType);
+
+        const int64_t count = static_cast<int64_t>(operands.size());
+
+        // Allocate a stack array of Value* to hold all string parts: Value*[count]
+        mlir::LLVM::LLVMArrayType arrType = mlir::LLVM::LLVMArrayType::get(ptrType(ctx), count);
+        mlir::LLVM::ConstantOp allocSize = rewriter.create<mlir::LLVM::ConstantOp>(
+                loc, i64Type(ctx), rewriter.getI64IntegerAttr(1));
+        mlir::LLVM::AllocaOp alloca = rewriter.create<mlir::LLVM::AllocaOp>(loc, ptrType(ctx), arrType, allocSize);
+
+        // Store each string part into the array in order
+        for (int64_t i = 0; i < count; i++) {
+            // Compute pointer to parts[i] via GEP (get element pointer)
+            mlir::LLVM::ConstantOp idx = rewriter.create<mlir::LLVM::ConstantOp>(
+                    loc, i64Type(ctx), rewriter.getI64IntegerAttr(i));
+
+            mlir::LLVM::GEPOp gep = rewriter.create<mlir::LLVM::GEPOp>(
+                    loc, ptrType(ctx), ptrType(ctx), alloca, mlir::ValueRange{idx});
+
+            // Store the i-th operand (a Value*) into parts[i]
+            rewriter.create<mlir::LLVM::StoreOp>(loc, operands[i], gep);
+        }
+
+        // Pass the array pointer and count to pyir_build_string
+        mlir::LLVM::ConstantOp countVal = rewriter.create<mlir::LLVM::ConstantOp>(
+                loc, i64Type(ctx), rewriter.getI64IntegerAttr(count));
+        mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{alloca, countVal});
+
+        rewriter.replaceOp(op, call.getResult());
+        return mlir::success();
+    }
+};
+
+
+/**
  * MLIR pass that lowers the entire PyIR dialect to the LLVM dialect.
  *
  * Applies all PyIR to LLVM conversion patterns along with the standard func to LLVM patterns. Marks the PyIR dialect
@@ -713,7 +796,9 @@ void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns,
         LoadConstLowering,
         PushNullLowering,
         CallLowering,
-        PopTopLowering
+        PopTopLowering,
+        FormatSimpleLowering,
+        BuildStringLowering
     >(typeConverter, ctx);
 }
 

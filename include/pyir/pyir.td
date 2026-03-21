@@ -32,17 +32,20 @@ def PyIR_Resume : PyIR_Op<"resume"> {
     let assemblyFormat = "$arg attr-dict";
 }
 
+
 def PyIR_PushNull : PyIR_Op<"push_null", [Pure]> {
     let summary = "Push a null value onto the stack (for calls without self)";
     let results = (outs ByteCodeObject_Type:$result);
     let assemblyFormat = "attr-dict";
 }
 
+
 def PyIR_PopTop : PyIR_Op<"pop_top"> {
     let summary = "Discard the top of stack";
     let arguments = (ins ByteCodeObject_Type:$value);
     let assemblyFormat = "$value attr-dict `:` type($value)";
 }
+
 
 def PyIR_LoadName : PyIR_Op<"load_name"> {
     let summary = "Load a name from the current scope";
@@ -51,11 +54,13 @@ def PyIR_LoadName : PyIR_Op<"load_name"> {
     let assemblyFormat = "$var_name attr-dict";
 }
 
+
 def PyIR_StoreName : PyIR_Op<"store_name"> {
     let summary = "Store a value into a current scope name";
     let arguments = (ins StrAttr:$var_name, ByteCodeObject_Type:$value);
     let assemblyFormat = "$var_name `,` $value attr-dict `:` type($value)";
 }
+
 
 def PyIR_Call : PyIR_Op<"call", [DeclareOpInterfaceMethods<MemoryEffectsOpInterface>]> {
     let summary = "Call a callable with arguments";
@@ -164,4 +169,20 @@ def PyIR_StoreDeref : PyIR_Op<"store_deref"> {
     let summary = "Store into a cell or free variable";
     let arguments = (ins StrAttr:$var_name, ByteCodeObject_Type:$value);
     let assemblyFormat = "$var_name `,` $value attr-dict `:` type($value)";
+}
+
+
+def PyIR_FormatSimple : PyIR_Op<"format_simple", [Pure]> {
+    let summary = "Convert a value to its string representation";
+    let arguments = (ins ByteCodeObject_Type:$value);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$value attr-dict `:` type($value)";
+}
+
+
+def PyIR_BuildString : PyIR_Op<"build_string"> {
+    let summary = "Concatenate N strings from the stack into one";
+    let arguments = (ins Variadic<ByteCodeObject_Type>:$parts);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$parts attr-dict `:` functional-type($parts, $result)";
 }

@@ -83,6 +83,10 @@ Value* pyir_builtinStr(Value** args, int64_t argc);
 
 Value* pyir_builtinBool(Value** args, int64_t argc);
 
+Value* pyir_format_simple(const Value* val);
+
+Value* pyir_build_string(Value** parts, int64_t count);
+
 } //namespace pyir::runtime
 
 #endif //PYCOMPILE_PYIR_RUNTIME_H

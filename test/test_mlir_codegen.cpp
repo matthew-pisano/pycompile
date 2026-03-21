@@ -152,16 +152,62 @@ TEST_CASE_METHOD(MLIRFixture, "Test Boolean Operators MLIR") {
 
     SECTION("Test Boolean AND") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = True\nb = True\nc = a and b");
-        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::UnaryNot unaryOp = mlir::dyn_cast<pyir::UnaryNot>(getOp(fn, 4));
-        REQUIRE(unaryOp);
+        mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+
+        // Verify Op types
+        REQUIRE(mlir::isa<pyir::IsTruthy>(getOp(fn, 6)));
+        REQUIRE(mlir::isa<mlir::cf::CondBranchOp>(getOp(fn, 7)));
+
+        mlir::cf::CondBranchOp condBr = mlir::cast<mlir::cf::CondBranchOp>(getOp(fn, 7));
+        REQUIRE(mlir::isa<pyir::IsTruthy>(condBr.getCondition().getDefiningOp()));
+
+        // Verify blocks
+        const llvm::iplist<mlir::Block>& blocks = fn.getBlocks();
+        REQUIRE(blocks.size() == 3); // Entry block, true block, and false block
+
+        mlir::Region::iterator blockIt = fn.getBody().begin();
+
+        // Entry block should end with cond_br
+        mlir::Block& entryBlock = *blockIt++;
+        REQUIRE(mlir::isa<mlir::cf::CondBranchOp>(entryBlock.getTerminator()));
+
+        // True block
+        mlir::Block& trueBlock = *blockIt++;
+        REQUIRE(mlir::isa<mlir::func::ReturnOp>(trueBlock.getTerminator()));
+
+        // False block
+        mlir::Block& falseBlock = *blockIt++;
+        REQUIRE(mlir::isa<mlir::cf::BranchOp>(falseBlock.getTerminator()));
     }
 
     SECTION("Test Boolean OR") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = True\nb = True\nc = a or b");
-        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::UnaryNot unaryOp = mlir::dyn_cast<pyir::UnaryNot>(getOp(fn, 4));
-        REQUIRE(unaryOp);
+        mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+
+        // Verify Op types
+        REQUIRE(mlir::isa<pyir::IsTruthy>(getOp(fn, 6)));
+        REQUIRE(mlir::isa<mlir::cf::CondBranchOp>(getOp(fn, 7)));
+
+        mlir::cf::CondBranchOp condBr = mlir::cast<mlir::cf::CondBranchOp>(getOp(fn, 7));
+        REQUIRE(mlir::isa<pyir::IsTruthy>(condBr.getCondition().getDefiningOp()));
+
+        // Verify blocks
+        const llvm::iplist<mlir::Block>& blocks = fn.getBlocks();
+        REQUIRE(blocks.size() == 3); // Entry block, true block, and false block
+
+        mlir::Region::iterator blockIt = fn.getBody().begin();
+
+        // Entry block should end with cond_br
+        mlir::Block& entryBlock = *blockIt++;
+        REQUIRE(mlir::isa<mlir::cf::CondBranchOp>(entryBlock.getTerminator()));
+
+        // True block
+        mlir::Block& trueBlock = *blockIt++;
+        REQUIRE(mlir::isa<mlir::func::ReturnOp>(trueBlock.getTerminator()));
+
+        // False block
+        mlir::Block& falseBlock = *blockIt++;
+        REQUIRE(mlir::isa<mlir::cf::BranchOp>(falseBlock.getTerminator()));
     }
 
     SECTION("Test Boolean XOR") {

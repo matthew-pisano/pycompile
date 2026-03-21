@@ -737,7 +737,7 @@ void lowerToLLVMDialect(mlir::MLIRContext& ctx, const mlir::OwningOpRef<mlir::Mo
             errorMessage = diag.str();
             errorLoc = diag.getLocation();
         }
-        // return mlir::success();
+        return mlir::success();
     });
 
     const llvm::LogicalResult result = pm.run(module.get());

@@ -683,13 +683,13 @@ struct PyIRToLLVMPass : mlir::PassWrapper<PyIRToLLVMPass, mlir::OperationPass<ml
         populatePyIRToLLVMPatterns(patterns, typeConverter);
         mlir::populateFuncToLLVMConversionPatterns(typeConverter, patterns);
         mlir::arith::populateArithToLLVMConversionPatterns(typeConverter, patterns);
+        mlir::cf::populateControlFlowToLLVMConversionPatterns(typeConverter, patterns);
 
         mlir::LLVMConversionTarget target(*ctx);
         target.addIllegalDialect<pyir::PyIRDialect>();
         target.addIllegalDialect<mlir::arith::ArithDialect>();
         target.addLegalDialect<mlir::LLVM::LLVMDialect>();
         target.addLegalOp<mlir::ModuleOp>();
-        target.addLegalOp<mlir::cf::CondBranchOp, mlir::cf::BranchOp>();
 
         if (mlir::failed(mlir::applyFullConversion(module, target, std::move(patterns))))
             signalPassFailure();
@@ -731,8 +731,6 @@ void lowerToLLVMDialect(mlir::MLIRContext& ctx, const mlir::OwningOpRef<mlir::Mo
     pm.addPass(mlir::createCanonicalizerPass());
     // Lower PyIR to LLVM dialect
     pm.addPass(createPyIRToLLVMPass());
-    // Lower control flow operations to LLVM dialect
-    pm.addPass(mlir::createConvertControlFlowToLLVMPass());
 
     mlir::Location errorLoc = mlir::UnknownLoc::get(&ctx);
     std::string errorMessage;

@@ -112,9 +112,19 @@ namespace pyir {
             // Emit a branch from the current block if it isn't already terminated.
             if (offsetToBlock.contains(instr.offset)) {
                 mlir::Block* targetBlock = offsetToBlock[instr.offset];
-                if (!builder.getBlock()->mightHaveTerminator())
-                    builder.create<mlir::cf::BranchOp>(loc, targetBlock);
+                if (!builder.getBlock()->mightHaveTerminator()) {
+                    // Pass current stack as block args to the target block
+                    llvm::SmallVector<mlir::Value> branchArgs(stack.begin(), stack.end());
+                    if (targetBlock->getNumArguments() == 0)
+                        for (mlir::Value v : branchArgs)
+                            targetBlock->addArgument(v.getType(), loc);
+                    builder.create<mlir::cf::BranchOp>(loc, targetBlock, mlir::ValueRange{branchArgs});
+                }
                 builder.setInsertionPointToStart(targetBlock);
+                // Replace stack with block arguments
+                stack.clear();
+                for (mlir::BlockArgument arg : targetBlock->getArguments())
+                    stack.push_back(arg);
             }
 
             switch (instr.opcode) {
@@ -275,6 +285,13 @@ namespace pyir {
                     break;
                 }
 
+                case PythonOpcode::COPY: {
+                    const int64_t* copyIdx = std::get_if<int64_t>(&instr.argval);
+                    auto value = stack.at(stack.size() - *copyIdx);
+                    stack.push_back(value);
+                    break;
+                }
+
                 case PythonOpcode::JUMP_FORWARD: {
                     const int64_t* target = std::get_if<int64_t>(&instr.argval);
                     if (!target)
@@ -298,8 +315,20 @@ namespace pyir {
                     // unbox !pyir.object -> i1
                     mlir::Value i1cond = builder.create<IsTruthy>(loc, builder.getI1Type(), cond).getResult();
                     mlir::Block* trueBlock = offsetToBlock.at(*target);
-                    mlir::Block* falseBlock = fn.addBlock(); // fall-through block
-                    builder.create<mlir::cf::CondBranchOp>(loc, i1cond, trueBlock, falseBlock);
+                    mlir::Block* falseBlock = fn.addBlock();
+
+                    // Pass remaining stack values as block arguments to the true block so they are available after the jump
+                    llvm::SmallVector<mlir::Value> trueArgs(stack.begin(), stack.end());
+                    llvm::SmallVector<mlir::Type> trueArgTypes;
+                    for (auto v : trueArgs)
+                        trueArgTypes.push_back(v.getType());
+
+                    if (trueBlock->getNumArguments() == 0)
+                        for (auto t : trueArgTypes)
+                            trueBlock->addArgument(t, loc);
+
+                    builder.create<mlir::cf::CondBranchOp>(loc, i1cond, trueBlock, mlir::ValueRange{trueArgs},
+                                                           falseBlock, mlir::ValueRange{});
                     builder.setInsertionPointToStart(falseBlock);
                     break;
                 }
@@ -316,8 +345,21 @@ namespace pyir {
                     // unbox !pyir.object -> i1
                     mlir::Value i1cond = builder.create<IsTruthy>(loc, builder.getI1Type(), cond).getResult();
                     mlir::Block* falseBlock = offsetToBlock.at(*target);
-                    mlir::Block* trueBlock = fn.addBlock(); // fall-through block
-                    builder.create<mlir::cf::CondBranchOp>(loc, i1cond, trueBlock, falseBlock);
+                    mlir::Block* trueBlock = fn.addBlock();
+
+                    // Pass remaining stack values as block arguments to the false block so they are available after the jump
+                    llvm::SmallVector<mlir::Value> falseArgs(stack.begin(), stack.end());
+                    llvm::SmallVector<mlir::Type> falseArgTypes;
+                    for (mlir::Value v : falseArgs)
+                        falseArgTypes.push_back(v.getType());
+
+                    // Add block arguments to falseBlock if not already added
+                    if (falseBlock->getNumArguments() == 0)
+                        for (mlir::Type t : falseArgTypes)
+                            falseBlock->addArgument(t, loc);
+
+                    builder.create<mlir::cf::CondBranchOp>(loc, i1cond, trueBlock, mlir::ValueRange{}, falseBlock,
+                                                           mlir::ValueRange{falseArgs});
                     builder.setInsertionPointToStart(trueBlock);
                     break;
                 }
@@ -409,6 +451,8 @@ namespace pyir {
         // Reset insertion point to module level before emitting main
         builder.setInsertionPointToEnd(mlirModule.getBody());
         insertMainEntryPoint(builder, ctx, mlirModuleName);
+
+        mlirModule.getOperation()->print(llvm::errs());
 
         // Verify the module is well-formed before returning
         if (mlir::failed(mlir::verify(mlirModule)))

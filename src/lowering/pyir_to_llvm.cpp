@@ -19,6 +19,7 @@
 #include <mlir/Conversion/FuncToLLVM/ConvertFuncToLLVM.h>
 #include <mlir/Conversion/ArithToLLVM/ArithToLLVM.h>
 #include <mlir/Dialect/Arith/IR/Arith.h>
+#include <mlir/Dialect/ControlFlow/IR/ControlFlow.h>
 #include <mlir/Transforms/Passes.h>
 
 #include "utils.h"
@@ -185,6 +186,42 @@ struct PyIROpConversion : mlir::ConversionPattern {
             call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{operands[0], operands[1]});
 
         rewriter.replaceOp(op, call.getResult());
+        return mlir::success();
+    }
+};
+
+
+/**
+ * Lowers pyir.is_truthy to a call to the runtime function pyir_is_truthy.
+ *
+ * Evaluates a heap-allocated Value* as a literal boolean.
+ *
+ * pyir.is_truthy %val : !pyir.object
+ *     %result = llvm.call @pyir_is_truthy(%val)
+ */
+struct IsTruthyLowering : PyIROpConversion {
+    IsTruthyLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::IsTruthy::getOperationName(), tc, ctx) {
+    }
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override {
+        mlir::MLIRContext* ctx = op->getContext();
+        const mlir::ModuleOp module = getModule(op);
+        const mlir::Location loc = op->getLoc();
+
+        // declare: extern int8_t pyir_is_truthy(Value* val)
+        const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
+                mlir::IntegerType::get(ctx, 8), {ptrType(ctx)});
+        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_is_truthy", fnType);
+
+        mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{operands[0]});
+
+        // truncate i8 to i1 for cf.cond_br
+        const mlir::Value i1val = rewriter.create<mlir::LLVM::TruncOp>(
+                loc, mlir::IntegerType::get(ctx, 1), call.getResult());
+
+        rewriter.replaceOp(op, i1val);
         return mlir::success();
     }
 };
@@ -661,6 +698,7 @@ void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns,
                                 mlir::LLVMTypeConverter& typeConverter) {
     mlir::MLIRContext* ctx = patterns.getContext();
     patterns.add<
+        IsTruthyLowering,
         ToBoolLowering,
         UnaryNegativeLowering,
         UnaryNotLowering,
@@ -699,7 +737,7 @@ void lowerToLLVMDialect(mlir::MLIRContext& ctx, const mlir::OwningOpRef<mlir::Mo
             errorMessage = diag.str();
             errorLoc = diag.getLocation();
         }
-        return mlir::success();
+        // return mlir::success();
     });
 
     const llvm::LogicalResult result = pm.run(module.get());

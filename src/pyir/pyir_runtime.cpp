@@ -69,6 +69,10 @@ static bool toBool(const Value* val) {
     }, val->data);
 }
 
+int8_t pyir_is_truthy(const Value* val) {
+    return toBool(val) ? 1 : 0;
+}
+
 Value* pyir_add(const Value* lhs, const Value* rhs) {
     if (lhs->isInt() && rhs->isInt())
         return new Value(std::get<int64_t>(lhs->data) + std::get<int64_t>(rhs->data));

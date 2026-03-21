@@ -85,7 +85,7 @@ def PyIR_ToBool : PyIR_Op<"to_bool", [Pure]> {
     let summary = "Coerce a Python object to a boolean";
     let arguments = (ins ByteCodeObject_Type:$value);
     let results   = (outs ByteCodeObject_Type:$result);
-    let assemblyFormat = "$value attr-dict `:` type($value)";
+    let assemblyFormat = "$value attr-dict `:` type($value) `->` type($result)";
 }
 
 
@@ -93,7 +93,7 @@ def PyIR_IsTruthy : PyIR_Op<"is_truthy", [Pure]> {
     let summary = "Extract a native i1 boolean from a Python object";
     let arguments = (ins ByteCodeObject_Type:$value);
     let results   = (outs I1:$result);
-    let assemblyFormat = "$value attr-dict `:` type($value)";
+    let assemblyFormat = "$value attr-dict `:` type($value) `->` type($result)";
 }
 
 
@@ -101,7 +101,7 @@ def PyIR_UnaryNot : PyIR_Op<"unary_not", [Pure]> {
     let summary = "Negates a boolean";
     let arguments = (ins ByteCodeObject_Type:$value);
     let results   = (outs ByteCodeObject_Type:$result);
-    let assemblyFormat = "$value attr-dict `:` type($value)";
+    let assemblyFormat = "$value attr-dict `:` type($value) `->` type($result)";
 }
 
 
@@ -109,7 +109,7 @@ def PyIR_UnaryNegative : PyIR_Op<"unary_negative", [Pure]> {
     let summary = "Negates a number";
     let arguments = (ins ByteCodeObject_Type:$value);
     let results   = (outs ByteCodeObject_Type:$result);
-    let assemblyFormat = "$value attr-dict `:` type($value)";
+    let assemblyFormat = "$value attr-dict `:` type($value) `->` type($result)";
 }
 
 
@@ -117,7 +117,7 @@ def PyIR_UnaryInvert : PyIR_Op<"unary_invert", [Pure]> {
     let summary = "Inverts a binary sequence";
     let arguments = (ins ByteCodeObject_Type:$value);
     let results   = (outs ByteCodeObject_Type:$result);
-    let assemblyFormat = "$value attr-dict `:` type($value)";
+    let assemblyFormat = "$value attr-dict `:` type($value) `->` type($result)";
 }
 
 
@@ -125,7 +125,7 @@ def PyIR_BinaryOp : PyIR_Op<"binary_op"> {
     let summary = "Binary operation on two Python objects";
     let arguments = (ins StrAttr:$op, ByteCodeObject_Type:$lhs, ByteCodeObject_Type:$rhs);
     let results   = (outs ByteCodeObject_Type:$result);
-    let assemblyFormat = "$op `,` $lhs `,` $rhs attr-dict `:` type($lhs)";
+    let assemblyFormat = "$op `,` $lhs `,` $rhs attr-dict `:` type($lhs) `->` type($result)";
 }
 
 
@@ -133,7 +133,7 @@ def PyIR_CompareOp : PyIR_Op<"compare_op"> {
     let summary = "Comparison operation on two Python objects";
     let arguments = (ins StrAttr:$op, ByteCodeObject_Type:$lhs, ByteCodeObject_Type:$rhs);
     let results   = (outs ByteCodeObject_Type:$result);
-    let assemblyFormat = "$op `,` $lhs `,` $rhs attr-dict `:` type($lhs)";
+    let assemblyFormat = "$op `,` $lhs `,` $rhs attr-dict `:` type($lhs) `->` type($result)";
 }
 
 

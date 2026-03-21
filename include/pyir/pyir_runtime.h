@@ -11,6 +11,8 @@
 
 extern "C" {
 
+int8_t pyir_is_truthy(const Value* val);
+
 // arithmetic
 Value* pyir_add(const Value* lhs, const Value* rhs);
 

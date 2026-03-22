@@ -83,7 +83,7 @@ namespace pyir {
         if (isFunction)
             // Value*(Value** args, int64_t argc), matches Value::Fn
             fnType = builder.getFunctionType(
-                    {pyType, builder.getIntegerType(64)}, // args_ptr, argc
+                    {pyType, pyType}, // args_ptr, argc
                     {pyType} // return Value*
                     );
         else

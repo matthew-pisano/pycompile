@@ -173,7 +173,7 @@ def PyIR_PopScope : PyIR_Op<"pop_scope"> {
 def PyIR_LoadArg : PyIR_Op<"load_arg", [Pure]> {
     let summary = "Load the i-th argument from a Value** args array";
     let arguments = (ins ByteCodeObject_Type:$args_ptr,
-                         SI64Attr:$index);
+                         I64Attr:$index);
     let results   = (outs ByteCodeObject_Type:$result);
     let assemblyFormat = "$args_ptr `[` $index `]` attr-dict";
 }

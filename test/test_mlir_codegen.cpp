@@ -25,19 +25,7 @@ struct MLIRFixture {
 
     mlir::OwningOpRef<mlir::ModuleOp> compile(const std::string& source) {
         const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
-
-        std::stringstream ss;
-        serializeByteCodeModule(bytecodeModule, ss);
-        std::cout << ss.str() << std::endl;
-
         mlir::OwningOpRef<mlir::ModuleOp> module = pyir::generatePyIR(ctx, bytecodeModule);
-
-        std::string mlirModuleContent;
-        llvm::raw_string_ostream llvmOs(mlirModuleContent);
-        const mlir::OpPrintingFlags flags;
-        module.get().getOperation()->print(llvmOs, flags);
-        std::cout << mlirModuleContent << std::endl;
-
         return module;
     }
 };
@@ -385,7 +373,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Conditional MLIR") {
 
 
 TEST_CASE_METHOD(MLIRFixture, "Test Function Definition MLIR") {
- SECTION("Simple Function") {
+    SECTION("Simple Function") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("def foo():\n  print('bar')\nfoo()");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
     }

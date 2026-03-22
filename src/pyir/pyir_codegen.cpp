@@ -578,11 +578,15 @@ namespace pyir {
         builder.setInsertionPointToEnd(mlirModule.getBody());
         insertMainEntryPoint(builder, ctx, mlirModuleName);
 
-        mlirModule.getOperation()->print(llvm::errs());
-
         // Verify the module is well-formed before returning
-        if (mlir::failed(mlir::verify(mlirModule)))
+        if (mlir::failed(mlir::verify(mlirModule))) {
+            std::stringstream ss;
+            serializeByteCodeModule(module, ss);
+            llvm::errs() << ss.str();
+            mlirModule.getOperation()->print(llvm::errs());
+
             throw std::runtime_error(module.moduleName + ": error: MLIR module verification failed");
+        }
 
         return mlirModule;
     }

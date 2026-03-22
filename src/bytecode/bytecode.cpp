@@ -196,9 +196,10 @@ void serializeByteCodeModule(const ByteCodeModule& code, std::ostream& os, const
             os << ind << "  [nested code object]:\n";
             // Wrap nested instructions in a temporary DisassembledCode for printing
             if (const std::shared_ptr<ByteCodeModule>* nestedPtr = std::get_if<std::shared_ptr<ByteCodeModule> >(
-                    &instr.argval))
-                serializeByteCodeModule(**nestedPtr, os, depth + 1);
-            else
+                    &instr.argval)) {
+                if (*nestedPtr)
+                    serializeByteCodeModule(**nestedPtr, os, depth + 1);
+            } else
                 throw std::runtime_error("Expected argval to be a vector of Instructions for nested code object");
         }
     }

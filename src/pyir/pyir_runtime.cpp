@@ -80,6 +80,10 @@ void pyir_pop_scope() {
         scopeStack.pop_back();
 }
 
+Value* pyir_make_function(void* fn_ptr) {
+    return new Value(reinterpret_cast<Value::Fn>(fn_ptr));
+}
+
 int8_t pyir_is_truthy(const Value* val) {
     return toBool(val) ? 1 : 0;
 }

@@ -16,6 +16,8 @@ void pyir_push_scope();
 
 void pyir_pop_scope();
 
+Value* pyir_make_function(void* fn_ptr);
+
 int8_t pyir_is_truthy(const Value* val);
 
 // arithmetic

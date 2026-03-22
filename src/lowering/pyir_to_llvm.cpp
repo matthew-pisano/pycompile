@@ -814,6 +814,163 @@ struct BuildStringLowering : PyIROpConversion {
 
 
 /**
+ * Lowers pyir.push_scope to a call to pyir_push_scope().
+ *
+ * pyir.push_scope
+ *     llvm.call @pyir_push_scope()
+ */
+struct PushScopeLowering : PyIROpConversion {
+    PushScopeLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::PushScope::getOperationName(), tc, ctx) {
+    }
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
+                                        mlir::ConversionPatternRewriter& rewriter) const override {
+        mlir::MLIRContext* ctx = op->getContext();
+        const mlir::ModuleOp module = getModule(op);
+        const mlir::Location loc = op->getLoc();
+
+        // declare: extern void pyir_push_scope()
+        const mlir::LLVM::LLVMFunctionType fnType =
+                mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {});
+        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_push_scope", fnType);
+
+        rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{});
+        rewriter.eraseOp(op);
+        return mlir::success();
+    }
+};
+
+
+/**
+ * Lowers pyir.pop_scope to a call to pyir_pop_scope().
+ *
+ * pyir.pop_scope
+ *     llvm.call @pyir_pop_scope()
+ */
+struct PopScopeLowering : PyIROpConversion {
+    PopScopeLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::PopScope::getOperationName(), tc, ctx) {
+    }
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
+                                        mlir::ConversionPatternRewriter& rewriter) const override {
+        mlir::MLIRContext* ctx = op->getContext();
+        const mlir::ModuleOp module = getModule(op);
+        const mlir::Location loc = op->getLoc();
+
+        // declare: extern void pyir_pop_scope()
+        const mlir::LLVM::LLVMFunctionType fnType =
+                mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {});
+        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_pop_scope", fnType);
+
+        rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{});
+        rewriter.eraseOp(op);
+        return mlir::success();
+    }
+};
+
+
+/**
+ * Lowers pyir.load_arg to a GEP + load into the args array.
+ *
+ * pyir.load_arg %args_ptr[%index]
+ *     %gep = llvm.gep %args_ptr[index]
+ *     %val = llvm.load %gep
+ */
+struct LoadArgLowering : PyIROpConversion {
+    LoadArgLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::LoadArg::getOperationName(), tc, ctx) {
+    }
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override {
+        mlir::MLIRContext* ctx = op->getContext();
+        const mlir::Location loc = op->getLoc();
+
+        pyir::LoadArg loadArg = mlir::cast<pyir::LoadArg>(op);
+        const int64_t index = loadArg.getIndex();
+
+        // operands[0] is the args_ptr (Value** as !llvm.ptr)
+        mlir::Value argsPtr = operands[0];
+
+        // GEP into args[index]
+        mlir::LLVM::ConstantOp idx = rewriter.create<mlir::LLVM::ConstantOp>(
+                loc, i64Type(ctx), rewriter.getI64IntegerAttr(index));
+        mlir::LLVM::GEPOp gep = rewriter.create<mlir::LLVM::GEPOp>(
+                loc, ptrType(ctx), ptrType(ctx), argsPtr, mlir::ValueRange{idx});
+
+        // Load Value* from args[index]
+        mlir::LLVM::LoadOp load = rewriter.create<mlir::LLVM::LoadOp>(loc, ptrType(ctx), gep);
+
+        rewriter.replaceOp(op, load.getResult());
+        return mlir::success();
+    }
+};
+
+
+/**
+ * Lowers pyir.make_function to a call to pyir_make_function(fn_ptr).
+ *
+ * Takes the symbol name stored in the attribute, gets its address as a function pointer,
+ * and wraps it in a heap-allocated Value* callable.
+ *
+ * pyir.make_function "fn_name"
+ *     %ptr = llvm.mlir.addressof @fn_name
+ *     %val = llvm.call @pyir_make_function(%ptr)
+ */
+struct MakeFunctionLowering : PyIROpConversion {
+    MakeFunctionLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::MakeFunction::getOperationName(), tc, ctx) {
+    }
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
+                                        mlir::ConversionPatternRewriter& rewriter) const override {
+        mlir::MLIRContext* ctx = op->getContext();
+        const mlir::ModuleOp module = getModule(op);
+        const mlir::Location loc = op->getLoc();
+
+        pyir::MakeFunction makeFunc = mlir::cast<pyir::MakeFunction>(op);
+        const std::string fnName = makeFunc.getFnName().str();
+
+        // declare: extern Value* pyir_make_function(void* fn_ptr)
+        const mlir::LLVM::LLVMFunctionType fnType =
+                mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
+        mlir::LLVM::LLVMFuncOp runtimeFn =
+                getOrInsertRuntimeFn(rewriter, module, "pyir_make_function", fnType);
+
+        // Get function pointer from symbol table
+        const mlir::Value fnPtr = rewriter.create<mlir::LLVM::AddressOfOp>(loc, ptrType(ctx), fnName);
+
+        mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(
+                loc, runtimeFn, mlir::ValueRange{fnPtr});
+
+        rewriter.replaceOp(op, call.getResult());
+        return mlir::success();
+    }
+};
+
+
+/**
+ * Lowers pyir.return_value to llvm.return.
+ *
+ * pyir.return_value %val
+ *     llvm.return %val
+ */
+struct ReturnValueLowering : PyIROpConversion {
+    ReturnValueLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::ReturnValue::getOperationName(), tc, ctx) {
+    }
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override {
+        rewriter.replaceOpWithNewOp<mlir::LLVM::ReturnOp>(op, operands[0]);
+        return mlir::success();
+    }
+};
+
+
+/**
  * MLIR pass that lowers the entire PyIR dialect to the LLVM dialect.
  *
  * Applies all PyIR to LLVM conversion patterns along with the standard func to LLVM patterns. Marks the PyIR dialect
@@ -872,7 +1029,12 @@ void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns,
         CallLowering,
         PopTopLowering,
         FormatSimpleLowering,
-        BuildStringLowering
+        BuildStringLowering,
+        PushScopeLowering,
+        PopScopeLowering,
+        LoadArgLowering,
+        MakeFunctionLowering,
+        ReturnValueLowering
     >(typeConverter, ctx);
 }
 

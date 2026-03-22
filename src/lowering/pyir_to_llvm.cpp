@@ -487,15 +487,9 @@ struct LoadNameLowering : PyIROpConversion {
         const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
         mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_load_name", fnType);
 
-        // create a global string constant for the name
         const std::string globalName = "__pyir_str_" + loadName.getVarName().str();
-
-        // get pointer to the global string
         const mlir::Value strPtr = getOrInsertStringConstant(rewriter, module, loc, globalName, loadName.getVarName());
-
-        // call pyir_load_name
         mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{strPtr});
-
         rewriter.replaceOp(op, call.getResult());
         return mlir::success();
     }
@@ -532,7 +526,6 @@ struct StoreNameLowering : PyIROpConversion {
 
         const std::string globalName = "__pyir_str_" + storeName.getVarName().str();
         const mlir::Value strPtr = getOrInsertStringConstant(rewriter, module, loc, globalName, storeName.getVarName());
-
         rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{strPtr, operands[0]});
         rewriter.eraseOp(op);
         return mlir::success();

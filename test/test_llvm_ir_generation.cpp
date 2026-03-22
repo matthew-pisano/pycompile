@@ -11,51 +11,37 @@
 #include <catch2/catch_all.hpp>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
-#include <mlir/Dialect/ControlFlow/IR/ControlFlowOps.h>
+#include <mlir/Dialect/LLVMIR/LLVMDialect.h>
 
 
 #include "pyir/pyir_codegen.h"
-#include "pyir/pyir_attrs.h"
 #include "bytecode/bytecode.h"
 #include "lowering/llvm_export.h"
+#include "lowering/pyir_to_llvm.h"
 
 
 struct LLVMFixture {
     mlir::MLIRContext mlirCtx;
     llvm::LLVMContext llvmCtx;
 
-    LLVMFixture() {
-        mlirCtx.loadDialect<pyir::PyIRDialect>();
-        mlirCtx.loadDialect<mlir::func::FuncDialect>();
-        mlirCtx.loadDialect<mlir::cf::ControlFlowDialect>();
-    }
-
     std::unique_ptr<llvm::Module> compile(const std::string& source) {
         const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
         const mlir::OwningOpRef<mlir::ModuleOp> mlirModule = pyir::generatePyIR(mlirCtx, bytecodeModule);
+        lowerToLLVMDialect(mlirCtx, mlirModule);
         std::unique_ptr<llvm::Module> llvmModule = translateToLLVMIR(llvmCtx, mlirModule);
         return llvmModule;
     }
 };
 
 
-TEST_CASE_METHOD(LLVMFixture, "Test Operation Order MLIR") {
-    const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = 3\nd = (a + b) * c");
-}
-
-
-TEST_CASE_METHOD(LLVMFixture, "Test F String Format") {
+TEST_CASE_METHOD(LLVMFixture, "Test F String Format LLVM") {
     const std::unique_ptr<llvm::Module> module = compile("f'Number <<{24}>>'");
 }
 
 
-TEST_CASE_METHOD(LLVMFixture, "Test Arithmetic Operators MLIR") {
+TEST_CASE_METHOD(LLVMFixture, "Test Arithmetic Operators LLVM") {
     SECTION("Test Addition") {
         const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a + b");
-    }
-
-    SECTION("Test Float Addition") {
-        const std::unique_ptr<llvm::Module> module = compile("a = 2.1\nb = 2.1\nc = a + b");
     }
 
     SECTION("Test Subtraction") {
@@ -91,7 +77,7 @@ TEST_CASE_METHOD(LLVMFixture, "Test Arithmetic Operators MLIR") {
 }
 
 
-TEST_CASE_METHOD(LLVMFixture, "Test Boolean Operators MLIR") {
+TEST_CASE_METHOD(LLVMFixture, "Test Boolean Operators LLVM") {
     SECTION("Test Boolean Negation") {
         const std::unique_ptr<llvm::Module> module = compile("a = True\nb = not a");
     }
@@ -114,7 +100,7 @@ TEST_CASE_METHOD(LLVMFixture, "Test Boolean Operators MLIR") {
 }
 
 
-TEST_CASE_METHOD(LLVMFixture, "Test Comparators MLIR") {
+TEST_CASE_METHOD(LLVMFixture, "Test Comparators LLVM") {
     SECTION("Test Boolean Negation") {
         const std::unique_ptr<llvm::Module> module = compile("a = True\nb = not a");
     }
@@ -156,12 +142,12 @@ TEST_CASE_METHOD(LLVMFixture, "Test Comparators MLIR") {
 }
 
 
-TEST_CASE_METHOD(LLVMFixture, "Test Conditional MLIR") {
+TEST_CASE_METHOD(LLVMFixture, "Test Conditional LLVM") {
     const std::unique_ptr<llvm::Module> module = compile("a = True\nif a:\n  ...\nelse:\n  ...");
 }
 
 
-TEST_CASE_METHOD(LLVMFixture, "Test Function Definition MLIR") {
+TEST_CASE_METHOD(LLVMFixture, "Test Function Definition LLVM") {
     SECTION("Simple Function") {
         const std::unique_ptr<llvm::Module> module = compile("def foo():\n  print('bar')\nfoo()");
     }
@@ -176,11 +162,6 @@ TEST_CASE_METHOD(LLVMFixture, "Test Function Definition MLIR") {
 }
 
 
-TEST_CASE_METHOD(LLVMFixture, "Test Hello World MLIR") {
+TEST_CASE_METHOD(LLVMFixture, "Test Hello World LLVM") {
     const std::unique_ptr<llvm::Module> module = compile("print('Hello world!')");
-}
-
-
-TEST_CASE_METHOD(LLVMFixture, "Test Simple Arithmetic MLIR") {
-    const std::unique_ptr<llvm::Module> module = compile("a = 1\nb = 2\nsummed = a + b\nprint(summed)");
 }

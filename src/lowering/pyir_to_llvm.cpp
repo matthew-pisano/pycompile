@@ -386,6 +386,78 @@ struct CompareOpLowering : PyIROpConversion {
 
 
 /**
+ * Lowers pyir.load_fast to a call to the runtime function pyir_load_fast.
+ *
+ * The name string is stored as a constant and passed as a const char* pointer. The runtime resolves the name
+ * against the names present in the current scope and returns a heap-allocated Value*.
+ *
+ * pyir.load_fast "arg"
+ *     %ptr = llvm.mlir.addressof @__pyir_str_arg
+  *    %val = llvm.call @pyir_load_fast(%ptr)
+ */
+struct LoadFastLowering : PyIROpConversion {
+    LoadFastLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::LoadFast::getOperationName(), tc, ctx) {
+    }
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
+                                        mlir::ConversionPatternRewriter& rewriter) const override {
+        pyir::LoadFast loadFast = mlir::cast<pyir::LoadFast>(op);
+        mlir::MLIRContext* ctx = op->getContext();
+        const mlir::ModuleOp module = getModule(op);
+        const mlir::Location loc = op->getLoc();
+
+        // declare: extern Value* pyir_load_fast(const char* name)
+        const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
+        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_load_fast", fnType);
+
+        const std::string globalName = "__pyir_str_" + loadFast.getVarName().str();
+        const mlir::Value strPtr = getOrInsertStringConstant(rewriter, module, loc, globalName, loadFast.getVarName());
+        mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{strPtr});
+        rewriter.replaceOp(op, call.getResult());
+        return mlir::success();
+    }
+};
+
+
+/**
+ * Lowers pyir.store_fast to a call to the runtime function pyir_store_fast.
+ *
+ * The name string is stored as a constant and passed as a const char* pointer alongside the heap-allocated
+ * Value* to store. The runtime inserts or replaces the name in a local scope table, managing refcounts on the old
+ * and new values.
+ *
+ * pyir.store_fast "x", %val
+ *   %ptr = llvm.mlir.addressof @__pyir_str_x
+ *          llvm.call @pyir_store_fast(%ptr, %val)
+ */
+struct StoreFastLowering : PyIROpConversion {
+    StoreFastLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::StoreFast::getOperationName(), tc, ctx) {
+    }
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override {
+        pyir::StoreFast storeFast = mlir::cast<pyir::StoreFast>(op);
+        mlir::MLIRContext* ctx = op->getContext();
+        const mlir::ModuleOp module = getModule(op);
+        const mlir::Location loc = op->getLoc();
+
+        // declare: extern void pyir_store_fast(const char* name, Value* val)
+        const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
+                mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
+        mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_store_fast", fnType);
+
+        const std::string globalName = "__pyir_str_" + storeFast.getVarName().str();
+        const mlir::Value strPtr = getOrInsertStringConstant(rewriter, module, loc, globalName, storeFast.getVarName());
+        rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{strPtr, operands[0]});
+        rewriter.eraseOp(op);
+        return mlir::success();
+    }
+};
+
+
+/**
  * Lowers pyir.load_name to a call to the runtime function pyir_load_name.
  *
  * The name string is stored as a global constant and passed as a const char* pointer. The runtime resolves the name

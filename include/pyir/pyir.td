@@ -150,8 +150,37 @@ def PyIR_LoadConst : PyIR_Op<"load_const", [Pure]> {
 }
 
 
+def PyIR_MakeFunction : PyIR_Op<"make_function", [Pure]> {
+    let summary = "Wrap a function pointer into a callable Python object";
+    let arguments = (ins StrAttr:$fn_name);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$fn_name attr-dict";
+}
+
+
+def PyIR_PushScope : PyIR_Op<"push_scope"> {
+    let summary = "Push a new local variable scope onto the scope stack";
+    let assemblyFormat = "attr-dict";
+}
+
+
+def PyIR_PopScope : PyIR_Op<"pop_scope"> {
+    let summary = "Pop the current local variable scope from the scope stack";
+    let assemblyFormat = "attr-dict";
+}
+
+
+def PyIR_LoadArg : PyIR_Op<"load_arg", [Pure]> {
+    let summary = "Load the i-th argument from a Value** args array";
+    let arguments = (ins ByteCodeObject_Type:$args_ptr,
+                         SI64Attr:$index);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$args_ptr `[` $index `]` attr-dict";
+}
+
+
 def PyIR_ReturnValue : PyIR_Op<"return_value", [Terminator]> {
-    let summary = "Return a value from the current function";
+    let summary = "Return a Value* from a Python function";
     let arguments = (ins ByteCodeObject_Type:$value);
     let assemblyFormat = "$value attr-dict `:` type($value)";
 }

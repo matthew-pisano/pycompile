@@ -195,8 +195,7 @@ void serializeByteCodeModule(const ByteCodeModule& code, std::ostream& os, const
         if (instr.argvalType == ArgvalType::Code) {
             os << ind << "  [nested code object]:\n";
             // Wrap nested instructions in a temporary DisassembledCode for printing
-            if (const std::shared_ptr<ByteCodeModule>* nestedPtr = std::get_if<std::shared_ptr<ByteCodeModule> >(
-                    &instr.argval)) {
+            if (const auto* nestedPtr = std::get_if<std::shared_ptr<ByteCodeModule> >(&instr.argval)) {
                 if (*nestedPtr)
                     serializeByteCodeModule(**nestedPtr, os, depth + 1);
             } else
@@ -219,6 +218,7 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
     // Code-level metadata
     result.info.freevars = extractPyTupleStrings(code, "co_freevars");
     result.info.cellvars = extractPyTupleStrings(code, "co_cellvars");
+    result.info.varnames = extractPyTupleStrings(code, "co_varnames");
     result.info.exceptionTable = decodeExceptionTable(code);
 
     // Instructions

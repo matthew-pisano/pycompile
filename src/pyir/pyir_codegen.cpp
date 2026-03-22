@@ -70,20 +70,49 @@ namespace pyir {
      * @param ctx The MLIR Context
      * @param module The original ByteCodeModule
      * @param moduleName The name to give the MLIR module
+     * @param fnCounter A counter used to generate unique function names
      * @throw PyCompileError For unknown or malformed ops
      */
     void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ByteCodeModule& module,
-                         const std::string& moduleName) {
+                         const std::string& moduleName, int& fnCounter) {
         ByteCodeObjectType pyType = ByteCodeObjectType::get(&ctx);
 
-        // All Python module-level code is wrapped in a zero-argument function that returns a single PyObject (the final return value).
-        mlir::FunctionType fnType = builder.getFunctionType({}, {});
+        const bool isFunction = moduleName.starts_with("__pyfn_");
+
+        mlir::FunctionType fnType;
+        if (isFunction)
+            // Value*(Value** args, int64_t argc), matches Value::Fn
+            fnType = builder.getFunctionType(
+                    {pyType, builder.getIntegerType(64)}, // args_ptr, argc
+                    {pyType} // return Value*
+                    );
+        else
+            // Module-level: no args, no return
+            fnType = builder.getFunctionType({}, {});
+
+
         mlir::func::FuncOp fn = builder.create<mlir::func::FuncOp>(mlir::UnknownLoc::get(&ctx),
-                                                                   llvm::StringRef(moduleName),
-                                                                   fnType);
+                                                                   llvm::StringRef(moduleName), fnType);
 
         mlir::Block* block = fn.addEntryBlock();
         builder.setInsertionPointToStart(block);
+
+        mlir::Location preambleLoc = module.instructions.empty()
+                                         ? mlir::UnknownLoc::get(&ctx)
+                                         : getInstructionLocation(ctx, module.instructions.front(), module.filename);
+
+        // For functions, emit push_scope + arg unpacking preamble using block arguments
+        if (isFunction) {
+            builder.create<PushScope>(preambleLoc);
+
+            mlir::Value argsPtr = block->getArgument(0); // args_ptr (!pyir.object, i.e. Value**)
+
+            for (size_t i = 0; i < module.info.varnames.size(); i++) {
+                mlir::IntegerAttr idxAttr = builder.getI64IntegerAttr(static_cast<int64_t>(i));
+                mlir::Value argVal = builder.create<LoadArg>(preambleLoc, pyType, argsPtr, idxAttr).getResult();
+                builder.create<StoreFast>(preambleLoc, module.info.varnames[i], argVal);
+            }
+        }
 
         // Value stack, maps the CPython evaluation stack to SSA values.
         std::vector<mlir::Value> stack;
@@ -133,9 +162,67 @@ namespace pyir {
                     // Bookkeeping instructions, no MLIR equivalent needed.
                     break;
 
+                case PythonOpcode::MAKE_FUNCTION: {
+                    // The top of stack is a LoadConst holding the mangled function name string
+                    mlir::Value fnNameVal = stack.back();
+                    stack.pop_back();
+
+                    // Extract the string attribute from the LoadConst op
+                    LoadConst loadConst = mlir::cast<LoadConst>(fnNameVal.getDefiningOp());
+                    const std::string fnName = mlir::cast<mlir::StringAttr>(loadConst.getValue()).str();
+
+                    // Emit: %result = pyir.load_const <fnName as StringAttr>
+                    // The lowering for MAKE_FUNCTION will call pyir_make_function(fn_ptr)
+                    // Emit a LoadConst with the name so MakeFunctionLowering can find the symbol.
+                    stack.push_back(builder.create<MakeFunction>(loc, pyType, fnName).getResult());
+                    break;
+                }
+
+                case PythonOpcode::LOAD_GLOBAL: {
+                    const std::string* name = std::get_if<std::string>(&instr.argval);
+                    if (!name)
+                        throw PyCompileError("LOAD_GLOBAL must have a string argval",
+                                             std::filesystem::path(module.filename).filename(),
+                                             instr.lineno, instr.offset);
+                    // Push the value
+                    stack.push_back(builder.create<LoadName>(loc, pyType, *name).getResult());
+                    // LOAD_GLOBAL also pushes a null sentinel
+                    stack.push_back(builder.create<PushNull>(loc, pyType).getResult());
+                    break;
+                }
+
+                case PythonOpcode::LOAD_FAST_BORROW: {
+                    const std::string* name = std::get_if<std::string>(&instr.argval);
+                    if (!name)
+                        throw PyCompileError("LOAD_FAST_BORROW must have a string argval",
+                                             std::filesystem::path(module.filename).filename(),
+                                             instr.lineno, instr.offset);
+                    stack.push_back(builder.create<LoadFast>(loc, pyType, *name).getResult());
+                    break;
+                }
+
                 case PythonOpcode::LOAD_CONST: {
                     if (std::holds_alternative<ArgvalNone>(instr.argval))
                         break;
+
+                    // Nested code object: emit a child FuncOp and push its name for MAKE_FUNCTION
+                    if (const auto* nestedPtr = std::get_if<std::shared_ptr<ByteCodeModule> >(&instr.argval)) {
+                        const ByteCodeModule& nested = **nestedPtr;
+
+                        // Mangle a unique name: __pyfn_<funcname>_<counter>
+                        const std::string fnName = "__pyfn_" + nested.moduleName + "_" + std::to_string(fnCounter++);
+
+                        // Save insertion point, emit the nested FuncOp at module level, then restore
+                        mlir::OpBuilder::InsertionGuard guard(builder);
+                        mlir::ModuleOp parentModule = fn->getParentOfType<mlir::ModuleOp>();
+                        builder.setInsertionPointToEnd(parentModule.getBody());
+                        buildMLIRModule(builder, ctx, nested, fnName, fnCounter);
+
+                        // Push the function name as a string attr so MAKE_FUNCTION can find it
+                        mlir::Attribute attr = builder.getStringAttr(fnName);
+                        stack.push_back(builder.create<LoadConst>(loc, pyType, attr).getResult());
+                        break;
+                    }
 
                     mlir::Attribute attr;
                     if (const std::string* s = std::get_if<std::string>(&instr.argval))
@@ -279,9 +366,20 @@ namespace pyir {
                     break;
 
                 case PythonOpcode::RETURN_VALUE: {
-                    if (!stack.empty())
+                    mlir::Value retVal;
+                    if (!stack.empty()) {
+                        retVal = stack.back();
                         stack.pop_back();
-                    builder.create<mlir::func::ReturnOp>(loc);
+                    }
+
+                    // Pop the local scope before returning from a function (not needed at module level)
+                    if (moduleName.starts_with("__pyfn_"))
+                        builder.create<PopScope>(loc);
+
+                    if (retVal)
+                        builder.create<ReturnValue>(loc, retVal);
+                    else
+                        builder.create<mlir::func::ReturnOp>(loc);
                     break;
                 }
 
@@ -467,7 +565,8 @@ namespace pyir {
         builder.setInsertionPointToEnd(mlirModule.getBody());
 
         const std::string mlirModuleName = mangleModuleName(baseModuleName);
-        buildMLIRModule(builder, ctx, module, mlirModuleName);
+        int fnCounter = 0;
+        buildMLIRModule(builder, ctx, module, mlirModuleName, fnCounter);
         // Reset insertion point to module level before emitting main
         builder.setInsertionPointToEnd(mlirModule.getBody());
         insertMainEntryPoint(builder, ctx, mlirModuleName);

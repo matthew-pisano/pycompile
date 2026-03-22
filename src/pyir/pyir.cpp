@@ -13,7 +13,7 @@ namespace pyir {
     void PyIRDialect::initialize() {
         addOperations<ToBool, IsTruthy, BinaryOp, Call, LoadConst, LoadDeref, LoadFast, LoadName, StoreName, PopTop,
                       PushNull, Resume, ReturnValue, StoreFast, StoreDeref, UnaryNot, UnaryNegative, UnaryInvert,
-                      CompareOp, FormatSimple, BuildString>();
+                      CompareOp, FormatSimple, BuildString, MakeFunction, PushScope, PopScope, LoadArg>();
 
         addTypes<ByteCodeObjectType>();
     }

@@ -6,6 +6,7 @@
 
 #include "pyir/pyir_ops.h"
 #include "pyir/pyir_types.h"
+#include "pyir/pyir_attrs.h"
 
 #include "pyir.cpp.inc"
 
@@ -16,5 +17,6 @@ namespace pyir {
                       CompareOp, FormatSimple, BuildString, MakeFunction, PushScope, PopScope, LoadArg>();
 
         addTypes<ByteCodeObjectType>();
+        addAttributes<NoneAttr>();
     }
 } // namespace pyir

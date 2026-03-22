@@ -8,6 +8,7 @@
 
 #include "pyir/pyir_ops.h"
 #include "pyir/pyir_types.h"
+#include "pyir/pyir_attrs.h"
 
 #include <mlir/Conversion/LLVMCommon/ConversionTarget.h>
 #include <mlir/Conversion/LLVMCommon/TypeConverter.h>
@@ -600,8 +601,9 @@ struct LoadConstLowering : PyIROpConversion {
             mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{floatVal});
             result = call.getResult();
         }
-        // UnitAttr type
-        else if (mlir::isa<mlir::UnitAttr>(loadConst.getValue())) {
+        // None type
+        else if (mlir::isa<pyir::NoneAttr>(loadConst.getValue())) {
+            // declare: extern Value* pyir_load_const_none()
             const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {});
             mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_load_const_none", fnType);
             mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{});

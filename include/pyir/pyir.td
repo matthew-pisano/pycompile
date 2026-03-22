@@ -8,11 +8,11 @@ def PyIR_Dialect : Dialect {
     let summary = "Python bytecode IR dialect";
     let cppNamespace = "::pyir";
     let useDefaultTypePrinterParser = 1;
+    let useDefaultAttributePrinterParser = 1;
 }
 
 
-class PyIR_Type<string name, string typeMnemonic>
-    : TypeDef<PyIR_Dialect, name> {
+class PyIR_Type<string name, string typeMnemonic> : TypeDef<PyIR_Dialect, name> {
     let mnemonic = typeMnemonic;
 }
 
@@ -22,8 +22,13 @@ def ByteCodeObject_Type : PyIR_Type<"ByteCodeObject", "object"> {
 }
 
 
-class PyIR_Op<string mnemonic, list<Trait> traits = []>
-    : Op<PyIR_Dialect, mnemonic, traits>;
+def PyIR_NoneAttr : AttrDef<PyIR_Dialect, "None"> {
+    let mnemonic = "none";
+    let summary = "Represents the Python None singleton";
+}
+
+
+class PyIR_Op<string mnemonic, list<Trait> traits = []> : Op<PyIR_Dialect, mnemonic, traits>;
 
 
 def PyIR_Resume : PyIR_Op<"resume"> {

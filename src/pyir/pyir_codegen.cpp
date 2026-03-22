@@ -13,6 +13,8 @@
 
 #include "utils.h"
 #include "pyir/pyir_ops.h"
+#include "pyir/pyir_attrs.h"
+
 
 namespace pyir {
 
@@ -206,7 +208,7 @@ namespace pyir {
                     if (std::holds_alternative<ArgvalNone>(instr.argval)) {
                         // None is a valid return value inside functions
                         if (moduleName.starts_with("__pyfn_")) {
-                            mlir::Attribute attr = builder.getUnitAttr();
+                            mlir::Attribute attr = NoneAttr::get(&ctx);
                             stack.push_back(builder.create<LoadConst>(loc, pyType, attr).getResult());
                         }
                         break;

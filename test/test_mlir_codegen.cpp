@@ -8,6 +8,7 @@
 
 
 #include "pyir/pyir_codegen.h"
+#include "pyir/pyir_attrs.h"
 #include "bytecode/bytecode.h"
 
 
@@ -429,9 +430,9 @@ TEST_CASE_METHOD(MLIRFixture, "Test Function Definition MLIR") {
         REQUIRE(strAttr);
         REQUIRE(strAttr.getValue() == "bar");
 
-        // load_const(none) is a unit attr
+        // load_const(none) is a none attr
         pyir::LoadConst noneConst = mlir::cast<pyir::LoadConst>(getOp(nestedFn, 5));
-        REQUIRE(mlir::isa<mlir::UnitAttr>(noneConst.getValue()));
+        REQUIRE(mlir::isa<pyir::NoneAttr>(noneConst.getValue()));
 
         // return_value returns the none const
         pyir::ReturnValue retVal = mlir::cast<pyir::ReturnValue>(getOp(nestedFn, 7));
@@ -496,9 +497,9 @@ TEST_CASE_METHOD(MLIRFixture, "Test Function Definition MLIR") {
         pyir::LoadFast loadFast = mlir::cast<pyir::LoadFast>(getOp(nestedFn, 5));
         REQUIRE(loadFast.getVarName() == "arg");
 
-        // load_const(none) is a unit attr
+        // load_const(none) is a none attr
         pyir::LoadConst noneConst = mlir::cast<pyir::LoadConst>(getOp(nestedFn, 7));
-        REQUIRE(mlir::isa<mlir::UnitAttr>(noneConst.getValue()));
+        REQUIRE(mlir::isa<pyir::NoneAttr>(noneConst.getValue()));
 
         // return_value returns the none const
         pyir::ReturnValue retVal = mlir::cast<pyir::ReturnValue>(getOp(nestedFn, 9));

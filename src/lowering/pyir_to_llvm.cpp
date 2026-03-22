@@ -336,6 +336,9 @@ struct BinaryOpLowering : PyIROpConversion {
                 {"*", "pyir_mul"},
                 {"/", "pyir_div"},
                 {"^", "pyir_xor"},
+                {"//", "pyir_floor_div"},
+                {"**", "pyir_exp"},
+                {"%", "pyir_mod"},
         };
 
         const std::string opStr = binaryOp.getOp().str();

@@ -122,6 +122,30 @@ Value* pyir_div(const Value* lhs, const Value* rhs) {
     return new Value(toFloat(lhs) / toFloat(rhs));
 }
 
+Value* pyir_floor_div(const Value* lhs, const Value* rhs) {
+    if (lhs->isInt() && rhs->isInt())
+        return new Value(std::get<int64_t>(lhs->data) / std::get<int64_t>(rhs->data));
+    if ((lhs->isInt() || lhs->isFloat()) && (rhs->isInt() || rhs->isFloat()))
+        return new Value(std::floor(toFloat(lhs) / toFloat(rhs)));
+    throw std::runtime_error("Unsupported operand types for //");
+}
+
+Value* pyir_exp(const Value* lhs, const Value* rhs) {
+    if (lhs->isInt() && rhs->isInt())
+        return new Value(std::get<int64_t>(lhs->data) * std::get<int64_t>(rhs->data));
+    if ((lhs->isInt() || lhs->isFloat()) && (rhs->isInt() || rhs->isFloat()))
+        return new Value(toFloat(lhs) * toFloat(rhs));
+    throw std::runtime_error("Unsupported operand types for **");
+}
+
+Value* pyir_mod(const Value* lhs, const Value* rhs) {
+    if (lhs->isInt() && rhs->isInt())
+        return new Value(std::get<int64_t>(lhs->data) % std::get<int64_t>(rhs->data));
+    if ((lhs->isInt() || lhs->isFloat()) && (rhs->isInt() || rhs->isFloat()))
+        return new Value(fmod(toFloat(lhs), toFloat(rhs)));
+    throw std::runtime_error("Unsupported operand types for %");
+}
+
 Value* pyir_eq(const Value* lhs, const Value* rhs) {
     return std::visit([]<typename T0, typename T1>(const T0& l, const T1& r) -> Value* {
         using L = std::decay_t<T0>;

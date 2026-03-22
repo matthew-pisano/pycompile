@@ -29,6 +29,12 @@ Value* pyir_mul(const Value* lhs, const Value* rhs);
 
 Value* pyir_div(const Value* lhs, const Value* rhs);
 
+Value* pyir_floor_div(const Value* lhs, const Value* rhs);
+
+Value* pyir_exp(const Value* lhs, const Value* rhs);
+
+Value* pyir_mod(const Value* lhs, const Value* rhs);
+
 // comparison
 Value* pyir_eq(const Value* lhs, const Value* rhs);
 

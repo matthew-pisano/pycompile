@@ -221,6 +221,10 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
     result.info.varnames = extractPyTupleStrings(code, "co_varnames");
     result.info.exceptionTable = decodeExceptionTable(code);
 
+    PyObject* argcount = PyObject_GetAttrString(code, "co_argcount");
+    result.info.argcount = argcount ? PyLong_AsInt(argcount) : 0;
+    Py_XDECREF(argcount);
+
     // Instructions
     PyObject* dis = PyImport_ImportModule("dis");
     if (!dis)

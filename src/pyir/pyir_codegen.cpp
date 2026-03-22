@@ -107,7 +107,7 @@ namespace pyir {
 
             mlir::Value argsPtr = block->getArgument(0); // args_ptr (!pyir.object, i.e. Value**)
 
-            for (size_t i = 0; i < module.info.varnames.size(); i++) {
+            for (size_t i = 0; i < static_cast<size_t>(module.info.argcount); i++) {
                 mlir::IntegerAttr idxAttr = builder.getI64IntegerAttr(static_cast<int64_t>(i));
                 mlir::Value argVal = builder.create<LoadArg>(preambleLoc, pyType, argsPtr, idxAttr).getResult();
                 builder.create<StoreFast>(preambleLoc, module.info.varnames[i], argVal);

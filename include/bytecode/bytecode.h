@@ -40,6 +40,11 @@ struct ExceptionTableEntry {
  */
 struct CodeInfo {
     /**
+     * The number of args passed to the code object.
+     */
+    int argcount = 0;
+
+    /**
      * Free variables that are defined in outer functions, but used by inners.
      * Used in closures.
      */

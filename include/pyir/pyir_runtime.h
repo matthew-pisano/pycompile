@@ -11,6 +11,11 @@
 
 extern "C" {
 
+// scope management
+void pyir_push_scope();
+
+void pyir_pop_scope();
+
 int8_t pyir_is_truthy(const Value* val);
 
 // arithmetic
@@ -43,6 +48,12 @@ Value* pyir_unary_not(const Value* val);
 Value* pyir_unary_invert(const Value* val);
 
 Value* pyir_xor(const Value* lhs, const Value* rhs);
+
+Value* pyir_load_fast(const char* name);
+
+void pyir_store_fast(const char* name, Value* val);
+
+void pyir_store_arg(const char* name, Value* val);
 
 // name resolution, returns a builtin Fn or None
 Value* pyir_load_name(const char* name);

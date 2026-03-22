@@ -6,6 +6,7 @@
 #define PYCOMPILE_BYTECODE_H
 
 #define PY_SSIZE_T_CLEAN
+#include <memory>
 #include <Python.h>
 #include <optional>
 #include <string>
@@ -38,6 +39,16 @@ struct ExceptionTableEntry {
  * Program metadata extracted from a code object, relevant to bytecode evaluation and disassembly.
  */
 struct CodeInfo {
+    /**
+     * The name given to the block of code (e.g. a function label)
+     */
+    std::string codeName;
+
+    /**
+     * The number of args passed to the code object.
+     */
+    int argcount = 0;
+
     /**
      * Free variables that are defined in outer functions, but used by inners.
      * Used in closures.
@@ -99,12 +110,19 @@ struct ArgvalNone {
 
 struct ByteCodeInstruction; // Forward declaration of Instruction struct.
 
+struct ByteCodeModule;
+
 /**
  * A variant type to represent the possible types of instruction arguments, which can be ArgvalNone, a bool, an int64_t,
- * a double_t, a string, a tuple of strings, or a nested code object (represented as a vector of Instructions).
+ * a double_t, a string, a tuple of strings, or a nested code object (represented as a bytecode module).
  */
-using Argval = std::variant<ArgvalNone, bool, int64_t, double_t, std::string, std::vector<std::string>, std::vector<
-                                ByteCodeInstruction> >;
+using Argval = std::variant<ArgvalNone,
+                            bool,
+                            int64_t,
+                            double_t,
+                            std::string,
+                            std::vector<std::string>,
+                            std::shared_ptr<ByteCodeModule> >;
 
 
 /**

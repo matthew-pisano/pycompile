@@ -76,7 +76,9 @@ struct ValueRef {
 
     explicit ValueRef(Value* p) :
         ptr(p) {
-    } // takes ownership, no incref
+    }
+
+    // takes ownership, no incref
     ~ValueRef() {
         if (ptr)
             ptr->decref();

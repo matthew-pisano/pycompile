@@ -195,11 +195,9 @@ void serializeByteCodeModule(const ByteCodeModule& code, std::ostream& os, const
         if (instr.argvalType == ArgvalType::Code) {
             os << ind << "  [nested code object]:\n";
             // Wrap nested instructions in a temporary DisassembledCode for printing
-            if (const std::vector<ByteCodeInstruction>* nestedCode = std::get_if<std::vector<ByteCodeInstruction> >(
-                    &instr.argval)) {
-                ByteCodeModule nested;
-                nested.instructions = *nestedCode;
-                serializeByteCodeModule(nested, os, depth + 1);
+            if (const auto* nestedPtr = std::get_if<std::shared_ptr<ByteCodeModule> >(&instr.argval)) {
+                if (*nestedPtr)
+                    serializeByteCodeModule(**nestedPtr, os, depth + 1);
             } else
                 throw std::runtime_error("Expected argval to be a vector of Instructions for nested code object");
         }
@@ -220,7 +218,16 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
     // Code-level metadata
     result.info.freevars = extractPyTupleStrings(code, "co_freevars");
     result.info.cellvars = extractPyTupleStrings(code, "co_cellvars");
+    result.info.varnames = extractPyTupleStrings(code, "co_varnames");
     result.info.exceptionTable = decodeExceptionTable(code);
+
+    PyObject* argcount = PyObject_GetAttrString(code, "co_argcount");
+    result.info.argcount = argcount ? PyLong_AsInt(argcount) : 0;
+    Py_XDECREF(argcount);
+
+    PyObject* codeName = PyObject_GetAttrString(code, "co_name");
+    result.info.codeName = codeName ? PyUnicode_AsUTF8(codeName) : "<unknown>";
+    Py_XDECREF(codeName);
 
     // Instructions
     PyObject* dis = PyImport_ImportModule("dis");
@@ -308,7 +315,7 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
             // Increment refcount so the temporary CompiledModule owns the code object and will decref it when destroyed
             Py_XINCREF(argval);
             CompiledModule nested{compiledModule.filename, compiledModule.module_name, argval};
-            instr.argval = generatePythonBytecode(nested, depth + 1).instructions;
+            instr.argval = std::make_shared<ByteCodeModule>(generatePythonBytecode(nested, depth + 1));
         } else {
             instr.argvalType = ArgvalType::None; // For any other types, just treat it as None
             instr.argval = ArgvalNone{};

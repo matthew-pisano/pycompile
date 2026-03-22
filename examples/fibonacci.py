@@ -1,4 +1,4 @@
-def fibonacci(n: int):
+def fibonacci(n):
     """Returns the nth Fibonacci number."""
     if n <= 0:
         return 0
@@ -8,6 +8,5 @@ def fibonacci(n: int):
         return fibonacci(n - 1) + fibonacci(n - 2)
 
 
-if __name__ == "__main__":
-    n = 10
-    print(f"The {n}th Fibonacci number is: {fibonacci(n)}")
+fib = 10
+print(f"The {fib}th Fibonacci number is: {fibonacci(fib)}")

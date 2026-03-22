@@ -8,6 +8,7 @@
 #include <format>
 #include <stdexcept>
 #include <unordered_map>
+#include <vector>
 
 
 extern "C" {
@@ -21,6 +22,7 @@ static const std::unordered_map<std::string, Value::Fn> builtins = {
 };
 
 static std::unordered_map<std::string, Value*> moduleScope;
+static std::vector<std::unordered_map<std::string, Value*> > scopeStack;
 
 static double_t toFloat(const Value* v) {
     // Promote int to float if either operand is a float
@@ -67,6 +69,19 @@ static bool toBool(const Value* val) {
             return true;
         return false;
     }, val->data);
+}
+
+void pyir_push_scope() {
+    scopeStack.emplace_back();
+}
+
+void pyir_pop_scope() {
+    if (!scopeStack.empty())
+        scopeStack.pop_back();
+}
+
+Value* pyir_make_function(void* fn_ptr) {
+    return new Value(reinterpret_cast<Value::Fn>(fn_ptr));
 }
 
 int8_t pyir_is_truthy(const Value* val) {
@@ -234,6 +249,31 @@ Value* pyir_to_bool(const Value* val) {
     return new Value(toBool(val));
 }
 
+
+Value* pyir_load_fast(const char* name) {
+    if (scopeStack.empty())
+        throw std::runtime_error(std::string("No active scope to load '") + name + "'");
+
+    const std::unordered_map<std::string, Value*>& locals = scopeStack.back();
+
+    const auto it = locals.find(name);
+    if (it == locals.end())
+        throw std::runtime_error(std::string("Local variable '") + name + "' referenced before assignment");
+
+    return it->second;
+}
+
+void pyir_store_fast(const char* name, Value* val) {
+    if (scopeStack.empty())
+        throw std::runtime_error(std::string("No active scope to store '") + name + "'");
+    scopeStack.back()[name] = val;
+}
+
+// Called at function entry to bind each parameter name to its argument value
+void pyir_store_arg(const char* name, Value* val) {
+    pyir_store_fast(name, val);
+}
+
 Value* pyir_load_name(const char* name) {
     // Check for builtins
     if (const auto it = builtins.find(name); it != builtins.end())
@@ -267,6 +307,10 @@ Value* pyir_load_const_float(const double_t val) {
 
 Value* pyir_load_const_bool(const int8_t val) {
     return new Value(val == 1);
+}
+
+Value* pyir_load_const_none() {
+    return new Value(NoneType{});
 }
 
 Value* pyir_call(const Value* callee, Value** args, const int64_t argc) {

@@ -368,7 +368,6 @@ struct CompareOpLowering : PyIROpConversion {
         // Map operator string to runtime function name
         static const std::unordered_map<std::string, std::string> opToFn = {
                 {"==", "pyir_eq"},
-                {"bool(==)", "pyir_eq"},
                 {"!=", "pyir_ne"},
                 {"<", "pyir_lt"},
                 {"<=", "pyir_le"},
@@ -376,7 +375,11 @@ struct CompareOpLowering : PyIROpConversion {
                 {">=", "pyir_ge"},
         };
 
-        const std::string opStr = compareOp.getOp().str();
+        std::string opStr = compareOp.getOp().str();
+        if (opStr.contains("bool(")) {
+            opStr = opStr.substr(5); // Remove 'bool('
+            opStr.pop_back(); // Remove ')'
+        }
         const auto it = opToFn.find(opStr);
         if (it == opToFn.end())
             return mlir::failure();

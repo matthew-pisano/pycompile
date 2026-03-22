@@ -80,6 +80,8 @@ Value* pyir_load_const_float(double_t val);
 
 Value* pyir_load_const_bool(int8_t val);
 
+Value* pyir_load_const_none();
+
 // truthiness, used by conditional jumps
 Value* pyir_to_bool(const Value* val);
 

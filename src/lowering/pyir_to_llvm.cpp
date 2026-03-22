@@ -603,6 +603,13 @@ struct LoadConstLowering : PyIROpConversion {
             mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{floatVal});
             result = call.getResult();
         }
+        // UnitAttr type
+        else if (mlir::isa<mlir::UnitAttr>(loadConst.getValue())) {
+            const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {});
+            mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_load_const_none", fnType);
+            mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{});
+            result = call.getResult();
+        }
         // Unhandled constant type
         else
             return mlir::failure();

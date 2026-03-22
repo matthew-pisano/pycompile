@@ -117,6 +117,9 @@ namespace pyir {
         // Value stack, maps the CPython evaluation stack to SSA values.
         std::vector<mlir::Value> stack;
 
+        // Keeps track of declared function names
+        std::unordered_map<mlir::Value*, std::string> pendingFunctions;
+
         // Pre-pass: collect all jump target offsets and create blocks for them.
         // This must happen before emission so forward jumps can reference blocks that haven't been emitted yet.
         std::unordered_map<size_t, mlir::Block*> offsetToBlock;
@@ -163,17 +166,15 @@ namespace pyir {
                     break;
 
                 case PythonOpcode::MAKE_FUNCTION: {
-                    // The top of stack is a LoadConst holding the mangled function name string
-                    mlir::Value fnNameVal = stack.back();
+                    mlir::Value sentinel = stack.back();
                     stack.pop_back();
 
-                    // Extract the string attribute from the LoadConst op
-                    LoadConst loadConst = mlir::cast<LoadConst>(fnNameVal.getDefiningOp());
-                    const std::string fnName = mlir::cast<mlir::StringAttr>(loadConst.getValue()).str();
+                    const std::string fnName = pendingFunctions.at(
+                            static_cast<mlir::Value*>(sentinel.getAsOpaquePointer()));
+                    pendingFunctions.erase(static_cast<mlir::Value*>(sentinel.getAsOpaquePointer()));
+                    // Erase the sentinel PushNull op since it was just a placeholder
+                    sentinel.getDefiningOp()->erase();
 
-                    // Emit: %result = pyir.load_const <fnName as StringAttr>
-                    // The lowering for MAKE_FUNCTION will call pyir_make_function(fn_ptr)
-                    // Emit a LoadConst with the name so MakeFunctionLowering can find the symbol.
                     stack.push_back(builder.create<MakeFunction>(loc, pyType, fnName).getResult());
                     break;
                 }
@@ -202,8 +203,14 @@ namespace pyir {
                 }
 
                 case PythonOpcode::LOAD_CONST: {
-                    if (std::holds_alternative<ArgvalNone>(instr.argval))
+                    if (std::holds_alternative<ArgvalNone>(instr.argval)) {
+                        // None is a valid return value inside functions
+                        if (moduleName.starts_with("__pyfn_")) {
+                            mlir::Attribute attr = builder.getUnitAttr();
+                            stack.push_back(builder.create<LoadConst>(loc, pyType, attr).getResult());
+                        }
                         break;
+                    }
 
                     // Nested code object: emit a child FuncOp and push its name for MAKE_FUNCTION
                     if (const auto* nestedPtr = std::get_if<std::shared_ptr<ByteCodeModule> >(&instr.argval)) {
@@ -218,9 +225,9 @@ namespace pyir {
                         builder.setInsertionPointToEnd(parentModule.getBody());
                         buildMLIRModule(builder, ctx, nested, fnName, fnCounter);
 
-                        // Push the function name as a string attr so MAKE_FUNCTION can find it
-                        mlir::Attribute attr = builder.getStringAttr(fnName);
-                        stack.push_back(builder.create<LoadConst>(loc, pyType, attr).getResult());
+                        mlir::Value sentinel = builder.create<PushNull>(loc, pyType).getResult();
+                        pendingFunctions[static_cast<mlir::Value*>(sentinel.getAsOpaquePointer())] = fnName;
+                        stack.push_back(sentinel);
                         break;
                     }
 
@@ -570,6 +577,8 @@ namespace pyir {
         // Reset insertion point to module level before emitting main
         builder.setInsertionPointToEnd(mlirModule.getBody());
         insertMainEntryPoint(builder, ctx, mlirModuleName);
+
+        mlirModule.getOperation()->print(llvm::errs());
 
         // Verify the module is well-formed before returning
         if (mlir::failed(mlir::verify(mlirModule)))

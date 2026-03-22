@@ -25,6 +25,11 @@ struct MLIRFixture {
 
     mlir::OwningOpRef<mlir::ModuleOp> compile(const std::string& source) {
         const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
+
+        std::stringstream ss;
+        serializeByteCodeModule(bytecodeModule, ss);
+        std::cout << ss.str() << std::endl;
+
         mlir::OwningOpRef<mlir::ModuleOp> module = pyir::generatePyIR(ctx, bytecodeModule);
 
         std::string mlirModuleContent;
@@ -65,7 +70,8 @@ TEST_CASE_METHOD(MLIRFixture, "Test Operation Order MLIR") {
 TEST_CASE_METHOD(MLIRFixture, "Test F String Format") {
     const mlir::OwningOpRef<mlir::ModuleOp> module = compile("f'Number <<{24}>>'");
     const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
- // Check first string component
+
+    // Check first string component
     pyir::LoadConst loadConst = mlir::dyn_cast<pyir::LoadConst>(getOp(fn, 0));
     REQUIRE(loadConst);
     mlir::StringAttr strAttr = mlir::dyn_cast<mlir::StringAttr>(loadConst.getValue());
@@ -375,6 +381,12 @@ TEST_CASE_METHOD(MLIRFixture, "Test Conditional MLIR") {
     // False block
     mlir::Block& falseBlock = *blockIt++;
     REQUIRE(mlir::isa<mlir::func::ReturnOp>(falseBlock.getTerminator()));
+}
+
+
+TEST_CASE_METHOD(MLIRFixture, "Test Function Definition MLIR") {
+    const mlir::OwningOpRef<mlir::ModuleOp> module = compile("def foo(arg):\n  print(arg)\nfoo('bar')");
+    const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
 }
 
 

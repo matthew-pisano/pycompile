@@ -1,6 +1,6 @@
-a = True
-
-if a:
+def main():
     print("Hello, World!")
-else:
-    print("Hello There!")
+
+
+if __name__ == "__main__":
+    main()

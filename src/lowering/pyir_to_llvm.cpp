@@ -368,6 +368,7 @@ struct CompareOpLowering : PyIROpConversion {
         // Map operator string to runtime function name
         static const std::unordered_map<std::string, std::string> opToFn = {
                 {"==", "pyir_eq"},
+                {"bool(==)", "pyir_eq"},
                 {"!=", "pyir_ne"},
                 {"<", "pyir_lt"},
                 {"<=", "pyir_le"},

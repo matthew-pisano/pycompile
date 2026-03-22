@@ -503,7 +503,7 @@ namespace pyir {
                 case PythonOpcode::FORMAT_SIMPLE: {
                     mlir::Value val = stack.back();
                     stack.pop_back();
-                    stack.push_back(builder.create<pyir::FormatSimple>(loc, pyType, val).getResult());
+                    stack.push_back(builder.create<FormatSimple>(loc, pyType, val).getResult());
                     break;
                 }
                 case PythonOpcode::BUILD_STRING: {
@@ -516,7 +516,7 @@ namespace pyir {
                         parts[i] = stack.back();
                         stack.pop_back();
                     }
-                    stack.push_back(builder.create<pyir::BuildString>(loc, pyType, parts).getResult());
+                    stack.push_back(builder.create<BuildString>(loc, pyType, parts).getResult());
                     break;
                 }
 

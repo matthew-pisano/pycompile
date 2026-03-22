@@ -217,7 +217,7 @@ namespace pyir {
                         const ByteCodeModule& nested = **nestedPtr;
 
                         // Mangle a unique name: __pyfn_<funcname>_<counter>
-                        const std::string fnName = "__pyfn_" + nested.moduleName + "_" + std::to_string(fnCounter++);
+                        const std::string fnName = "__pyfn_" + nested.info.codeName + "_" + std::to_string(fnCounter++);
 
                         // Save insertion point, emit the nested FuncOp at module level, then restore
                         mlir::OpBuilder::InsertionGuard guard(builder);

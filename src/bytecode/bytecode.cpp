@@ -225,6 +225,10 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
     result.info.argcount = argcount ? PyLong_AsInt(argcount) : 0;
     Py_XDECREF(argcount);
 
+    PyObject* codeName = PyObject_GetAttrString(code, "co_name");
+    result.info.codeName = codeName ? PyUnicode_AsUTF8(codeName) : "<unknown>";
+    Py_XDECREF(codeName);
+
     // Instructions
     PyObject* dis = PyImport_ImportModule("dis");
     if (!dis)

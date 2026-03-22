@@ -40,6 +40,11 @@ struct ExceptionTableEntry {
  */
 struct CodeInfo {
     /**
+     * The name given to the block of code (e.g. a function label)
+     */
+    std::string codeName;
+
+    /**
      * The number of args passed to the code object.
      */
     int argcount = 0;

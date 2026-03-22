@@ -385,8 +385,20 @@ TEST_CASE_METHOD(MLIRFixture, "Test Conditional MLIR") {
 
 
 TEST_CASE_METHOD(MLIRFixture, "Test Function Definition MLIR") {
-    const mlir::OwningOpRef<mlir::ModuleOp> module = compile("def foo(arg):\n  print(arg)\nfoo('bar')");
-    const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+ SECTION("Simple Function") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("def foo():\n  print('bar')\nfoo()");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+    }
+
+    SECTION("Function with Args") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("def foo(arg):\n  print(arg)\nfoo('bar')");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+    }
+
+    SECTION("Function with Return") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("def foo():\n  return 'bar'\nprint(foo())");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+    }
 }
 
 

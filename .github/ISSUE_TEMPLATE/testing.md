@@ -7,10 +7,6 @@ assignees: ''
 
 ---
 
-## Problem Description
-
-A clear and concise description of what the problem is.
-
 ## Proposed Solution
 
 A clear and concise description of how the tests can be updated.

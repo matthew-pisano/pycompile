@@ -13,6 +13,7 @@ A short summary of the changes made.
 * [ ] Breaking change
 * [ ] Documentation update
 * [ ] Test or fixture update
+* [ ] Reorganization or Refactor
 
 ## Additional Context
 

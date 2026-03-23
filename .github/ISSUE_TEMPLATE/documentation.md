@@ -1,6 +1,6 @@
 ---
 name: Documentation proposal
-about: Suggest a new feature to be implemented
+about: Suggest a change to documentation
 title: "[DOC] Example Documentation Proposal"
 labels: [ 'documentation' ]
 assignees: ''

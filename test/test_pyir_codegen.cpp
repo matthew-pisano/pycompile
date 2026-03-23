@@ -16,18 +16,12 @@
  * Fixture that initializes the MLIR context and compiles python strings to MLIR modules
  */
 struct MLIRFixture {
-    mlir::MLIRContext ctx;
-
-    MLIRFixture() {
-        ctx.loadDialect<pyir::PyIRDialect>();
-        ctx.loadDialect<mlir::func::FuncDialect>();
-        ctx.loadDialect<mlir::cf::ControlFlowDialect>();
-    }
+    mlir::MLIRContext mlirCtx;
 
     mlir::OwningOpRef<mlir::ModuleOp> compile(const std::string& source) {
         const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
-        mlir::OwningOpRef<mlir::ModuleOp> module = pyir::generatePyIR(ctx, bytecodeModule);
-        return module;
+        mlir::OwningOpRef<mlir::ModuleOp> mlirModule = pyir::generatePyIR(mlirCtx, bytecodeModule);
+        return mlirModule;
     }
 };
 
@@ -56,7 +50,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Operation Order MLIR") {
 }
 
 
-TEST_CASE_METHOD(MLIRFixture, "Test F String Format") {
+TEST_CASE_METHOD(MLIRFixture, "Test F String Format MLIR") {
     const mlir::OwningOpRef<mlir::ModuleOp> module = compile("f'Number <<{24}>>'");
     const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
 

@@ -152,9 +152,11 @@ FetchContent_MakeAvailable(Catch2)
 add_executable(pycompile-tests
         ${PYCOMPILE_SOURCES}
         test/test_bytecode.cpp
-        test/test_mlir_codegen.cpp
+        test/test_pyir_codegen.cpp
+        test/test_llvm_ir_generation.cpp
+        test/test_code_execution.cpp
 )
-target_link_libraries(pycompile-tests PRIVATE ${PYCOMPILE_LIBS} Catch2::Catch2WithMain)
+target_link_libraries(pycompile-tests PRIVATE ${PYCOMPILE_LIBS} stdpyir Catch2::Catch2WithMain)
 
 include(CTest)
 include(Catch)

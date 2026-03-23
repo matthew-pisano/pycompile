@@ -18,7 +18,7 @@
 
 /**
  * Captures stdout output during JIT execution by redirecting the FILE* before
- * calling the JIT'd function and restoring it afterward.
+ * calling the JIT compiled function and restoring it afterward.
  *
  * @param fn The function to execute.
  * @return The output string from the function.

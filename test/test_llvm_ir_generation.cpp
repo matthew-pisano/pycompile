@@ -20,6 +20,9 @@
 #include "lowering/pyir_to_llvm.h"
 
 
+/**
+ * Fixture that initializes the MLIR and LLVM contexts and compiles python strings to LLVM modules
+ */
 struct LLVMFixture {
     mlir::MLIRContext mlirCtx;
     llvm::LLVMContext llvmCtx;

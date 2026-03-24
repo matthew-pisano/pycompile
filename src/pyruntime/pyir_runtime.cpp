@@ -2,7 +2,7 @@
 // Created by matthew on 3/8/26.
 //
 
-#include "pyir/pyir_runtime.h"
+#include "pyruntime/pyir_runtime.h"
 
 #include <csignal>
 #include <format>

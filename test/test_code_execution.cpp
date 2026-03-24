@@ -13,7 +13,7 @@
 #include "lowering/llvm_export.h"
 #include "lowering/pyir_to_llvm.h"
 #include "pyir/pyir_codegen.h"
-#include "pyir/pyir_runtime.h"
+#include "pyruntime/pyir_runtime.h"
 
 
 /**

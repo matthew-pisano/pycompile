@@ -108,7 +108,7 @@ target_compile_definitions(pyir_lowering PRIVATE
 
 
 add_library(stdpyir STATIC
-        src/pyir/pyir_runtime.cpp
+        src/pyruntime/pyir_runtime.cpp
 )
 set_target_properties(stdpyir PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"

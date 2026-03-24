@@ -68,6 +68,21 @@ std::string resolve_deref(const CodeInfo& info, const int64_t idx) {
 }
 
 
+/**
+ * A collection of data structures used for bookkeeping during the bytecode to MLIR conversion process
+ */
+struct ConversionMeta {
+    /// Value stack, maps the CPython evaluation stack to SSA values.
+    std::vector<mlir::Value> stack;
+    /// Maps program offsets to program blocks, used for jump addressing.
+    std::unordered_map<size_t, mlir::Block*> offsetToBlock;
+    /// Keeps track of declared function names before construction.
+    std::unordered_map<mlir::Value*, std::string> pendingFunctions;
+    /// Whether the module is a top-level module or a function
+    bool isFunction;
+};
+
+
 // Forward declaration
 void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ByteCodeModule& module,
                      const std::string& moduleName);
@@ -77,20 +92,17 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
  * Builds a single MLIR instruction from the given bytecode instruction, adding it through the builder.
  */
 void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ByteCodeModule& module,
-                          mlir::func::FuncOp& fn,
-                          const ByteCodeInstruction& instr, bool isFunction, std::vector<mlir::Value>& stack,
-                          std::unordered_map<size_t, mlir::Block*>& offsetToBlock,
-                          std::unordered_map<mlir::Value*, std::string>& pendingFunctions) {
+                          mlir::func::FuncOp& fn, const ByteCodeInstruction& instr, ConversionMeta& meta) {
     pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const mlir::Location loc = getInstructionLocation(ctx, instr, module.filename);
 
     // If this offset is a jump target, switch to its block.
     // Emit a branch from the current block if it isn't already terminated.
-    if (offsetToBlock.contains(instr.offset)) {
-        mlir::Block* targetBlock = offsetToBlock[instr.offset];
+    if (meta.offsetToBlock.contains(instr.offset)) {
+        mlir::Block* targetBlock = meta.offsetToBlock[instr.offset];
         if (!builder.getBlock()->mightHaveTerminator()) {
             // Pass current stack as block args to the target block
-            llvm::SmallVector<mlir::Value> branchArgs(stack.begin(), stack.end());
+            llvm::SmallVector<mlir::Value> branchArgs(meta.stack.begin(), meta.stack.end());
             if (targetBlock->getNumArguments() == 0)
                 for (mlir::Value v : branchArgs)
                     targetBlock->addArgument(v.getType(), loc);
@@ -98,9 +110,9 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
         }
         builder.setInsertionPointToStart(targetBlock);
         // Replace stack with block arguments
-        stack.clear();
+        meta.stack.clear();
         for (mlir::BlockArgument arg : targetBlock->getArguments())
-            stack.push_back(arg);
+            meta.stack.push_back(arg);
     }
 
     switch (instr.opcode) {
@@ -110,16 +122,16 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             break;
 
         case PythonOpcode::MAKE_FUNCTION: {
-            mlir::Value sentinel = stack.back();
-            stack.pop_back();
+            mlir::Value sentinel = meta.stack.back();
+            meta.stack.pop_back();
 
-            const std::string fnName = pendingFunctions.at(
+            const std::string fnName = meta.pendingFunctions.at(
                     static_cast<mlir::Value*>(sentinel.getAsOpaquePointer()));
-            pendingFunctions.erase(static_cast<mlir::Value*>(sentinel.getAsOpaquePointer()));
+            meta.pendingFunctions.erase(static_cast<mlir::Value*>(sentinel.getAsOpaquePointer()));
             // Erase the sentinel PushNull op since it was just a placeholder
             sentinel.getDefiningOp()->erase();
 
-            stack.push_back(builder.create<pyir::MakeFunction>(loc, pyType, fnName).getResult());
+            meta.stack.push_back(builder.create<pyir::MakeFunction>(loc, pyType, fnName).getResult());
             break;
         }
 
@@ -130,9 +142,9 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
                                      std::filesystem::path(module.filename).filename(),
                                      instr.lineno, instr.offset);
             // Push the value
-            stack.push_back(builder.create<pyir::LoadName>(loc, pyType, *name).getResult());
+            meta.stack.push_back(builder.create<pyir::LoadName>(loc, pyType, *name).getResult());
             // LOAD_GLOBAL also pushes a null sentinel
-            stack.push_back(builder.create<pyir::PushNull>(loc, pyType).getResult());
+            meta.stack.push_back(builder.create<pyir::PushNull>(loc, pyType).getResult());
             break;
         }
 
@@ -142,16 +154,16 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
                 throw PyCompileError("LOAD_FAST_BORROW must have a string argval",
                                      std::filesystem::path(module.filename).filename(),
                                      instr.lineno, instr.offset);
-            stack.push_back(builder.create<pyir::LoadFast>(loc, pyType, *name).getResult());
+            meta.stack.push_back(builder.create<pyir::LoadFast>(loc, pyType, *name).getResult());
             break;
         }
 
         case PythonOpcode::LOAD_CONST: {
             if (std::holds_alternative<ArgvalNone>(instr.argval)) {
                 // None is a valid return value inside functions
-                if (isFunction) {
+                if (meta.isFunction) {
                     mlir::Attribute attr = pyir::NoneAttr::get(&ctx);
-                    stack.push_back(builder.create<pyir::LoadConst>(loc, pyType, attr).getResult());
+                    meta.stack.push_back(builder.create<pyir::LoadConst>(loc, pyType, attr).getResult());
                 }
                 break;
             }
@@ -170,8 +182,8 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
                 buildMLIRModule(builder, ctx, nested, fnName);
 
                 mlir::Value sentinel = builder.create<pyir::PushNull>(loc, pyType).getResult();
-                pendingFunctions[static_cast<mlir::Value*>(sentinel.getAsOpaquePointer())] = fnName;
-                stack.push_back(sentinel);
+                meta.pendingFunctions[static_cast<mlir::Value*>(sentinel.getAsOpaquePointer())] = fnName;
+                meta.stack.push_back(sentinel);
                 break;
             }
 
@@ -185,7 +197,7 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             else if (const bool* b = std::get_if<bool>(&instr.argval))
                 attr = builder.getBoolAttr(*b);
 
-            stack.push_back(builder.create<pyir::LoadConst>(loc, pyType, attr).getResult());
+            meta.stack.push_back(builder.create<pyir::LoadConst>(loc, pyType, attr).getResult());
             break;
         }
 
@@ -195,7 +207,7 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
                 throw PyCompileError("LOAD_NAME must have a string argval",
                                      std::filesystem::path(module.filename).filename(),
                                      instr.lineno, instr.offset);
-            stack.push_back(builder.create<pyir::LoadName>(loc, pyType, *name).getResult());
+            meta.stack.push_back(builder.create<pyir::LoadName>(loc, pyType, *name).getResult());
             break;
         }
 
@@ -205,8 +217,8 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
                 throw PyCompileError("STORE_NAME must have a string argval",
                                      std::filesystem::path(module.filename).filename(),
                                      instr.lineno, instr.offset);
-            mlir::Value val = stack.back();
-            stack.pop_back();
+            mlir::Value val = meta.stack.back();
+            meta.stack.pop_back();
             builder.create<pyir::StoreName>(loc, *name, val);
             break;
         }
@@ -217,7 +229,7 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
                 throw PyCompileError("LOAD_FAST must have a string argvall",
                                      std::filesystem::path(module.filename).filename(),
                                      instr.lineno, instr.offset);
-            stack.push_back(builder.create<pyir::LoadFast>(loc, pyType, *name).getResult());
+            meta.stack.push_back(builder.create<pyir::LoadFast>(loc, pyType, *name).getResult());
             break;
         }
 
@@ -227,8 +239,8 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
                 throw PyCompileError("STORE_FAST must have a string argval",
                                      std::filesystem::path(module.filename).filename(),
                                      instr.lineno, instr.offset);
-            mlir::Value val = stack.back();
-            stack.pop_back();
+            mlir::Value val = meta.stack.back();
+            meta.stack.pop_back();
             builder.create<pyir::StoreFast>(loc, *name, val);
             break;
         }
@@ -240,7 +252,7 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
                                      std::filesystem::path(module.filename).filename(),
                                      instr.lineno, instr.offset);
             const std::string name = resolve_deref(module.info, *idx);
-            stack.push_back(builder.create<pyir::LoadDeref>(loc, pyType, name).getResult());
+            meta.stack.push_back(builder.create<pyir::LoadDeref>(loc, pyType, name).getResult());
             break;
         }
 
@@ -251,8 +263,8 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
                                      std::filesystem::path(module.filename).filename(),
                                      instr.lineno, instr.offset);
             const std::string name = resolve_deref(module.info, *idx);
-            mlir::Value val = stack.back();
-            stack.pop_back();
+            mlir::Value val = meta.stack.back();
+            meta.stack.pop_back();
             builder.create<pyir::StoreDeref>(loc, name, val);
             break;
         }
@@ -263,11 +275,11 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
                 throw PyCompileError("BINARY_OP must have a string argval",
                                      std::filesystem::path(module.filename).filename(),
                                      instr.lineno, instr.offset);
-            mlir::Value rhs = stack.back();
-            stack.pop_back();
-            mlir::Value lhs = stack.back();
-            stack.pop_back();
-            stack.push_back(builder.create<pyir::BinaryOp>(loc, pyType, opStr, lhs, rhs).getResult());
+            mlir::Value rhs = meta.stack.back();
+            meta.stack.pop_back();
+            mlir::Value lhs = meta.stack.back();
+            meta.stack.pop_back();
+            meta.stack.push_back(builder.create<pyir::BinaryOp>(loc, pyType, opStr, lhs, rhs).getResult());
             break;
         }
 
@@ -277,17 +289,17 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
                 throw PyCompileError("COMPARE_OP must have a string argval",
                                      std::filesystem::path(module.filename).filename(),
                                      instr.lineno, instr.offset);
-            mlir::Value rhs = stack.back();
-            stack.pop_back();
-            mlir::Value lhs = stack.back();
-            stack.pop_back();
-            stack.push_back(builder.create<pyir::CompareOp>(loc, pyType, opStr, lhs, rhs).getResult());
+            mlir::Value rhs = meta.stack.back();
+            meta.stack.pop_back();
+            mlir::Value lhs = meta.stack.back();
+            meta.stack.pop_back();
+            meta.stack.push_back(builder.create<pyir::CompareOp>(loc, pyType, opStr, lhs, rhs).getResult());
             break;
         }
 
         case PythonOpcode::PUSH_NULL:
             // Push a null sentinel onto the stack for the call convention.
-            stack.push_back(builder.create<pyir::PushNull>(loc, pyType).getResult());
+            meta.stack.push_back(builder.create<pyir::PushNull>(loc, pyType).getResult());
             break;
 
         case PythonOpcode::CALL: {
@@ -299,32 +311,32 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             // Pop arguments in reverse order
             std::vector<mlir::Value> args(*argc);
             for (int64_t i = *argc - 1; i >= 0; i--) {
-                args[i] = stack.back();
-                stack.pop_back();
+                args[i] = meta.stack.back();
+                meta.stack.pop_back();
             }
 
-            stack.pop_back(); // null sentinel
-            mlir::Value callee = stack.back();
-            stack.pop_back(); // actual callee
+            meta.stack.pop_back(); // null sentinel
+            mlir::Value callee = meta.stack.back();
+            meta.stack.pop_back(); // actual callee
 
-            stack.push_back(builder.create<pyir::Call>(loc, pyType, callee, args).getResult());
+            meta.stack.push_back(builder.create<pyir::Call>(loc, pyType, callee, args).getResult());
             break;
         }
 
         case PythonOpcode::POP_TOP:
             // Discard top of stack, if the value is unused MLIR's DCE will clean up the producing op if it's Pure.
-            stack.pop_back();
+            meta.stack.pop_back();
             break;
 
         case PythonOpcode::RETURN_VALUE: {
             mlir::Value retVal;
-            if (!stack.empty()) {
-                retVal = stack.back();
-                stack.pop_back();
+            if (!meta.stack.empty()) {
+                retVal = meta.stack.back();
+                meta.stack.pop_back();
             }
 
             // Pop the local scope before returning from a function (not needed at module level)
-            if (isFunction)
+            if (meta.isFunction)
                 builder.create<pyir::PopScope>(loc);
 
             if (retVal)
@@ -336,8 +348,8 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
 
         case PythonOpcode::COPY: {
             const int64_t* copyIdx = std::get_if<int64_t>(&instr.argval);
-            auto value = stack.at(stack.size() - *copyIdx);
-            stack.push_back(value);
+            auto value = meta.stack.at(meta.stack.size() - *copyIdx);
+            meta.stack.push_back(value);
             break;
         }
 
@@ -347,7 +359,7 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
                 throw PyCompileError("JUMP_FORWARD must have an int argval",
                                      std::filesystem::path(module.filename).filename(),
                                      instr.lineno, instr.offset);
-            mlir::Block* dest = offsetToBlock.at(*target);
+            mlir::Block* dest = meta.offsetToBlock.at(*target);
             builder.create<mlir::cf::BranchOp>(loc, dest);
             break;
         }
@@ -358,16 +370,16 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
                 throw PyCompileError("POP_JUMP_IF_TRUE must have an int argval",
                                      std::filesystem::path(module.filename).filename(),
                                      instr.lineno, instr.offset);
-            mlir::Value cond = stack.back();
-            stack.pop_back();
+            mlir::Value cond = meta.stack.back();
+            meta.stack.pop_back();
 
             // unbox !pyir.object -> i1
             mlir::Value i1cond = builder.create<pyir::IsTruthy>(loc, builder.getI1Type(), cond).getResult();
-            mlir::Block* trueBlock = offsetToBlock.at(*target);
+            mlir::Block* trueBlock = meta.offsetToBlock.at(*target);
             mlir::Block* falseBlock = fn.addBlock();
 
             // Pass remaining stack values as block arguments to the true block so they are available after the jump
-            llvm::SmallVector<mlir::Value> trueArgs(stack.begin(), stack.end());
+            llvm::SmallVector<mlir::Value> trueArgs(meta.stack.begin(), meta.stack.end());
             llvm::SmallVector<mlir::Type> trueArgTypes;
             for (auto v : trueArgs)
                 trueArgTypes.push_back(v.getType());
@@ -388,16 +400,16 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
                 throw PyCompileError("POP_JUMP_IF_FALSE must have an int argval",
                                      std::filesystem::path(module.filename).filename(),
                                      instr.lineno, instr.offset);
-            mlir::Value cond = stack.back();
-            stack.pop_back();
+            mlir::Value cond = meta.stack.back();
+            meta.stack.pop_back();
 
             // unbox !pyir.object -> i1
             mlir::Value i1cond = builder.create<pyir::IsTruthy>(loc, builder.getI1Type(), cond).getResult();
-            mlir::Block* falseBlock = offsetToBlock.at(*target);
+            mlir::Block* falseBlock = meta.offsetToBlock.at(*target);
             mlir::Block* trueBlock = fn.addBlock();
 
             // Pass remaining stack values as block arguments to the false block so they are available after the jump
-            llvm::SmallVector<mlir::Value> falseArgs(stack.begin(), stack.end());
+            llvm::SmallVector<mlir::Value> falseArgs(meta.stack.begin(), meta.stack.end());
             llvm::SmallVector<mlir::Type> falseArgTypes;
             for (mlir::Value v : falseArgs)
                 falseArgTypes.push_back(v.getType());
@@ -420,41 +432,41 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
                                      std::filesystem::path(module.filename).filename(),
                                      instr.lineno, instr.offset);
             mlir::Attribute attr = builder.getI64IntegerAttr(*target);
-            stack.push_back(builder.create<pyir::LoadConst>(loc, pyType, attr).getResult());
+            meta.stack.push_back(builder.create<pyir::LoadConst>(loc, pyType, attr).getResult());
             break;
         }
 
         case PythonOpcode::TO_BOOL: {
-            mlir::Value toConvert = stack.back();
-            stack.pop_back(); // Replace value
-            stack.push_back(builder.create<pyir::ToBool>(loc, pyType, toConvert).getResult());
+            mlir::Value toConvert = meta.stack.back();
+            meta.stack.pop_back(); // Replace value
+            meta.stack.push_back(builder.create<pyir::ToBool>(loc, pyType, toConvert).getResult());
             break;
         }
 
         case PythonOpcode::UNARY_NOT: {
-            mlir::Value value = stack.back();
-            stack.pop_back();
-            stack.push_back(builder.create<pyir::UnaryNot>(loc, pyType, value).getResult());
+            mlir::Value value = meta.stack.back();
+            meta.stack.pop_back();
+            meta.stack.push_back(builder.create<pyir::UnaryNot>(loc, pyType, value).getResult());
             break;
         }
         case PythonOpcode::UNARY_NEGATIVE: {
-            mlir::Value value = stack.back();
-            stack.pop_back();
-            stack.push_back(builder.create<pyir::UnaryNegative>(loc, pyType, value).getResult());
+            mlir::Value value = meta.stack.back();
+            meta.stack.pop_back();
+            meta.stack.push_back(builder.create<pyir::UnaryNegative>(loc, pyType, value).getResult());
             break;
         }
 
         case PythonOpcode::UNARY_INVERT: {
-            mlir::Value value = stack.back();
-            stack.pop_back();
-            stack.push_back(builder.create<pyir::UnaryInvert>(loc, pyType, value).getResult());
+            mlir::Value value = meta.stack.back();
+            meta.stack.pop_back();
+            meta.stack.push_back(builder.create<pyir::UnaryInvert>(loc, pyType, value).getResult());
             break;
         }
 
         case PythonOpcode::FORMAT_SIMPLE: {
-            mlir::Value val = stack.back();
-            stack.pop_back();
-            stack.push_back(builder.create<pyir::FormatSimple>(loc, pyType, val).getResult());
+            mlir::Value val = meta.stack.back();
+            meta.stack.pop_back();
+            meta.stack.push_back(builder.create<pyir::FormatSimple>(loc, pyType, val).getResult());
             break;
         }
         case PythonOpcode::BUILD_STRING: {
@@ -464,10 +476,10 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
 
             std::vector<mlir::Value> parts(*count);
             for (int64_t i = *count - 1; i >= 0; i--) {
-                parts[i] = stack.back();
-                stack.pop_back();
+                parts[i] = meta.stack.back();
+                meta.stack.pop_back();
             }
-            stack.push_back(builder.create<pyir::BuildString>(loc, pyType, parts).getResult());
+            meta.stack.push_back(builder.create<pyir::BuildString>(loc, pyType, parts).getResult());
             break;
         }
 
@@ -493,10 +505,11 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
                      const std::string& moduleName) {
     pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
 
-    const bool isFunction = moduleName.starts_with("__pyfn_");
+    ConversionMeta meta;
+    meta.isFunction = moduleName.starts_with("__pyfn_");
 
     mlir::FunctionType fnType;
-    if (isFunction)
+    if (meta.isFunction)
         // Value*(Value** args, int64_t argc), matches Value::Fn
         fnType = builder.getFunctionType(
                 {pyType, pyType}, // args_ptr, argc
@@ -518,7 +531,7 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
                                            : getInstructionLocation(ctx, module.instructions.front(), module.filename);
 
     // For functions, emit push_scope + arg unpacking preamble using block arguments
-    if (isFunction) {
+    if (meta.isFunction) {
         builder.create<pyir::PushScope>(preambleLoc);
 
         mlir::Value argsPtr = block->getArgument(0); // args_ptr (!pyir.object, i.e. Value**)
@@ -530,31 +543,24 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
         }
     }
 
-    // Value stack, maps the CPython evaluation stack to SSA values.
-    std::vector<mlir::Value> stack;
-
-    // Keeps track of declared function names
-    std::unordered_map<mlir::Value*, std::string> pendingFunctions;
-
     // Pre-pass: collect all jump target offsets and create blocks for them.
     // This must happen before emission so forward jumps can reference blocks that haven't been emitted yet.
-    std::unordered_map<size_t, mlir::Block*> offsetToBlock;
     for (const ByteCodeInstruction& instr : module.instructions) {
         const int64_t* target = std::get_if<int64_t>(&instr.argval);
         const bool isJumpTarget = instr.opcode == PythonOpcode::JUMP_FORWARD ||
                                   instr.opcode == PythonOpcode::POP_JUMP_IF_TRUE ||
                                   instr.opcode == PythonOpcode::POP_JUMP_IF_FALSE;
-        if (target && isJumpTarget && !offsetToBlock.contains(*target))
-            offsetToBlock[*target] = fn.addBlock();
+        if (target && isJumpTarget && !meta.offsetToBlock.contains(*target))
+            meta.offsetToBlock[*target] = fn.addBlock();
     }
 
     // Exception table handler targets also get blocks
     for (const ExceptionTableEntry& e : module.info.exceptionTable)
-        if (!offsetToBlock.contains(e.target))
-            offsetToBlock[e.target] = fn.addBlock();
+        if (!meta.offsetToBlock.contains(e.target))
+            meta.offsetToBlock[e.target] = fn.addBlock();
 
     for (const ByteCodeInstruction& instr : module.instructions)
-        buildMLIRInstruction(builder, ctx, module, fn, instr, isFunction, stack, offsetToBlock, pendingFunctions);
+        buildMLIRInstruction(builder, ctx, module, fn, instr, meta);
 
 }
 

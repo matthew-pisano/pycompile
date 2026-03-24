@@ -96,25 +96,6 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
     pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const mlir::Location loc = getInstructionLocation(ctx, instr, module.filename);
 
-    // If this offset is a jump target, switch to its block.
-    // Emit a branch from the current block if it isn't already terminated.
-    if (meta.offsetToBlock.contains(instr.offset)) {
-        mlir::Block* targetBlock = meta.offsetToBlock[instr.offset];
-        if (!builder.getBlock()->mightHaveTerminator()) {
-            // Pass current stack as block args to the target block
-            llvm::SmallVector<mlir::Value> branchArgs(meta.stack.begin(), meta.stack.end());
-            if (targetBlock->getNumArguments() == 0)
-                for (mlir::Value v : branchArgs)
-                    targetBlock->addArgument(v.getType(), loc);
-            builder.create<mlir::cf::BranchOp>(loc, targetBlock, mlir::ValueRange{branchArgs});
-        }
-        builder.setInsertionPointToStart(targetBlock);
-        // Replace stack with block arguments
-        meta.stack.clear();
-        for (mlir::BlockArgument arg : targetBlock->getArguments())
-            meta.stack.push_back(arg);
-    }
-
     switch (instr.opcode) {
         case PythonOpcode::RESUME:
         case PythonOpcode::NOT_TAKEN:
@@ -542,6 +523,10 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
             builder.create<pyir::StoreFast>(preambleLoc, module.info.varnames[i], argVal);
         }
     }
+ // Exception table handler targets also get blocks
+    for (const ExceptionTableEntry& e : module.info.exceptionTable)
+        if (!meta.offsetToBlock.contains(e.target))
+            meta.offsetToBlock[e.target] = fn.addBlock();
 
     // Pre-pass: collect all jump target offsets and create blocks for them.
     // This must happen before emission so forward jumps can reference blocks that haven't been emitted yet.
@@ -554,13 +539,31 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
             meta.offsetToBlock[*target] = fn.addBlock();
     }
 
-    // Exception table handler targets also get blocks
-    for (const ExceptionTableEntry& e : module.info.exceptionTable)
-        if (!meta.offsetToBlock.contains(e.target))
-            meta.offsetToBlock[e.target] = fn.addBlock();
+    for (const ByteCodeInstruction& instr : module.instructions) {
+        // If this offset is a jump target, switch to its block.
+        // Emit a branch from the current block if it isn't already terminated.
+        if (meta.offsetToBlock.contains(instr.offset)) {
+            mlir::Block* targetBlock = meta.offsetToBlock[instr.offset];
 
-    for (const ByteCodeInstruction& instr : module.instructions)
+            if (!builder.getBlock()->mightHaveTerminator()) {
+                const mlir::Location loc = getInstructionLocation(ctx, instr, module.filename);
+                // Pass current stack as block args to the target block
+                llvm::SmallVector<mlir::Value> branchArgs(meta.stack.begin(), meta.stack.end());
+                if (targetBlock->getNumArguments() == 0)
+                    for (mlir::Value v : branchArgs)
+                        targetBlock->addArgument(v.getType(), loc);
+                builder.create<mlir::cf::BranchOp>(loc, targetBlock, mlir::ValueRange{branchArgs});
+            }
+
+            builder.setInsertionPointToStart(targetBlock);
+            // Replace stack with block arguments
+            meta.stack.clear();
+            for (mlir::BlockArgument arg : targetBlock->getArguments())
+                meta.stack.push_back(arg);
+        }
+
         buildMLIRInstruction(builder, ctx, module, fn, instr, meta);
+    }
 
 }
 

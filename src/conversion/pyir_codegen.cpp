@@ -523,7 +523,7 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
             builder.create<pyir::StoreFast>(preambleLoc, module.info.varnames[i], argVal);
         }
     }
- // Exception table handler targets also get blocks
+    // Exception table handler targets also get blocks
     for (const ExceptionTableEntry& e : module.info.exceptionTable)
         if (!meta.offsetToBlock.contains(e.target))
             meta.offsetToBlock[e.target] = fn.addBlock();
@@ -568,6 +568,9 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
 }
 
 
+/**
+ * Inserts a main function as an explicit entrypoint to the module.
+ */
 void insertMainEntryPoint(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, llvm::StringRef moduleFnName) {
     const mlir::UnknownLoc loc = mlir::UnknownLoc::get(&ctx);
     mlir::IntegerType i32Type = builder.getIntegerType(32);

@@ -132,6 +132,33 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
 
 
 /**
+ * Switches to writing instructions into the block denoted by the jump target instruction offset.
+ *
+ * Uses lookahead jump blocks to get block for the current instruction.
+ */
+void switchToOffsetBlock(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ByteCodeModule& module,
+                         const ByteCodeInstruction& instr, ConversionMeta& meta) {
+    mlir::Block* targetBlock = meta.offsetToBlock[instr.offset];
+
+    if (!builder.getBlock()->mightHaveTerminator()) {
+        const mlir::Location loc = getInstructionLocation(ctx, instr, module.filename);
+        // Pass current stack as block args to the target block
+        llvm::SmallVector<mlir::Value> branchArgs(meta.stack.begin(), meta.stack.end());
+        if (targetBlock->getNumArguments() == 0)
+            for (mlir::Value v : branchArgs)
+                targetBlock->addArgument(v.getType(), loc);
+        builder.create<mlir::cf::BranchOp>(loc, targetBlock, mlir::ValueRange{branchArgs});
+    }
+
+    builder.setInsertionPointToStart(targetBlock);
+    // Replace stack with block arguments
+    meta.stack.clear();
+    for (mlir::BlockArgument arg : targetBlock->getArguments())
+        meta.stack.push_back(arg);
+}
+
+
+/**
  * Translates a ByteCodeModule to an MLIR FuncOp instruction-by-instruction
  * @param builder The MLIR OpBuilder to use by reference
  * @param ctx The MLIR Context
@@ -200,25 +227,8 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
     for (const ByteCodeInstruction& instr : module.instructions) {
         // If this offset is a jump target, switch to its block.
         // Emit a branch from the current block if it isn't already terminated.
-        if (meta.offsetToBlock.contains(instr.offset)) {
-            mlir::Block* targetBlock = meta.offsetToBlock[instr.offset];
-
-            if (!builder.getBlock()->mightHaveTerminator()) {
-                const mlir::Location loc = getInstructionLocation(ctx, instr, module.filename);
-                // Pass current stack as block args to the target block
-                llvm::SmallVector<mlir::Value> branchArgs(meta.stack.begin(), meta.stack.end());
-                if (targetBlock->getNumArguments() == 0)
-                    for (mlir::Value v : branchArgs)
-                        targetBlock->addArgument(v.getType(), loc);
-                builder.create<mlir::cf::BranchOp>(loc, targetBlock, mlir::ValueRange{branchArgs});
-            }
-
-            builder.setInsertionPointToStart(targetBlock);
-            // Replace stack with block arguments
-            meta.stack.clear();
-            for (mlir::BlockArgument arg : targetBlock->getArguments())
-                meta.stack.push_back(arg);
-        }
+        if (meta.offsetToBlock.contains(instr.offset))
+            switchToOffsetBlock(builder, ctx, module, instr, meta);
 
         buildMLIRInstruction(builder, ctx, module, fn, instr, meta);
     }

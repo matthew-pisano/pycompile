@@ -122,7 +122,7 @@ set(PYCOMPILE_SOURCES
         src/utils.cpp
         src/bytecode/python_opcodes.cpp
         src/bytecode/python_error.cpp
-        src/pyir/pyir_codegen.cpp
+        src/conversion/pyir_codegen.cpp
         src/bytecode/serialize_bytecode.cpp
 )
 

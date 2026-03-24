@@ -2,7 +2,7 @@
 // Created by matthew on 3/6/26.
 //
 
-#include "pyir/pyir_codegen.h"
+#include "conversion/pyir_codegen.h"
 
 #include <filesystem>
 #include <iostream>
@@ -10,6 +10,7 @@
 #include <mlir/IR/AsmState.h>
 #include <mlir/Dialect/ControlFlow/IR/ControlFlowOps.h>
 #include <mlir/Dialect/Arith/IR/Arith.h>
+#include <mlir/Dialect/Func/IR/FuncOps.h>
 
 #include "utils.h"
 #include "pyir/pyir_ops.h"
@@ -617,43 +618,6 @@ namespace pyir {
         }
 
         return merged;
-    }
-
-
-    /**
-     * A bridge between llvm::raw_ostream and std::ostream
-     */
-    class OstreamBridge : public llvm::raw_ostream {
-    public:
-        explicit OstreamBridge(std::ostream& os) :
-            os_(os), pos_(0) {
-        }
-
-        void write_impl(const char* ptr, const size_t size) override {
-            os_.write(ptr, static_cast<std::streamsize>(size));
-            pos_ += size;
-        }
-
-        [[nodiscard]] uint64_t current_pos() const override { return pos_; }
-
-    private:
-        std::ostream& os_;
-        uint64_t pos_;
-    };
-
-
-    void printMLIRFuncOp(mlir::func::FuncOp fn, std::ostream& os) {
-        OstreamBridge bridge(os);
-        fn.print(bridge);
-        bridge.flush();
-        os << std::endl;
-    }
-
-
-    void serializePyIRModule(const mlir::ModuleOp& module, std::ostream& os) {
-        module->walk([&os](const mlir::func::FuncOp fn) {
-            printMLIRFuncOp(fn, os);
-        });
     }
 
 } //namespace pyir

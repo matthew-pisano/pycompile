@@ -11,7 +11,7 @@
 #include "version.h"
 #include "lowering/llvm_export.h"
 #include "lowering/pyir_to_llvm.h"
-#include "pyir/pyir_codegen.h"
+#include "conversion/pyir_codegen.h"
 
 
 /**

@@ -14,7 +14,7 @@
 #include <mlir/Dialect/LLVMIR/LLVMDialect.h>
 
 
-#include "pyir/pyir_codegen.h"
+#include "conversion/pyir_codegen.h"
 #include "bytecode/bytecode.h"
 #include "lowering/llvm_export.h"
 #include "lowering/pyir_to_llvm.h"

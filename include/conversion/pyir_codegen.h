@@ -5,12 +5,10 @@
 #ifndef PYCOMPILE_PYIR_CODEGEN_H
 #define PYCOMPILE_PYIR_CODEGEN_H
 
-#include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/BuiltinOps.h>
 #include <mlir/IR/MLIRContext.h>
 
 #include "bytecode/bytecode.h"
-#include "pyir/pyir_ops.h"
 
 namespace pyir {
 
@@ -20,10 +18,6 @@ namespace pyir {
     // Wraps multiple modules into a single mlir::ModuleOp
     mlir::OwningOpRef<mlir::ModuleOp> mergePyIRModules(mlir::MLIRContext& ctx,
                                                        std::vector<mlir::OwningOpRef<mlir::ModuleOp> >& mlirModules);
-
-    void printMLIRFuncOp(mlir::func::FuncOp fn, std::ostream& os);
-
-    void serializePyIRModule(const mlir::ModuleOp& module, std::ostream& os);
 } //namespace pyir
 
 #endif //PYCOMPILE_PYIR_CODEGEN_H

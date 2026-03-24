@@ -5,10 +5,12 @@
 #include <iostream>
 #include <catch2/catch_all.hpp>
 #include <mlir/Dialect/ControlFlow/IR/ControlFlowOps.h>
+#include <mlir/Dialect/Func/IR/FuncOps.h>
 
 
-#include "pyir/pyir_codegen.h"
+#include "conversion/pyir_codegen.h"
 #include "pyir/pyir_attrs.h"
+#include "pyir/pyir_ops.h"
 #include "bytecode/bytecode.h"
 
 

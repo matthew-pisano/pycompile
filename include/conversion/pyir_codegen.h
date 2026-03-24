@@ -10,10 +10,15 @@
 
 #include "bytecode/bytecode.h"
 
-// Wraps a single module into an mlir::ModuleOp containing one FuncOp
+
+/// Builds an MLIR module from the given bytecode
+void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ByteCodeModule& module,
+                     const std::string& moduleName);
+
+/// Wraps a single module into an mlir::ModuleOp containing one FuncOp
 mlir::OwningOpRef<mlir::ModuleOp> generatePyIR(mlir::MLIRContext& ctx, const ByteCodeModule& module);
 
-// Wraps multiple modules into a single mlir::ModuleOp
+/// Wraps multiple modules into a single mlir::ModuleOp
 mlir::OwningOpRef<mlir::ModuleOp> mergePyIRModules(mlir::MLIRContext& ctx,
                                                    std::vector<mlir::OwningOpRef<mlir::ModuleOp> >& mlirModules);
 

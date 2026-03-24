@@ -24,6 +24,18 @@ public:
         this->msg = std::format("{}:{}:{}: error: {}", moduleName, resolvedLineno, offset, msg);
     }
 
+    PyCompileError(const std::string& msg, const mlir::Location& loc) {
+        size_t lineno = 0;
+        size_t offset = 0;
+        std::string filename;
+        if (const auto fileLoc = mlir::dyn_cast<mlir::FileLineColLoc>(loc)) {
+            filename = fileLoc.getFilename().getValue();
+            lineno = fileLoc.getLine();
+            offset = fileLoc.getColumn();
+        }
+        this->msg = std::format("{}:{}:{}: error: {}", filename, lineno, offset, msg);
+    }
+
     [[nodiscard]] const char* what() const noexcept override {
         return msg.c_str();
     }

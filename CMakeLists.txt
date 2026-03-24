@@ -124,6 +124,11 @@ set(PYCOMPILE_SOURCES
         src/bytecode/python_error.cpp
         src/conversion/pyir_codegen.cpp
         src/bytecode/serialize_bytecode.cpp
+        src/conversion/memory_codegen.cpp
+        src/conversion/logical_codegen.cpp
+        src/conversion/function_codegen.cpp
+        src/conversion/control_flow_codegen.cpp
+        src/conversion/builder_codegen.cpp
 )
 
 set(PYCOMPILE_LIBS

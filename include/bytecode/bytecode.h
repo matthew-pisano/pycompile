@@ -177,7 +177,7 @@ void serializeByteCodeModule(const ByteCodeModule& code, std::ostream& os, int d
  * @return A ByteCodeModule struct containing the metadata and instructions of the code object
  * @throws std::runtime_error if the max nested function depth is exceeded, or if there are errors during disassembly.
  */
-ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, int depth = 0);
+ByteCodeModule generatePythonByteCode(const CompiledModule& compiledModule, int depth = 0);
 
 
 /**

@@ -15,16 +15,16 @@
  */
 struct CompiledModule {
     std::string filename;
-    std::string module_name;
+    std::string moduleName;
     PyObject* codeObject; // Owned reference to the compiled code object
 
     CompiledModule(std::string filename, std::string module_name, PyObject* codeObject) :
-        filename(std::move(filename)), module_name(std::move(module_name)), codeObject(codeObject) {
+        filename(std::move(filename)), moduleName(std::move(module_name)), codeObject(codeObject) {
     }
 
     // Move constructor
     CompiledModule(CompiledModule&& other) noexcept :
-        filename(std::move(other.filename)), module_name(std::move(other.module_name)), codeObject(other.codeObject) {
+        filename(std::move(other.filename)), moduleName(std::move(other.moduleName)), codeObject(other.codeObject) {
         other.codeObject = nullptr; // Prevent double deletion
     }
 

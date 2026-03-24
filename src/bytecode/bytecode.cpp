@@ -205,10 +205,99 @@ void serializeByteCodeModule(const ByteCodeModule& code, std::ostream& os, const
 }
 
 
-ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, const int depth) {
+/**
+ * Decodes a Python object into a bytecode instruction.
+ * @param pyobject The Python object to decode.
+ * @param filename The filename for nested code objects.
+ * @param moduleName The module name for nested code objects.
+ * @param currentLineno The current line number, updated as a reference.
+ * @param depth The current recursion depth for nested code objects (default is 0)
+ * @return A decoded instruction.
+ */
+ByteCodeInstruction decodeByteCodeInstruction(PyObject* pyobject, const std::string& filename,
+                                              const std::string& moduleName, int& currentLineno, const int depth) {
+    ByteCodeInstruction instr{};
+
+    PyObject* offset = PyObject_GetAttrString(pyobject, "offset");
+    instr.offset = PyLong_AsLong(offset);
+    Py_DECREF(offset);
+
+    PyObject* opcode = PyObject_GetAttrString(pyobject, "opcode");
+    instr.opcodeId = PyLong_AsInt(opcode);
+    Py_DECREF(opcode);
+
+    PyObject* opname = PyObject_GetAttrString(pyobject, "opname");
+    std::string opcodeStr = PyUnicode_AsUTF8(opname);
+    instr.opcode = pythonOpcodeFromString(opcodeStr);
+    Py_DECREF(opname);
+
+    PyObject* argrepr = PyObject_GetAttrString(pyobject, "argrepr");
+    instr.argrepr = PyUnicode_AsUTF8(argrepr);
+    Py_DECREF(argrepr);
+
+    // starts_line is a boolean indicating whether this instruction starts a new source line.
+    PyObject* startsLine = PyObject_GetAttrString(pyobject, "starts_line");
+    bool isStartOfLine = startsLine && PyObject_IsTrue(startsLine) == 1;
+    instr.startsLine = isStartOfLine;
+    Py_XDECREF(startsLine);
+
+    PyObject* linenoAttr = PyObject_GetAttrString(pyobject, "positions");
+    if (linenoAttr && linenoAttr != Py_None) {
+        // In Python 3.11+, positions is available
+        PyObject* startLine = PyObject_GetAttrString(linenoAttr, "lineno");
+        if (startLine && startLine != Py_None)
+            currentLineno = PyLong_AsInt(startLine);
+
+        instr.lineno = currentLineno;
+        Py_XDECREF(startLine);
+        Py_DECREF(linenoAttr);
+    }
+    // Fallback for older Python versions or if positions unavailable
+    else
+        Py_XDECREF(linenoAttr);
+
+    PyObject* argval = PyObject_GetAttrString(pyobject, "argval"); // borrowed reference
+    if (PyBool_Check(argval)) {
+        instr.argvalType = ArgvalType::Bool;
+        instr.argval = (argval == Py_True);
+    } else if (PyLong_Check(argval)) {
+        instr.argvalType = ArgvalType::Int;
+        instr.argval = PyLong_AsLong(argval);
+    } else if (PyFloat_Check(argval)) {
+        instr.argvalType = ArgvalType::Float;
+        instr.argval = PyFloat_AsDouble(argval);
+    } else if (PyUnicode_Check(argval)) {
+        instr.argvalType = ArgvalType::Str;
+        instr.argval = PyUnicode_AsUTF8(argval);
+    } else if (PyTuple_Check(argval)) {
+        instr.argvalType = ArgvalType::TupleStr;
+        std::vector<std::string> tupleStrs;
+        const Py_ssize_t n = PyTuple_Size(argval);
+        for (Py_ssize_t i = 0; i < n; i++) {
+            PyObject* s = PyTuple_GetItem(argval, i); // borrowed
+            if (PyUnicode_Check(s))
+                tupleStrs.emplace_back(PyUnicode_AsUTF8(s));
+        }
+        instr.argval = std::move(tupleStrs);
+    } else if (PyCode_Check(argval)) {
+        instr.argvalType = ArgvalType::Code;
+        // Increment refcount so the temporary CompiledModule owns the code object and will decref it when destroyed
+        Py_XINCREF(argval);
+        CompiledModule nested{filename, moduleName, argval};
+        instr.argval = std::make_shared<ByteCodeModule>(generatePythonByteCode(nested, depth + 1));
+    } else {
+        instr.argvalType = ArgvalType::None; // For any other types, just treat it as None
+        instr.argval = ArgvalNone{};
+    }
+    Py_XDECREF(argval);
+    return instr;
+}
+
+
+ByteCodeModule generatePythonByteCode(const CompiledModule& compiledModule, const int depth) {
     ByteCodeModule result;
     result.filename = compiledModule.filename;
-    result.moduleName = compiledModule.module_name;
+    result.moduleName = compiledModule.moduleName;
 
     if (depth > NESTED_FUNCTION_DEPTH)
         throw std::runtime_error("Maximum nested function depth exceeded");
@@ -245,84 +334,12 @@ ByteCodeModule generatePythonBytecode(const CompiledModule& compiledModule, cons
     Py_XDECREF(firstLineno);
 
     PyObject* item;
-    // Iterate over the instructions returned by dis, extracting their attributes into Instruction structs.
+    // Iterate over the instructions returned by dis, extracting their attributes into Instruction structs
     while ((item = PyIter_Next(instrIt))) {
-        ByteCodeInstruction instr{};
-
-        PyObject* offset = PyObject_GetAttrString(item, "offset");
-        instr.offset = PyLong_AsLong(offset);
-        Py_DECREF(offset);
-
-        PyObject* opcode = PyObject_GetAttrString(item, "opcode");
-        instr.opcodeId = PyLong_AsInt(opcode);
-        Py_DECREF(opcode);
-
-        PyObject* opname = PyObject_GetAttrString(item, "opname");
-        std::string opcodeStr = PyUnicode_AsUTF8(opname);
-        instr.opcode = pythonOpcodeFromString(opcodeStr);
-        Py_DECREF(opname);
-
-        PyObject* argrepr = PyObject_GetAttrString(item, "argrepr");
-        instr.argrepr = PyUnicode_AsUTF8(argrepr);
-        Py_DECREF(argrepr);
-
-        // starts_line is a boolean indicating whether this instruction starts a new source line.
-        PyObject* startsLine = PyObject_GetAttrString(item, "starts_line");
-        bool isStartOfLine = startsLine && PyObject_IsTrue(startsLine) == 1;
-        instr.startsLine = isStartOfLine;
-        Py_XDECREF(startsLine);
-
-        PyObject* linenoAttr = PyObject_GetAttrString(item, "positions");
-        if (linenoAttr && linenoAttr != Py_None) {
-            // In Python 3.11+, positions is available
-            PyObject* startLine = PyObject_GetAttrString(linenoAttr, "lineno");
-            if (startLine && startLine != Py_None)
-                currentLineno = PyLong_AsInt(startLine);
-
-            instr.lineno = currentLineno;
-            Py_XDECREF(startLine);
-            Py_DECREF(linenoAttr);
-        } else
-        // Fallback for older Python versions or if positions unavailable
-            Py_XDECREF(linenoAttr);
-
-        // argval: bool | int | float | str | tuple | code object | other
-        PyObject* argval = PyObject_GetAttrString(item, "argval"); // borrowed reference
-        if (PyBool_Check(argval)) {
-            instr.argvalType = ArgvalType::Bool;
-            instr.argval = (argval == Py_True);
-        } else if (PyLong_Check(argval)) {
-            instr.argvalType = ArgvalType::Int;
-            instr.argval = PyLong_AsLong(argval);
-        } else if (PyFloat_Check(argval)) {
-            instr.argvalType = ArgvalType::Float;
-            instr.argval = PyFloat_AsDouble(argval);
-        } else if (PyUnicode_Check(argval)) {
-            instr.argvalType = ArgvalType::Str;
-            instr.argval = PyUnicode_AsUTF8(argval);
-        } else if (PyTuple_Check(argval)) {
-            instr.argvalType = ArgvalType::TupleStr;
-            std::vector<std::string> tupleStrs;
-            const Py_ssize_t n = PyTuple_Size(argval);
-            for (Py_ssize_t i = 0; i < n; i++) {
-                PyObject* s = PyTuple_GetItem(argval, i); // borrowed
-                if (PyUnicode_Check(s))
-                    tupleStrs.emplace_back(PyUnicode_AsUTF8(s));
-            }
-            instr.argval = std::move(tupleStrs);
-        } else if (PyCode_Check(argval)) {
-            instr.argvalType = ArgvalType::Code;
-            // Increment refcount so the temporary CompiledModule owns the code object and will decref it when destroyed
-            Py_XINCREF(argval);
-            CompiledModule nested{compiledModule.filename, compiledModule.module_name, argval};
-            instr.argval = std::make_shared<ByteCodeModule>(generatePythonBytecode(nested, depth + 1));
-        } else {
-            instr.argvalType = ArgvalType::None; // For any other types, just treat it as None
-            instr.argval = ArgvalNone{};
-        }
-
+        // Recursive call is devluating a nested code object
+        ByteCodeInstruction instr = decodeByteCodeInstruction(item, compiledModule.filename, compiledModule.moduleName,
+                                                              currentLineno, depth);
         Py_DECREF(item);
-        Py_XDECREF(argval);
         result.instructions.push_back(std::move(instr));
     }
 
@@ -348,7 +365,7 @@ std::vector<ByteCodeModule> compilePython(const std::vector<std::string>& fileCo
     bytecodeModules.reserve(compiledModules.size());
     for (size_t i = 0; i < compiledModules.size(); i++)
         try {
-            bytecodeModules.push_back(generatePythonBytecode(compiledModules[i]));
+            bytecodeModules.push_back(generatePythonByteCode(compiledModules[i]));
         } catch (const std::runtime_error& e) {
             throw std::runtime_error(std::filesystem::path(fileNames[i]).filename().string() + ": " + e.what());
         }

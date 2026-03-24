@@ -153,7 +153,7 @@ int main(const int argc, char* argv[]) {
     std::vector<mlir::OwningOpRef<mlir::ModuleOp> > mlirModules;
     for (const ByteCodeModule& module : bytecodeModules) {
         try {
-            mlirModules.push_back(pyir::generatePyIR(context, module));
+            mlirModules.push_back(generatePyIR(context, module));
         } catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;
             return 1;
@@ -168,7 +168,7 @@ int main(const int argc, char* argv[]) {
     mlir::OwningOpRef<mlir::ModuleOp> mergedMlirModule;
     if (mlirModules.size() > 1)
         try {
-            mergedMlirModule = pyir::mergePyIRModules(context, mlirModules);
+            mergedMlirModule = mergePyIRModules(context, mlirModules);
         } catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;
             return 1;

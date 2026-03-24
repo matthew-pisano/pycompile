@@ -10,14 +10,11 @@
 
 #include "bytecode/bytecode.h"
 
-namespace pyir {
+// Wraps a single module into an mlir::ModuleOp containing one FuncOp
+mlir::OwningOpRef<mlir::ModuleOp> generatePyIR(mlir::MLIRContext& ctx, const ByteCodeModule& module);
 
-    // Wraps a single module into an mlir::ModuleOp containing one FuncOp
-    mlir::OwningOpRef<mlir::ModuleOp> generatePyIR(mlir::MLIRContext& ctx, const ByteCodeModule& module);
-
-    // Wraps multiple modules into a single mlir::ModuleOp
-    mlir::OwningOpRef<mlir::ModuleOp> mergePyIRModules(mlir::MLIRContext& ctx,
-                                                       std::vector<mlir::OwningOpRef<mlir::ModuleOp> >& mlirModules);
-} //namespace pyir
+// Wraps multiple modules into a single mlir::ModuleOp
+mlir::OwningOpRef<mlir::ModuleOp> mergePyIRModules(mlir::MLIRContext& ctx,
+                                                   std::vector<mlir::OwningOpRef<mlir::ModuleOp> >& mlirModules);
 
 #endif //PYCOMPILE_PYIR_CODEGEN_H

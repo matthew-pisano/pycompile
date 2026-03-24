@@ -29,7 +29,7 @@ struct LLVMFixture {
 
     std::unique_ptr<llvm::Module> compile(const std::string& source) {
         const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
-        const mlir::OwningOpRef<mlir::ModuleOp> mlirModule = pyir::generatePyIR(mlirCtx, bytecodeModule);
+        const mlir::OwningOpRef<mlir::ModuleOp> mlirModule = generatePyIR(mlirCtx, bytecodeModule);
         lowerToLLVMDialect(mlirCtx, mlirModule);
         std::unique_ptr<llvm::Module> llvmModule = translateToLLVMIR(llvmCtx, mlirModule);
         return llvmModule;

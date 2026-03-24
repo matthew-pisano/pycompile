@@ -13,14 +13,7 @@
 #include <variant>
 #include <vector>
 
-#include "bytecode/pythoncode.h"
 #include "bytecode/python_opcodes.h"
-
-
-/**
- * The maximum depth to evaluate nested Python Callables to
- */
-static constexpr int NESTED_FUNCTION_DEPTH = 16;
 
 /**
  * Python 3.11+ uses an exception table to determine which exception handler to jump to when an
@@ -94,22 +87,13 @@ enum class ArgvalType {
 
 
 /**
- * Helper function to convert an ArgvalType enum value to a human-readable string for debugging and printing purposes.
- * @param type The ArgvalType enum value to convert to a string
- * @return A string representation of the ArgvalType value, such as "Int", "Str", "TupleStr", "Code", or "None".
- */
-inline std::string argvalTypeToString(ArgvalType type);
-
-
-/**
  * Dummy struct to represent the absence of an instruction argument, since some instructions have no argument.
  */
 struct ArgvalNone {
 };
 
 
-struct ByteCodeInstruction; // Forward declaration of Instruction struct.
-
+// Forward declaration.
 struct ByteCodeModule;
 
 /**
@@ -149,35 +133,6 @@ struct ByteCodeModule {
     CodeInfo info; // Metadata about the code object
     std::vector<ByteCodeInstruction> instructions; // The list of bytecode instructions
 };
-
-
-/**
- * Helper function to print a single instruction in a human-readable format, with indentation for nested code.
- * @param instr The Instruction struct to print
- * @param os The stream to write to
- * @param indentLevel The current indentation level (number of spaces) to use for printing the instruction
- */
-void serializeInstruction(const ByteCodeInstruction& instr, std::ostream& os, int indentLevel = 0);
-
-
-/**
- * Helper function to print the bytecode module in a human-readable format, including metadata and instructions.
- * @param code The ByteCodeModule struct to print
- * @param os The stream to write to
- * @param depth The current recursion depth for nested code objects, used for indentation (default is 0)
- */
-void serializeByteCodeModule(const ByteCodeModule& code, std::ostream& os, int depth = 0);
-
-
-/**
- * Disassemble a Python code object into a ByteCodeModule struct, extracting its metadata and instructions.
- * This function is recursive and will disassemble nested code objects (e.g. lambdas, comprehensions) up to a max depth.
- * @param compiledModule A CompiledModule struct containing the compiled code object to disassemble
- * @param depth The current recursion depth for nested code objects (default is 0)
- * @return A ByteCodeModule struct containing the metadata and instructions of the code object
- * @throws std::runtime_error if the max nested function depth is exceeded, or if there are errors during disassembly.
- */
-ByteCodeModule generatePythonByteCode(const CompiledModule& compiledModule, int depth = 0);
 
 
 /**

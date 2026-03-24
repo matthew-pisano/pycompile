@@ -120,10 +120,10 @@ find_package(Python REQUIRED COMPONENTS Interpreter Development)
 set(PYCOMPILE_SOURCES
         src/bytecode/bytecode.cpp
         src/utils.cpp
-        src/bytecode/pythoncode.cpp
         src/bytecode/python_opcodes.cpp
         src/bytecode/python_error.cpp
         src/pyir/pyir_codegen.cpp
+        src/bytecode/serialize_bytecode.cpp
 )
 
 set(PYCOMPILE_LIBS

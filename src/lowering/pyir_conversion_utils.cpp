@@ -6,29 +6,19 @@
 #include "lowering/pyir_conversion_utils.h"
 
 
-mlir::LLVM::LLVMPointerType ptrType(mlir::MLIRContext* ctx) {
-    return mlir::LLVM::LLVMPointerType::get(ctx);
-}
+mlir::LLVM::LLVMPointerType ptrType(mlir::MLIRContext* ctx) { return mlir::LLVM::LLVMPointerType::get(ctx); }
 
 
-mlir::Type boolType(mlir::MLIRContext* ctx) {
-    return mlir::IntegerType::get(ctx, 8);
-}
+mlir::Type boolType(mlir::MLIRContext* ctx) { return mlir::IntegerType::get(ctx, 8); }
 
 
-mlir::Type i64Type(mlir::MLIRContext* ctx) {
-    return mlir::IntegerType::get(ctx, 64);
-}
+mlir::Type i64Type(mlir::MLIRContext* ctx) { return mlir::IntegerType::get(ctx, 64); }
 
 
-mlir::Type i8Type(mlir::MLIRContext* ctx) {
-    return mlir::IntegerType::get(ctx, 8);
-}
+mlir::Type i8Type(mlir::MLIRContext* ctx) { return mlir::IntegerType::get(ctx, 8); }
 
 
-mlir::Type f64Type(mlir::MLIRContext* ctx) {
-    return mlir::Float64Type::get(ctx);
-}
+mlir::Type f64Type(mlir::MLIRContext* ctx) { return mlir::Float64Type::get(ctx); }
 
 
 mlir::LLVM::LLVMFuncOp getOrInsertRuntimeFn(mlir::PatternRewriter& rewriter, mlir::ModuleOp module,
@@ -51,10 +41,8 @@ mlir::Value getOrInsertStringConstant(mlir::ConversionPatternRewriter& rewriter,
         mlir::PatternRewriter::InsertionGuard guard(rewriter);
         rewriter.setInsertionPointToStart(module.getBody());
         auto strType = mlir::LLVM::LLVMArrayType::get(i8Type(ctx), str.size() + 1);
-        rewriter.create<mlir::LLVM::GlobalOp>(
-                loc, strType, /*isConstant=*/true,
-                mlir::LLVM::Linkage::Private, name,
-                rewriter.getStringAttr(str.str() + '\0'));
+        rewriter.create<mlir::LLVM::GlobalOp>(loc, strType, /*isConstant=*/true, mlir::LLVM::Linkage::Private, name,
+                                              rewriter.getStringAttr(str.str() + '\0'));
     }
 
     return rewriter.create<mlir::LLVM::AddressOfOp>(loc, ptrType(ctx), name);

@@ -21,4 +21,4 @@ struct ConversionMeta {
     bool isFunction;
 };
 
-#endif //PYCOMPILE_CODEGEN_UTILS_H
+#endif // PYCOMPILE_CODEGEN_UTILS_H

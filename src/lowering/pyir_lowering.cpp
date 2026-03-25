@@ -6,30 +6,30 @@
 
 #include <filesystem>
 
+#include "pyir/pyir_attrs.h"
 #include "pyir/pyir_ops.h"
 #include "pyir/pyir_types.h"
-#include "pyir/pyir_attrs.h"
 
+#include <mlir/Conversion/ArithToLLVM/ArithToLLVM.h>
+#include <mlir/Conversion/ControlFlowToLLVM/ControlFlowToLLVM.h>
+#include <mlir/Conversion/FuncToLLVM/ConvertFuncToLLVM.h>
 #include <mlir/Conversion/LLVMCommon/ConversionTarget.h>
 #include <mlir/Conversion/LLVMCommon/TypeConverter.h>
+#include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Dialect/LLVMIR/LLVMDialect.h>
 #include <mlir/Dialect/LLVMIR/LLVMTypes.h>
 #include <mlir/IR/BuiltinOps.h>
 #include <mlir/Pass/Pass.h>
 #include <mlir/Transforms/DialectConversion.h>
-#include <mlir/Conversion/FuncToLLVM/ConvertFuncToLLVM.h>
-#include <mlir/Conversion/ArithToLLVM/ArithToLLVM.h>
-#include <mlir/Dialect/Arith/IR/Arith.h>
-#include <mlir/Conversion/ControlFlowToLLVM/ControlFlowToLLVM.h>
 
 #include <mlir/Transforms/Passes.h>
 
-#include "lowering/pyir_conversion_utils.h"
 #include "lowering/builder_lowering.h"
 #include "lowering/control_flow_lowering.h"
 #include "lowering/function_lowering.h"
 #include "lowering/logical_lowering.h"
 #include "lowering/memory_lowering.h"
+#include "lowering/pyir_conversion_utils.h"
 #include "utils.h"
 
 
@@ -55,7 +55,7 @@ static void addPyIRTypeConversions(mlir::LLVMTypeConverter& converter) {
  * as illegal and the LLVM dialect as legal, so applyFullConversion will fail if any PyIR ops remain after the patterns
  * have been applied.
  */
-struct PyIRToLLVMPass : mlir::PassWrapper<PyIRToLLVMPass, mlir::OperationPass<mlir::ModuleOp> > {
+struct PyIRToLLVMPass : mlir::PassWrapper<PyIRToLLVMPass, mlir::OperationPass<mlir::ModuleOp>> {
     MLIR_DEFINE_EXPLICIT_INTERNAL_INLINE_TYPE_ID(PyIRToLLVMPass)
 
     void getDependentDialects(mlir::DialectRegistry& registry) const override {
@@ -87,39 +87,17 @@ struct PyIRToLLVMPass : mlir::PassWrapper<PyIRToLLVMPass, mlir::OperationPass<ml
 };
 
 
-void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns,
-                                mlir::LLVMTypeConverter& typeConverter) {
+void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns, mlir::LLVMTypeConverter& typeConverter) {
     mlir::MLIRContext* ctx = patterns.getContext();
-    patterns.add<
-        IsTruthyLowering,
-        ToBoolLowering,
-        UnaryNegativeLowering,
-        UnaryNotLowering,
-        UnaryInvertLowering,
-        BinaryOpLowering,
-        CompareOpLowering,
-        LoadFastLowering,
-        StoreFastLowering,
-        LoadNameLowering,
-        StoreNameLowering,
-        LoadConstLowering,
-        PushNullLowering,
-        CallLowering,
-        PopTopLowering,
-        FormatSimpleLowering,
-        BuildStringLowering,
-        PushScopeLowering,
-        PopScopeLowering,
-        LoadArgLowering,
-        MakeFunctionLowering,
-        ReturnValueLowering
-    >(typeConverter, ctx);
+    patterns.add<IsTruthyLowering, ToBoolLowering, UnaryNegativeLowering, UnaryNotLowering, UnaryInvertLowering,
+                 BinaryOpLowering, CompareOpLowering, LoadFastLowering, StoreFastLowering, LoadNameLowering,
+                 StoreNameLowering, LoadConstLowering, PushNullLowering, CallLowering, PopTopLowering,
+                 FormatSimpleLowering, BuildStringLowering, PushScopeLowering, PopScopeLowering, LoadArgLowering,
+                 MakeFunctionLowering, ReturnValueLowering>(typeConverter, ctx);
 }
 
 
-std::unique_ptr<mlir::Pass> createPyIRToLLVMPass() {
-    return std::make_unique<PyIRToLLVMPass>();
-}
+std::unique_ptr<mlir::Pass> createPyIRToLLVMPass() { return std::make_unique<PyIRToLLVMPass>(); }
 
 
 void lowerToLLVMDialect(mlir::MLIRContext& ctx, const mlir::OwningOpRef<mlir::ModuleOp>& module) {

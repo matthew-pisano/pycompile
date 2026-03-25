@@ -5,8 +5,8 @@
 #ifndef PYCOMPILE_FUNCTION_LOWERING_H
 #define PYCOMPILE_FUNCTION_LOWERING_H
 
-#include "pyir/pyir_ops.h"
 #include "lowering/pyir_conversion_utils.h"
+#include "pyir/pyir_ops.h"
 
 
 /**
@@ -26,8 +26,8 @@
  * For zero-argument calls, a null pointer is passed instead of an array.
  */
 struct CallLowering : PyIROpConversion {
-    CallLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::Call::getOperationName(), tc, ctx) {
-    }
+    CallLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::Call::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
@@ -41,8 +41,8 @@ struct CallLowering : PyIROpConversion {
  *     llvm.call @pyir_pushScope()
  */
 struct PushScopeLowering : PyIROpConversion {
-    PushScopeLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::PushScope::getOperationName(), tc, ctx) {
-    }
+    PushScopeLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::PushScope::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
@@ -56,8 +56,8 @@ struct PushScopeLowering : PyIROpConversion {
  *     llvm.call @pyir_popScope()
  */
 struct PopScopeLowering : PyIROpConversion {
-    PopScopeLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::PopScope::getOperationName(), tc, ctx) {
-    }
+    PopScopeLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::PopScope::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
@@ -75,8 +75,8 @@ struct PopScopeLowering : PyIROpConversion {
  *     %val = llvm.call @pyir_makeFunction(%ptr)
  */
 struct MakeFunctionLowering : PyIROpConversion {
-    MakeFunctionLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::MakeFunction::getOperationName(), tc, ctx) {
-    }
+    MakeFunctionLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::MakeFunction::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
@@ -90,11 +90,11 @@ struct MakeFunctionLowering : PyIROpConversion {
  *     llvm.return %val
  */
 struct ReturnValueLowering : PyIROpConversion {
-    ReturnValueLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::ReturnValue::getOperationName(), tc, ctx) {
-    }
+    ReturnValueLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::ReturnValue::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
 };
 
-#endif //PYCOMPILE_FUNCTION_LOWERING_H
+#endif // PYCOMPILE_FUNCTION_LOWERING_H

@@ -34,8 +34,8 @@ TEST_CASE("Test Integer Assign Bytecode") {
     SECTION("Test Small Integer") {
         const std::string source = "x = 42";
         const std::vector expectedOpcodes = {PythonOpcode::RESUME, PythonOpcode::LOAD_SMALL_INT,
-                                             PythonOpcode::STORE_NAME,
-                                             PythonOpcode::LOAD_CONST, PythonOpcode::RETURN_VALUE};
+                                             PythonOpcode::STORE_NAME, PythonOpcode::LOAD_CONST,
+                                             PythonOpcode::RETURN_VALUE};
         const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
         const std::vector<PythonOpcode> opcodes = extractInstructionOpcodes(bytecodeModule.instructions);
 
@@ -50,8 +50,7 @@ TEST_CASE("Test Integer Assign Bytecode") {
 
     SECTION("Test Large Integer") {
         const std::string source = "x = 2147483646";
-        const std::vector expectedOpcodes = {PythonOpcode::RESUME, PythonOpcode::LOAD_CONST,
-                                             PythonOpcode::STORE_NAME,
+        const std::vector expectedOpcodes = {PythonOpcode::RESUME, PythonOpcode::LOAD_CONST, PythonOpcode::STORE_NAME,
                                              PythonOpcode::LOAD_CONST, PythonOpcode::RETURN_VALUE};
         const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
         const std::vector<PythonOpcode> opcodes = extractInstructionOpcodes(bytecodeModule.instructions);
@@ -65,10 +64,10 @@ TEST_CASE("Test Integer Assign Bytecode") {
 
 TEST_CASE("Test Function Bytecode") {
     const std::string source = "def func(x): return x + 1\nfunc(2)";
-    const std::vector expectedOpcodes = {PythonOpcode::RESUME, PythonOpcode::LOAD_CONST, PythonOpcode::MAKE_FUNCTION,
-                                         PythonOpcode::STORE_NAME, PythonOpcode::LOAD_NAME, PythonOpcode::PUSH_NULL,
-                                         PythonOpcode::LOAD_SMALL_INT, PythonOpcode::CALL, PythonOpcode::POP_TOP,
-                                         PythonOpcode::LOAD_CONST, PythonOpcode::RETURN_VALUE};
+    const std::vector expectedOpcodes = {
+            PythonOpcode::RESUME,    PythonOpcode::LOAD_CONST, PythonOpcode::MAKE_FUNCTION,  PythonOpcode::STORE_NAME,
+            PythonOpcode::LOAD_NAME, PythonOpcode::PUSH_NULL,  PythonOpcode::LOAD_SMALL_INT, PythonOpcode::CALL,
+            PythonOpcode::POP_TOP,   PythonOpcode::LOAD_CONST, PythonOpcode::RETURN_VALUE};
     const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
     const std::vector<PythonOpcode> opcodes = extractInstructionOpcodes(bytecodeModule.instructions);
 
@@ -84,10 +83,9 @@ TEST_CASE("Test Function Bytecode") {
 TEST_CASE("Test Builtin Bytecode") {
     SECTION("Test Print Builtin") {
         const std::string source = "print('hello')";
-        const std::vector expectedOpcodes = {PythonOpcode::RESUME, PythonOpcode::LOAD_NAME,
-                                             PythonOpcode::PUSH_NULL,
-                                             PythonOpcode::LOAD_CONST, PythonOpcode::CALL, PythonOpcode::POP_TOP,
-                                             PythonOpcode::LOAD_CONST, PythonOpcode::RETURN_VALUE};
+        const std::vector expectedOpcodes = {
+                PythonOpcode::RESUME, PythonOpcode::LOAD_NAME, PythonOpcode::PUSH_NULL,  PythonOpcode::LOAD_CONST,
+                PythonOpcode::CALL,   PythonOpcode::POP_TOP,   PythonOpcode::LOAD_CONST, PythonOpcode::RETURN_VALUE};
         const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
         const std::vector<PythonOpcode> opcodes = extractInstructionOpcodes(bytecodeModule.instructions);
         REQUIRE(opcodes == expectedOpcodes);
@@ -97,10 +95,9 @@ TEST_CASE("Test Builtin Bytecode") {
 
     SECTION("Test Input Builtin") {
         const std::string source = "input('prompt')";
-        const std::vector expectedOpcodes = {PythonOpcode::RESUME, PythonOpcode::LOAD_NAME,
-                                             PythonOpcode::PUSH_NULL,
-                                             PythonOpcode::LOAD_CONST, PythonOpcode::CALL, PythonOpcode::POP_TOP,
-                                             PythonOpcode::LOAD_CONST, PythonOpcode::RETURN_VALUE};
+        const std::vector expectedOpcodes = {
+                PythonOpcode::RESUME, PythonOpcode::LOAD_NAME, PythonOpcode::PUSH_NULL,  PythonOpcode::LOAD_CONST,
+                PythonOpcode::CALL,   PythonOpcode::POP_TOP,   PythonOpcode::LOAD_CONST, PythonOpcode::RETURN_VALUE};
         const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
         const std::vector<PythonOpcode> opcodes = extractInstructionOpcodes(bytecodeModule.instructions);
 
@@ -113,21 +110,38 @@ TEST_CASE("Test Builtin Bytecode") {
 
 TEST_CASE("Test List Comprehension Bytecode") {
     const std::string source = "list1 = [1, 2, 3]\nlistnew = [x for x in list1 if x < 3]";
-    const std::vector expectedOpcodes = {PythonOpcode::RESUME, PythonOpcode::BUILD_LIST, PythonOpcode::LOAD_CONST,
-                                         PythonOpcode::LIST_EXTEND, PythonOpcode::STORE_NAME, PythonOpcode::LOAD_NAME,
-                                         PythonOpcode::GET_ITER, PythonOpcode::LOAD_FAST_AND_CLEAR, PythonOpcode::SWAP,
-                                         PythonOpcode::BUILD_LIST, PythonOpcode::SWAP, PythonOpcode::FOR_ITER,
-                                         PythonOpcode::STORE_FAST_LOAD_FAST, PythonOpcode::LOAD_SMALL_INT,
-                                         PythonOpcode::COMPARE_OP, PythonOpcode::POP_JUMP_IF_TRUE,
-                                         PythonOpcode::NOT_TAKEN,
-                                         PythonOpcode::JUMP_BACKWARD, PythonOpcode::LOAD_FAST_BORROW,
-                                         PythonOpcode::LIST_APPEND,
-                                         PythonOpcode::JUMP_BACKWARD, PythonOpcode::END_FOR,
-                                         PythonOpcode::POP_ITER, PythonOpcode::SWAP,
-                                         PythonOpcode::STORE_FAST, PythonOpcode::STORE_NAME,
+    const std::vector expectedOpcodes = {PythonOpcode::RESUME,
+                                         PythonOpcode::BUILD_LIST,
                                          PythonOpcode::LOAD_CONST,
-                                         PythonOpcode::RETURN_VALUE, PythonOpcode::SWAP, PythonOpcode::POP_TOP,
-                                         PythonOpcode::SWAP, PythonOpcode::STORE_FAST,
+                                         PythonOpcode::LIST_EXTEND,
+                                         PythonOpcode::STORE_NAME,
+                                         PythonOpcode::LOAD_NAME,
+                                         PythonOpcode::GET_ITER,
+                                         PythonOpcode::LOAD_FAST_AND_CLEAR,
+                                         PythonOpcode::SWAP,
+                                         PythonOpcode::BUILD_LIST,
+                                         PythonOpcode::SWAP,
+                                         PythonOpcode::FOR_ITER,
+                                         PythonOpcode::STORE_FAST_LOAD_FAST,
+                                         PythonOpcode::LOAD_SMALL_INT,
+                                         PythonOpcode::COMPARE_OP,
+                                         PythonOpcode::POP_JUMP_IF_TRUE,
+                                         PythonOpcode::NOT_TAKEN,
+                                         PythonOpcode::JUMP_BACKWARD,
+                                         PythonOpcode::LOAD_FAST_BORROW,
+                                         PythonOpcode::LIST_APPEND,
+                                         PythonOpcode::JUMP_BACKWARD,
+                                         PythonOpcode::END_FOR,
+                                         PythonOpcode::POP_ITER,
+                                         PythonOpcode::SWAP,
+                                         PythonOpcode::STORE_FAST,
+                                         PythonOpcode::STORE_NAME,
+                                         PythonOpcode::LOAD_CONST,
+                                         PythonOpcode::RETURN_VALUE,
+                                         PythonOpcode::SWAP,
+                                         PythonOpcode::POP_TOP,
+                                         PythonOpcode::SWAP,
+                                         PythonOpcode::STORE_FAST,
                                          PythonOpcode::RERAISE};
     const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
     const std::vector<PythonOpcode> opcodes = extractInstructionOpcodes(bytecodeModule.instructions);
@@ -142,13 +156,13 @@ TEST_CASE("Test List Comprehension Bytecode") {
 
 TEST_CASE("Test Simple Arithmetic Bytecode") {
     const std::string source = "a = 1\nb = 2\nsummed = a + b\nprint(summed)";
-    const std::vector expectedOpcodes = {PythonOpcode::RESUME, PythonOpcode::LOAD_SMALL_INT, PythonOpcode::STORE_NAME,
-                                         PythonOpcode::LOAD_SMALL_INT, PythonOpcode::STORE_NAME,
-                                         PythonOpcode::LOAD_NAME,
-                                         PythonOpcode::LOAD_NAME, PythonOpcode::BINARY_OP, PythonOpcode::STORE_NAME,
-                                         PythonOpcode::LOAD_NAME, PythonOpcode::PUSH_NULL, PythonOpcode::LOAD_NAME,
-                                         PythonOpcode::CALL, PythonOpcode::POP_TOP,
-                                         PythonOpcode::LOAD_CONST, PythonOpcode::RETURN_VALUE};
+    const std::vector expectedOpcodes = {
+            PythonOpcode::RESUME,         PythonOpcode::LOAD_SMALL_INT, PythonOpcode::STORE_NAME,
+            PythonOpcode::LOAD_SMALL_INT, PythonOpcode::STORE_NAME,     PythonOpcode::LOAD_NAME,
+            PythonOpcode::LOAD_NAME,      PythonOpcode::BINARY_OP,      PythonOpcode::STORE_NAME,
+            PythonOpcode::LOAD_NAME,      PythonOpcode::PUSH_NULL,      PythonOpcode::LOAD_NAME,
+            PythonOpcode::CALL,           PythonOpcode::POP_TOP,        PythonOpcode::LOAD_CONST,
+            PythonOpcode::RETURN_VALUE};
     const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
     const std::vector<PythonOpcode> opcodes = extractInstructionOpcodes(bytecodeModule.instructions);
 

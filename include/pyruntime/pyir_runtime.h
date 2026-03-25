@@ -11,4 +11,4 @@
 #include "pyruntime/logical_runtime.h"
 #include "pyruntime/memory_runtime.h"
 
-#endif //PYCOMPILE_PYIR_RUNTIME_H
+#endif // PYCOMPILE_PYIR_RUNTIME_H

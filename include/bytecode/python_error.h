@@ -13,4 +13,4 @@
  */
 std::string getPythonErrorTraceback();
 
-#endif //PYCOMPILE_TRACEBACK_H
+#endif // PYCOMPILE_TRACEBACK_H

@@ -18,9 +18,7 @@ std::string getPythonErrorTraceback() {
     std::string msg;
 
     if (tracebackModule) {
-        PyObject* lines = PyObject_CallMethod(tracebackModule, "format_exception",
-                                              "OOO",
-                                              PyObject_Type(exc), exc,
+        PyObject* lines = PyObject_CallMethod(tracebackModule, "format_exception", "OOO", PyObject_Type(exc), exc,
                                               PyException_GetTraceback(exc));
         if (lines) {
             PyObject* joined = PyUnicode_Join(PyUnicode_FromString(""), lines);

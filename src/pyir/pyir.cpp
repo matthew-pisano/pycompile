@@ -4,9 +4,9 @@
 
 #include "pyir/pyir.h"
 
+#include "pyir/pyir_attrs.h"
 #include "pyir/pyir_ops.h"
 #include "pyir/pyir_types.h"
-#include "pyir/pyir_attrs.h"
 
 #include "pyir.cpp.inc"
 

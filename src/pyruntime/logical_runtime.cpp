@@ -10,9 +10,7 @@
 #include "pyruntime/runtime_util.h"
 
 
-int8_t pyir_isTruthy(const Value* val) {
-    return valueToBool(val) ? 1 : 0;
-}
+int8_t pyir_isTruthy(const Value* val) { return valueToBool(val) ? 1 : 0; }
 
 
 Value* pyir_add(const Value* lhs, const Value* rhs) {
@@ -81,19 +79,19 @@ Value* pyir_mod(const Value* lhs, const Value* rhs) {
 
 
 Value* pyir_eq(const Value* lhs, const Value* rhs) {
-    return std::visit([]<typename T0, typename T1>(const T0& l, const T1& r) -> Value* {
-        using L = std::decay_t<T0>;
-        using R = std::decay_t<T1>;
-        if constexpr (std::is_same_v<L, R>)
-            return new Value(l == r);
-        return new Value(false);
-    }, lhs->data, rhs->data);
+    return std::visit(
+            []<typename T0, typename T1>(const T0& l, const T1& r) -> Value* {
+                using L = std::decay_t<T0>;
+                using R = std::decay_t<T1>;
+                if constexpr (std::is_same_v<L, R>)
+                    return new Value(l == r);
+                return new Value(false);
+            },
+            lhs->data, rhs->data);
 }
 
 
-Value* pyir_ne(const Value* lhs, const Value* rhs) {
-    return new Value(!std::get<bool>(pyir_eq(lhs, rhs)->data));
-}
+Value* pyir_ne(const Value* lhs, const Value* rhs) { return new Value(!std::get<bool>(pyir_eq(lhs, rhs)->data)); }
 
 
 Value* pyir_lt(const Value* lhs, const Value* rhs) {
@@ -114,14 +112,10 @@ Value* pyir_le(const Value* lhs, const Value* rhs) {
 }
 
 
-Value* pyir_gt(const Value* lhs, const Value* rhs) {
-    return pyir_lt(rhs, lhs);
-}
+Value* pyir_gt(const Value* lhs, const Value* rhs) { return pyir_lt(rhs, lhs); }
 
 
-Value* pyir_ge(const Value* lhs, const Value* rhs) {
-    return pyir_le(rhs, lhs);
-}
+Value* pyir_ge(const Value* lhs, const Value* rhs) { return pyir_le(rhs, lhs); }
 
 
 Value* pyir_unaryNegative(const Value* val) {
@@ -154,11 +148,7 @@ Value* pyir_xor(const Value* lhs, const Value* rhs) {
 }
 
 
-Value* pyir_toBool(const Value* val) {
-    return new Value(valueToBool(val));
-}
+Value* pyir_toBool(const Value* val) { return new Value(valueToBool(val)); }
 
 
-Value* pyir_formatSimple(const Value* val) {
-    return new Value(valueToString(val));
-}
+Value* pyir_formatSimple(const Value* val) { return new Value(valueToString(val)); }

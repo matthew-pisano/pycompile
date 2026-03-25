@@ -4,10 +4,10 @@
 
 #include "utils.h"
 
-#include <stdexcept>
 #include <fstream>
-#include <sstream>
 #include <mlir/IR/Location.h>
+#include <sstream>
+#include <stdexcept>
 
 std::string readFileString(const std::string& filename) {
     std::ifstream file(filename);

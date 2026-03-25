@@ -5,12 +5,13 @@
 #ifndef PYCOMPILE_BUILDER_LOWERING_H
 #define PYCOMPILE_BUILDER_LOWERING_H
 
-#include "pyir/pyir_ops.h"
 #include "lowering/pyir_conversion_utils.h"
+#include "pyir/pyir_ops.h"
 
 
 /**
- * Lowers pyir.pyir_buildString to allocate memory and construct a new string using the runtime function pyir_buildString
+ * Lowers pyir.pyir_buildString to allocate memory and construct a new string using the runtime function
+ * pyir_buildString
  *
  * Parts are stack-allocated as a Value*[] array and passed by pointer along with the part count.
  * The runtime concatenates all parts into a single string Value*.
@@ -25,11 +26,11 @@
  *     %result = llvm.call @pyir_buildString(%arr, n)
  */
 struct BuildStringLowering : PyIROpConversion {
-    BuildStringLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::BuildString::getOperationName(), tc, ctx) {
-    }
+    BuildStringLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::BuildString::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
 };
 
-#endif //PYCOMPILE_BUILDER_LOWERING_H
+#endif // PYCOMPILE_BUILDER_LOWERING_H

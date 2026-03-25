@@ -9,9 +9,7 @@
 #include "pyruntime/runtime_state.h"
 
 
-void pyir_pushScope() {
-    scopeStack.emplace_back();
-}
+void pyir_pushScope() { scopeStack.emplace_back(); }
 
 
 void pyir_popScope() {
@@ -20,9 +18,7 @@ void pyir_popScope() {
 }
 
 
-Value* pyir_makeFunction(void* fn_ptr) {
-    return new Value(reinterpret_cast<Value::Fn>(fn_ptr));
-}
+Value* pyir_makeFunction(void* fn_ptr) { return new Value(reinterpret_cast<Value::Fn>(fn_ptr)); }
 
 
 Value* pyir_call(const Value* callee, Value** args, const int64_t argc) {
@@ -40,7 +36,4 @@ void pyir_decref(Value* v) {
 }
 
 
-Value* pyir_pushNull() {
-    return nullptr;
-}
-
+Value* pyir_pushNull() { return nullptr; }

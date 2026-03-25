@@ -7,12 +7,12 @@
 
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 
-#include "codegen_utils.h"
 #include "bytecode/bytecode.h"
+#include "codegen_utils.h"
 
 
 void loadSmallIntCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
-                       const ByteCodeInstruction& instr, ConversionMeta& meta);
+                         const ByteCodeInstruction& instr, ConversionMeta& meta);
 
 
 void loadGlobalCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
@@ -50,4 +50,4 @@ void storeDerefCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, cons
 void loadConstCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                       const mlir::func::FuncOp& fn, const ByteCodeInstruction& instr, ConversionMeta& meta);
 
-#endif //PYCOMPILE_MEMORY_CODEGEN_H
+#endif // PYCOMPILE_MEMORY_CODEGEN_H

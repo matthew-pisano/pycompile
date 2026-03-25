@@ -4,8 +4,8 @@
 
 #ifndef PYCOMPILE_UTILS_H
 #define PYCOMPILE_UTILS_H
-#include <string>
 #include <mlir/IR/BuiltinOps.h>
+#include <string>
 
 
 /**
@@ -36,9 +36,7 @@ public:
         this->msg = std::format("{}:{}:{}: error: {}", filename, lineno, offset, msg);
     }
 
-    [[nodiscard]] const char* what() const noexcept override {
-        return msg.c_str();
-    }
+    [[nodiscard]] const char* what() const noexcept override { return msg.c_str(); }
 
 private:
     std::string msg;
@@ -70,4 +68,4 @@ void writeFileString(const std::string& filename, const std::string& content);
  */
 std::string getMLIRModuleName(const mlir::OwningOpRef<mlir::ModuleOp>& mlirModule);
 
-#endif //PYCOMPILE_UTILS_H
+#endif // PYCOMPILE_UTILS_H

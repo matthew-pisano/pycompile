@@ -7,8 +7,8 @@
 
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 
-#include "codegen_utils.h"
 #include "bytecode/bytecode.h"
+#include "codegen_utils.h"
 
 
 void jumpForwardCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const ByteCodeInstruction& instr,
@@ -22,4 +22,4 @@ void popJumpIfTrueCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, m
 void popJumpIfFalseCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, mlir::func::FuncOp& fn,
                            const ByteCodeInstruction& instr, ConversionMeta& meta);
 
-#endif //PYCOMPILE_CONTROL_FLOW_CODEGEN_H
+#endif // PYCOMPILE_CONTROL_FLOW_CODEGEN_H

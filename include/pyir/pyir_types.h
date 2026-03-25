@@ -15,4 +15,4 @@
 #include "pyir_types.h.inc"
 #undef GET_TYPEDEF_CLASSES
 
-#endif //PYCOMPILE_PYIR_TYPES_H
+#endif // PYCOMPILE_PYIR_TYPES_H

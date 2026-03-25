@@ -1,18 +1,18 @@
 #include <CLI/CLI.hpp>
 #include <Python.h>
-#include <iostream>
-#include <mlir/IR/OwningOpRef.h>
 #include <filesystem>
+#include <iostream>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
+#include <mlir/IR/OwningOpRef.h>
 
 #include "bytecode/bytecode.h"
-#include "utils.h"
-#include "version.h"
 #include "bytecode/serialize_bytecode.h"
+#include "conversion/pyir_codegen.h"
 #include "lowering/llvm_export.h"
 #include "lowering/pyir_lowering.h"
-#include "conversion/pyir_codegen.h"
+#include "utils.h"
+#include "version.h"
 
 
 /**
@@ -38,9 +38,9 @@ void exportByteCode(const std::vector<ByteCodeModule>& bytecodeModules, const st
 /**
  * Serializes MLIR in textual format.
  * @param mlirModules The MLIR modules to serialize.
-* @param filename The filename to write to if a single module. Otherwise, names will be assumed.
+ * @param filename The filename to write to if a single module. Otherwise, names will be assumed.
  */
-void exportMLIRModules(const std::vector<mlir::OwningOpRef<mlir::ModuleOp> >& mlirModules,
+void exportMLIRModules(const std::vector<mlir::OwningOpRef<mlir::ModuleOp>>& mlirModules,
                        const std::string& filename = "") {
     for (const mlir::OwningOpRef<mlir::ModuleOp>& mlirModule : mlirModules) {
         std::string moduleFileName = filename;
@@ -151,7 +151,7 @@ int main(const int argc, char* argv[]) {
 
     // Lower bytecode into PYIR MLIR dialect
     mlir::MLIRContext context; // Must exit scope after all other MLIR instances
-    std::vector<mlir::OwningOpRef<mlir::ModuleOp> > mlirModules;
+    std::vector<mlir::OwningOpRef<mlir::ModuleOp>> mlirModules;
     for (const ByteCodeModule& module : bytecodeModules) {
         try {
             mlirModules.push_back(generatePyIR(context, module));

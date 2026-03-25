@@ -6,21 +6,21 @@
 
 #include <filesystem>
 #include <iostream>
-#include <mlir/IR/Verifier.h>
-#include <mlir/IR/AsmState.h>
-#include <mlir/Dialect/ControlFlow/IR/ControlFlowOps.h>
 #include <mlir/Dialect/Arith/IR/Arith.h>
+#include <mlir/Dialect/ControlFlow/IR/ControlFlowOps.h>
 #include <mlir/Dialect/Func/IR/FuncOps.h>
+#include <mlir/IR/AsmState.h>
+#include <mlir/IR/Verifier.h>
 
-#include "utils.h"
 #include "conversion/builder_codegen.h"
 #include "conversion/codegen_utils.h"
 #include "conversion/control_flow_codegen.h"
 #include "conversion/function_codegen.h"
 #include "conversion/logical_codegen.h"
 #include "conversion/memory_codegen.h"
-#include "pyir/pyir_ops.h"
 #include "pyir/pyir_attrs.h"
+#include "pyir/pyir_ops.h"
+#include "utils.h"
 
 /**
  * Mangles a Python module name to work as a valid MLIR symbol
@@ -176,24 +176,23 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
     mlir::FunctionType fnType;
     if (meta.isFunction)
         // Value*(Value** args, int64_t argc), matches Value::Fn
-        fnType = builder.getFunctionType(
-                {pyType, pyType}, // args_ptr, argc
-                {pyType} // return Value*
-                );
+        fnType = builder.getFunctionType({pyType, pyType}, // args_ptr, argc
+                                         {pyType} // return Value*
+        );
     else
         // Module-level: no args, no return
         fnType = builder.getFunctionType({}, {});
 
 
-    mlir::func::FuncOp fn = builder.create<mlir::func::FuncOp>(mlir::UnknownLoc::get(&ctx),
-                                                               llvm::StringRef(moduleName), fnType);
+    mlir::func::FuncOp fn =
+            builder.create<mlir::func::FuncOp>(mlir::UnknownLoc::get(&ctx), llvm::StringRef(moduleName), fnType);
 
     mlir::Block* block = fn.addEntryBlock();
     builder.setInsertionPointToStart(block);
 
-    const mlir::Location preambleLoc = module.instructions.empty()
-                                           ? mlir::UnknownLoc::get(&ctx)
-                                           : getInstructionLocation(ctx, module.instructions.front(), module.filename);
+    const mlir::Location preambleLoc =
+            module.instructions.empty() ? mlir::UnknownLoc::get(&ctx)
+                                        : getInstructionLocation(ctx, module.instructions.front(), module.filename);
 
     // For functions, emit push_scope + arg unpacking preamble using block arguments
     if (meta.isFunction) {
@@ -232,7 +231,6 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
 
         buildMLIRInstruction(builder, ctx, module, fn, instr, meta);
     }
-
 }
 
 
@@ -289,7 +287,7 @@ mlir::OwningOpRef<mlir::ModuleOp> generatePyIR(mlir::MLIRContext& ctx, const Byt
 
 
 mlir::OwningOpRef<mlir::ModuleOp> mergePyIRModules(mlir::MLIRContext& ctx,
-                                                   std::vector<mlir::OwningOpRef<mlir::ModuleOp> >& mlirModules) {
+                                                   std::vector<mlir::OwningOpRef<mlir::ModuleOp>>& mlirModules) {
     if (mlirModules.empty())
         throw std::runtime_error("Cannot merge an empty module list");
 

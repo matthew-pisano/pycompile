@@ -52,26 +52,16 @@ void pyir_storeName(const char* name, Value* val) {
 }
 
 
-Value* pyir_loadConstStr(const char* str) {
-    return new Value(std::string(str));
-}
+Value* pyir_loadConstStr(const char* str) { return new Value(std::string(str)); }
 
 
-Value* pyir_loadConstInt(const int64_t val) {
-    return new Value(val);
-}
+Value* pyir_loadConstInt(const int64_t val) { return new Value(val); }
 
 
-Value* pyir_loadConstFloat(const double_t val) {
-    return new Value(val);
-}
+Value* pyir_loadConstFloat(const double_t val) { return new Value(val); }
 
 
-Value* pyir_loadConstBool(const int8_t val) {
-    return new Value(val == 1);
-}
+Value* pyir_loadConstBool(const int8_t val) { return new Value(val == 1); }
 
 
-Value* pyir_loadConstNone() {
-    return new Value(NoneType{});
-}
+Value* pyir_loadConstNone() { return new Value(NoneType{}); }

@@ -59,8 +59,8 @@ void serializeInstruction(const ByteCodeInstruction& instr, std::ostream& os, co
     const std::string linenoStr = instr.lineno.has_value() ? "L" + std::to_string(*instr.lineno) : "L-";
 
     os << ind << lineStartStr << linenoStr << " offset " << std::setw(4) << std::left << instr.offset << " | "
-            << std::setw(30) << std::left << instr.opcode << " " << std::setw(10) << std::left << argTypeStr << " | "
-            << instRepr << std::endl;
+       << std::setw(30) << std::left << instr.opcode << " " << std::setw(10) << std::left << argTypeStr << " | "
+       << instRepr << std::endl;
 }
 
 
@@ -84,7 +84,7 @@ void serializeByteCodeModule(const ByteCodeModule& code, std::ostream& os, const
         os << ind << "exception table:\n";
         for (const ExceptionTableEntry& e : code.info.exceptionTable) {
             os << ind << "  [" << e.start << ", " << e.end << ") -> target " << e.target << "  depth " << e.depth
-                    << "  lasti " << (e.lasti ? "true" : "false") << "\n";
+               << "  lasti " << (e.lasti ? "true" : "false") << "\n";
         }
     }
 
@@ -96,7 +96,7 @@ void serializeByteCodeModule(const ByteCodeModule& code, std::ostream& os, const
         if (instr.argvalType == ArgvalType::Code) {
             os << ind << "  [nested code object]:\n";
             // Wrap nested instructions in a temporary DisassembledCode for printing
-            if (const auto* nestedPtr = std::get_if<std::shared_ptr<ByteCodeModule> >(&instr.argval)) {
+            if (const auto* nestedPtr = std::get_if<std::shared_ptr<ByteCodeModule>>(&instr.argval)) {
                 if (*nestedPtr)
                     serializeByteCodeModule(**nestedPtr, os, depth + 1);
             } else

@@ -4,12 +4,12 @@
 
 #include "conversion/function_codegen.h"
 
+#include <mlir/IR/Value.h>
 #include <string>
 #include <variant>
-#include <mlir/IR/Value.h>
 
-#include "utils.h"
 #include "pyir/pyir_ops.h"
+#include "utils.h"
 
 
 void makeFunctionCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
@@ -18,8 +18,7 @@ void makeFunctionCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const
     const mlir::Value sentinel = meta.stack.back();
     meta.stack.pop_back();
 
-    const std::string fnName = meta.pendingFunctions.at(
-            static_cast<mlir::Value*>(sentinel.getAsOpaquePointer()));
+    const std::string fnName = meta.pendingFunctions.at(static_cast<mlir::Value*>(sentinel.getAsOpaquePointer()));
     meta.pendingFunctions.erase(static_cast<mlir::Value*>(sentinel.getAsOpaquePointer()));
     // Erase the sentinel PushNull op since it was just a placeholder
     sentinel.getDefiningOp()->erase();

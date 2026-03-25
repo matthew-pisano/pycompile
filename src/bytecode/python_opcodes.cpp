@@ -10,7 +10,7 @@
 
 PythonOpcode pythonOpcodeFromString(const std::string& opcodeName) {
     static const std::unordered_map<std::string, PythonOpcode> table = {
-#define PYTHON_OPCODE(name, str) { str, PythonOpcode::name },
+#define PYTHON_OPCODE(name, str) {str, PythonOpcode::name},
 #include "bytecode/python_opcodes.inc"
 #undef PYTHON_OPCODE
     };
@@ -21,7 +21,9 @@ PythonOpcode pythonOpcodeFromString(const std::string& opcodeName) {
 
 std::string pythonOpcodeToString(const PythonOpcode opcode) {
     switch (opcode) {
-#define PYTHON_OPCODE(name, str) case PythonOpcode::name: return str;
+#define PYTHON_OPCODE(name, str)                                                                                       \
+    case PythonOpcode::name:                                                                                           \
+        return str;
 #include "bytecode/python_opcodes.inc"
 #undef PYTHON_OPCODE
         default:

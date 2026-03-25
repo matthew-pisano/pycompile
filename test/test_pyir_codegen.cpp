@@ -2,16 +2,16 @@
 // Created by matthew on 3/8/26.
 //
 
-#include <iostream>
 #include <catch2/catch_all.hpp>
+#include <iostream>
 #include <mlir/Dialect/ControlFlow/IR/ControlFlowOps.h>
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 
 
+#include "bytecode/bytecode.h"
 #include "conversion/pyir_codegen.h"
 #include "pyir/pyir_attrs.h"
 #include "pyir/pyir_ops.h"
-#include "bytecode/bytecode.h"
 
 
 /**
@@ -374,9 +374,8 @@ TEST_CASE_METHOD(MLIRFixture, "Test Function Definition MLIR") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("def foo():\n  print('bar')\nfoo()");
 
         // Collect all FuncOps in order: module fn, nested fn
-        llvm::SmallVector<mlir::func::FuncOp> fns(
-                (*module).getBody()->getOps<mlir::func::FuncOp>().begin(),
-                (*module).getBody()->getOps<mlir::func::FuncOp>().end());
+        llvm::SmallVector<mlir::func::FuncOp> fns((*module).getBody()->getOps<mlir::func::FuncOp>().begin(),
+                                                  (*module).getBody()->getOps<mlir::func::FuncOp>().end());
 
         mlir::func::FuncOp moduleFn = fns[0];
         mlir::func::FuncOp nestedFn = fns[1];
@@ -439,9 +438,8 @@ TEST_CASE_METHOD(MLIRFixture, "Test Function Definition MLIR") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("def foo(arg):\n  print(arg)\nfoo('bar')");
 
         // Collect all FuncOps in order: module fn, nested fn
-        llvm::SmallVector<mlir::func::FuncOp> fns(
-                (*module).getBody()->getOps<mlir::func::FuncOp>().begin(),
-                (*module).getBody()->getOps<mlir::func::FuncOp>().end());
+        llvm::SmallVector<mlir::func::FuncOp> fns((*module).getBody()->getOps<mlir::func::FuncOp>().begin(),
+                                                  (*module).getBody()->getOps<mlir::func::FuncOp>().end());
 
         mlir::func::FuncOp moduleFn = fns[0];
         mlir::func::FuncOp nestedFn = fns[1];
@@ -506,9 +504,8 @@ TEST_CASE_METHOD(MLIRFixture, "Test Function Definition MLIR") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("def foo():\n  return 'bar'\nprint(foo())");
 
         // Collect all FuncOps in order: module fn, nested fn
-        llvm::SmallVector<mlir::func::FuncOp> fns(
-                (*module).getBody()->getOps<mlir::func::FuncOp>().begin(),
-                (*module).getBody()->getOps<mlir::func::FuncOp>().end());
+        llvm::SmallVector<mlir::func::FuncOp> fns((*module).getBody()->getOps<mlir::func::FuncOp>().begin(),
+                                                  (*module).getBody()->getOps<mlir::func::FuncOp>().end());
 
         mlir::func::FuncOp moduleFn = fns[0];
         mlir::func::FuncOp nestedFn = fns[1];

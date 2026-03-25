@@ -6,9 +6,9 @@
 #define PYCOMPILE_PYIR_LOWERING_H
 
 #include <mlir/IR/MLIRContext.h>
+#include <mlir/IR/PatternMatch.h>
 #include <mlir/Pass/Pass.h>
 #include <mlir/Pass/PassManager.h>
-#include <mlir/IR/PatternMatch.h>
 
 #include <mlir/Conversion/LLVMCommon/TypeConverter.h>
 
@@ -16,7 +16,8 @@
 /**
  * Populates conversion patterns that lower PyIR ops to LLVM dialect ops.
  * @param patterns The patterns for conversion
-* @param typeConverter The type converter to use, must have PyIR type conversions registered via addPyIRTypeConversions.
+ * @param typeConverter The type converter to use, must have PyIR type conversions registered via
+ * addPyIRTypeConversions.
  */
 void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns, mlir::LLVMTypeConverter& typeConverter);
 
@@ -35,4 +36,4 @@ std::unique_ptr<mlir::Pass> createPyIRToLLVMPass();
  */
 void lowerToLLVMDialect(mlir::MLIRContext& ctx, const mlir::OwningOpRef<mlir::ModuleOp>& module);
 
-#endif //PYCOMPILE_PYIR_LOWERING_H
+#endif // PYCOMPILE_PYIR_LOWERING_H

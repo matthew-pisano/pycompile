@@ -7,8 +7,8 @@
 
 #include <mlir/IR/Builders.h>
 
-#include "codegen_utils.h"
 #include "bytecode/bytecode.h"
+#include "codegen_utils.h"
 
 
 void binaryOpCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
@@ -22,8 +22,7 @@ void compareOpCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ml
 void toBoolCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc, ConversionMeta& meta);
 
 
-void unaryNotCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
-                     ConversionMeta& meta);
+void unaryNotCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc, ConversionMeta& meta);
 
 
 void unaryNegativeCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
@@ -37,4 +36,4 @@ void unaryInvertCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const 
 void formatSimpleCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                          ConversionMeta& meta);
 
-#endif //PYCOMPILE_LOGICAL_CODEGEN_H
+#endif // PYCOMPILE_LOGICAL_CODEGEN_H

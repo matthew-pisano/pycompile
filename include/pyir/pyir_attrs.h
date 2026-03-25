@@ -5,12 +5,12 @@
 #ifndef PYCOMPILE_PYIR_ATTRS_H
 #define PYCOMPILE_PYIR_ATTRS_H
 
+#include <llvm/ADT/TypeSwitch.h>
 #include <mlir/IR/BuiltinAttributes.h>
 #include <mlir/IR/Dialect.h>
 #include <mlir/IR/DialectImplementation.h>
 #include <mlir/IR/OpDefinition.h>
 #include <mlir/IR/OpImplementation.h>
-#include <llvm/ADT/TypeSwitch.h>
 
 #include "pyir/pyir.h"
 
@@ -19,4 +19,4 @@
 #include "pyir_attrs.h.inc"
 #undef GET_ATTRDEF_CLASSES
 
-#endif //PYCOMPILE_PYIR_ATTRS_H
+#endif // PYCOMPILE_PYIR_ATTRS_H

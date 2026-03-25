@@ -4,13 +4,12 @@
 
 #ifndef PYCOMPILE_PYIR_VALUE_H
 #define PYCOMPILE_PYIR_VALUE_H
+#include <atomic>
 #include <string>
 #include <variant>
-#include <atomic>
 
 
-struct NoneType {
-};
+struct NoneType {};
 
 
 inline bool operator==(NoneType, NoneType) {
@@ -20,7 +19,7 @@ inline bool operator==(NoneType, NoneType) {
 
 
 struct Value {
-    using Fn = Value*(*)(Value**, int64_t);
+    using Fn = Value* (*) (Value**, int64_t);
     using Data = std::variant<NoneType, bool, int64_t, double, std::string, Fn>;
 
     Data data;
@@ -31,29 +30,17 @@ struct Value {
 
     Value& operator=(const Value&) = delete;
 
-    explicit Value(NoneType) :
-        data(NoneType{}) {
-    }
+    explicit Value(NoneType) : data(NoneType{}) {}
 
-    explicit Value(bool b) :
-        data(b) {
-    }
+    explicit Value(bool b) : data(b) {}
 
-    explicit Value(int64_t i) :
-        data(i) {
-    }
+    explicit Value(int64_t i) : data(i) {}
 
-    explicit Value(double f) :
-        data(f) {
-    }
+    explicit Value(double f) : data(f) {}
 
-    explicit Value(std::string s) :
-        data(std::move(s)) {
-    }
+    explicit Value(std::string s) : data(std::move(s)) {}
 
-    explicit Value(Fn f) :
-        data(f) {
-    }
+    explicit Value(Fn f) : data(f) {}
 
     void incref() { refcount.fetch_add(1, std::memory_order_relaxed); }
 
@@ -74,9 +61,7 @@ struct Value {
 struct ValueRef {
     Value* ptr;
 
-    explicit ValueRef(Value* p) :
-        ptr(p) {
-    }
+    explicit ValueRef(Value* p) : ptr(p) {}
 
     // takes ownership, no incref
     ~ValueRef() {
@@ -94,4 +79,4 @@ struct ValueRef {
 };
 
 
-#endif //PYCOMPILE_PYIR_VALUE_H
+#endif // PYCOMPILE_PYIR_VALUE_H

@@ -6,8 +6,8 @@
 #define PYCOMPILE_BYTECODE_H
 
 #define PY_SSIZE_T_CLEAN
-#include <memory>
 #include <Python.h>
+#include <memory>
 #include <optional>
 #include <string>
 #include <variant>
@@ -60,9 +60,9 @@ struct CodeInfo {
     std::vector<std::string> varnames;
 
     /**
-    * Names of local variables, arguments, and other identifiers used in the code object.
-    * Used for debugging and disassembly purposes.
-    */
+     * Names of local variables, arguments, and other identifiers used in the code object.
+     * Used for debugging and disassembly purposes.
+     */
     std::vector<std::string> names;
 
     /**
@@ -75,22 +75,13 @@ struct CodeInfo {
 /**
  * The type of the instruction argument, which can be one of several types depending on the opcode.
  */
-enum class ArgvalType {
-    None,
-    Bool,
-    Int,
-    Float,
-    Str,
-    TupleStr,
-    Code
-};
+enum class ArgvalType { None, Bool, Int, Float, Str, TupleStr, Code };
 
 
 /**
  * Dummy struct to represent the absence of an instruction argument, since some instructions have no argument.
  */
-struct ArgvalNone {
-};
+struct ArgvalNone {};
 
 
 // Forward declaration.
@@ -100,13 +91,8 @@ struct ByteCodeModule;
  * A variant type to represent the possible types of instruction arguments, which can be ArgvalNone, a bool, an int64_t,
  * a double_t, a string, a tuple of strings, or a nested code object (represented as a bytecode module).
  */
-using Argval = std::variant<ArgvalNone,
-                            bool,
-                            int64_t,
-                            double_t,
-                            std::string,
-                            std::vector<std::string>,
-                            std::shared_ptr<ByteCodeModule> >;
+using Argval = std::variant<ArgvalNone, bool, int64_t, double_t, std::string, std::vector<std::string>,
+                            std::shared_ptr<ByteCodeModule>>;
 
 
 /**
@@ -153,4 +139,4 @@ std::vector<ByteCodeModule> compilePython(const std::vector<std::string>& fileCo
  */
 ByteCodeModule compilePython(const std::string& fileContent, const std::string& fileName);
 
-#endif //PYCOMPILE_BYTECODE_H
+#endif // PYCOMPILE_BYTECODE_H

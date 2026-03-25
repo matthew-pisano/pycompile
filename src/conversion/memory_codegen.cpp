@@ -8,10 +8,10 @@
 #include <string>
 #include <variant>
 
-#include "utils.h"
 #include "conversion/pyir_codegen.h"
-#include "pyir/pyir_ops.h"
 #include "pyir/pyir_attrs.h"
+#include "pyir/pyir_ops.h"
+#include "utils.h"
 
 
 /// Global counter to build unique function names
@@ -36,7 +36,7 @@ std::string resolveDeref(const CodeInfo& info, const int64_t idx) {
 
 
 void loadSmallIntCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
-                       const ByteCodeInstruction& instr, ConversionMeta& meta) {
+                         const ByteCodeInstruction& instr, ConversionMeta& meta) {
     pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const int64_t* target = std::get_if<int64_t>(&instr.argval);
     if (!target)
@@ -147,7 +147,7 @@ void loadConstCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ml
     }
 
     // Nested code object: emit a child FuncOp and push its name for MAKE_FUNCTION
-    if (const auto* nestedPtr = std::get_if<std::shared_ptr<ByteCodeModule> >(&instr.argval)) {
+    if (const auto* nestedPtr = std::get_if<std::shared_ptr<ByteCodeModule>>(&instr.argval)) {
         const ByteCodeModule& nested = **nestedPtr;
 
         // Mangle a unique name: __pyfn_<funcname>_<counter>

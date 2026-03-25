@@ -2,17 +2,17 @@
 // Created by matthew on 3/22/26.
 //
 
+#include <catch2/catch_all.hpp>
 #include <llvm/ExecutionEngine/Orc/LLJIT.h>
 #include <llvm/ExecutionEngine/Orc/ThreadSafeModule.h>
 #include <llvm/Support/TargetSelect.h>
-#include <catch2/catch_all.hpp>
 #include <mlir/IR/MLIRContext.h>
 #include <mlir/IR/OwningOpRef.h>
 
 #include "bytecode/bytecode.h"
+#include "conversion/pyir_codegen.h"
 #include "lowering/llvm_export.h"
 #include "lowering/pyir_lowering.h"
-#include "conversion/pyir_codegen.h"
 #include "pyruntime/pyir_runtime.h"
 
 
@@ -87,8 +87,8 @@ struct JITFixture {
         llvm::orc::JITDylib& dylib = (*jit)->getMainJITDylib();
         llvm::orc::SymbolMap symbols;
         auto addSymbol = [&](const char* name, void* ptr) {
-            const llvm::orc::ExecutorSymbolDef sym = llvm::orc::ExecutorSymbolDef(llvm::orc::ExecutorAddr::fromPtr(ptr),
-                                                                                  llvm::JITSymbolFlags::Exported);
+            const llvm::orc::ExecutorSymbolDef sym =
+                    llvm::orc::ExecutorSymbolDef(llvm::orc::ExecutorAddr::fromPtr(ptr), llvm::JITSymbolFlags::Exported);
             symbols[(*jit)->getExecutionSession().intern(name)] = sym;
         };
 

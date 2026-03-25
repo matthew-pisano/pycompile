@@ -5,8 +5,8 @@
 #ifndef PYCOMPILE_CONTROL_FLOW_LOWERING_H
 #define PYCOMPILE_CONTROL_FLOW_LOWERING_H
 
-#include "pyir/pyir_ops.h"
 #include "lowering/pyir_conversion_utils.h"
+#include "pyir/pyir_ops.h"
 
 
 /**
@@ -16,8 +16,8 @@
  * lowered IR it becomes a runtime call that returns a null Value* sentinel, which the Call lowering discards.
  */
 struct PushNullLowering : PyIROpConversion {
-    PushNullLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::PushNull::getOperationName(), tc, ctx) {
-    }
+    PushNullLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::PushNull::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
@@ -31,11 +31,11 @@ struct PushNullLowering : PyIROpConversion {
  * can be erased. DCE will subsequently remove the producing op if it is Pure and has no other uses.
  */
 struct PopTopLowering : PyIROpConversion {
-    PopTopLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::PopTop::getOperationName(), tc, ctx) {
-    }
+    PopTopLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::PopTop::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
 };
 
-#endif //PYCOMPILE_CONTROL_FLOW_LOWERING_H
+#endif // PYCOMPILE_CONTROL_FLOW_LOWERING_H

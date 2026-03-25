@@ -5,8 +5,8 @@
 #ifndef PYCOMPILE_LOGICAL_LOWERING_H
 #define PYCOMPILE_LOGICAL_LOWERING_H
 
-#include "pyir/pyir_ops.h"
 #include "lowering/pyir_conversion_utils.h"
+#include "pyir/pyir_ops.h"
 
 
 /**
@@ -18,8 +18,8 @@
  *     %result = llvm.call @pyir_isTruthy(%val)
  */
 struct IsTruthyLowering : PyIROpConversion {
-    IsTruthyLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::IsTruthy::getOperationName(), tc, ctx) {
-    }
+    IsTruthyLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::IsTruthy::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
@@ -36,8 +36,8 @@ struct IsTruthyLowering : PyIROpConversion {
  *     %result = llvm.call @pyir_toBool(%val)
  */
 struct ToBoolLowering : PyIROpConversion {
-    ToBoolLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::ToBool::getOperationName(), tc, ctx) {
-    }
+    ToBoolLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::ToBool::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
@@ -53,8 +53,8 @@ struct ToBoolLowering : PyIROpConversion {
  *     %result = llvm.call @pyir_unaryInvert(%val)
  */
 struct UnaryInvertLowering : PyIROpConversion {
-    UnaryInvertLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::UnaryInvert::getOperationName(), tc, ctx) {
-    }
+    UnaryInvertLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::UnaryInvert::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
@@ -70,8 +70,8 @@ struct UnaryInvertLowering : PyIROpConversion {
  *     %result = llvm.call @pyir_unaryNegative(%val)
  */
 struct UnaryNegativeLowering : PyIROpConversion {
-    UnaryNegativeLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::UnaryNegative::getOperationName(), tc, ctx) {
-    }
+    UnaryNegativeLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::UnaryNegative::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
@@ -87,8 +87,8 @@ struct UnaryNegativeLowering : PyIROpConversion {
  *     %result = llvm.call @pyir_unaryNot(%val)
  */
 struct UnaryNotLowering : PyIROpConversion {
-    UnaryNotLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::UnaryNot::getOperationName(), tc, ctx) {
-    }
+    UnaryNotLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::UnaryNot::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
@@ -105,8 +105,8 @@ struct UnaryNotLowering : PyIROpConversion {
  *     %result = llvm.call @pyir_add(%lhs, %rhs)
  */
 struct BinaryOpLowering : PyIROpConversion {
-    BinaryOpLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::BinaryOp::getOperationName(), tc, ctx) {
-    }
+    BinaryOpLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::BinaryOp::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
@@ -123,8 +123,8 @@ struct BinaryOpLowering : PyIROpConversion {
  *     %result = llvm.call @pyir_eq(%lhs, %rhs)
  */
 struct CompareOpLowering : PyIROpConversion {
-    CompareOpLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::CompareOp::getOperationName(), tc, ctx) {
-    }
+    CompareOpLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::CompareOp::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
@@ -140,11 +140,11 @@ struct CompareOpLowering : PyIROpConversion {
  *     %result = llvm.call @pyir_formatSimple(%val)
  */
 struct FormatSimpleLowering : PyIROpConversion {
-    FormatSimpleLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::FormatSimple::getOperationName(), tc, ctx) {
-    }
+    FormatSimpleLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::FormatSimple::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
 };
 
-#endif //PYCOMPILE_LOGICAL_LOWERING_H
+#endif // PYCOMPILE_LOGICAL_LOWERING_H

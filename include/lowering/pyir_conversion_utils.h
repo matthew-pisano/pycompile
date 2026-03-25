@@ -5,40 +5,40 @@
 #ifndef PYCOMPILE_PYIR_CONVERSION_UTILS_H
 #define PYCOMPILE_PYIR_CONVERSION_UTILS_H
 
-#include <mlir/IR/MLIRContext.h>
-#include <mlir/Dialect/LLVMIR/LLVMTypes.h>
 #include <mlir/Conversion/LLVMCommon/TypeConverter.h>
 #include <mlir/Dialect/LLVMIR/LLVMDialect.h>
+#include <mlir/Dialect/LLVMIR/LLVMTypes.h>
+#include <mlir/IR/MLIRContext.h>
 
 /**
  * Returns an opaque LLVM pointer type (!llvm.ptr) in the given context.
  * Used as the LLVM representation of pyir::Value* throughout the lowering.
  */
-mlir::LLVM::LLVMPointerType ptrType(mlir::MLIRContext * ctx);
+mlir::LLVM::LLVMPointerType ptrType(mlir::MLIRContext* ctx);
 
 
 /**
  * Returns a bool (8-bit integer for LLVM) type in the given context.
  */
-mlir::Type boolType(mlir::MLIRContext * ctx);
+mlir::Type boolType(mlir::MLIRContext* ctx);
 
 
 /**
  * Returns a 64-bit integer type in the given context.
  */
-mlir::Type i64Type(mlir::MLIRContext * ctx);
+mlir::Type i64Type(mlir::MLIRContext* ctx);
 
 
 /**
  * Returns an 8-bit integer type in the given context.
  */
-mlir::Type i8Type(mlir::MLIRContext * ctx);
+mlir::Type i8Type(mlir::MLIRContext* ctx);
 
 
 /**
  * Returns a 64-bit float type in the given context.
  */
-mlir::Type f64Type(mlir::MLIRContext * ctx);
+mlir::Type f64Type(mlir::MLIRContext* ctx);
 
 
 /**
@@ -82,12 +82,10 @@ mlir::Value getOrInsertStringConstant(mlir::ConversionPatternRewriter& rewriter,
  * declarations or runtime function declarations.
  */
 struct PyIROpConversion : mlir::ConversionPattern {
-    PyIROpConversion(llvm::StringRef opName, const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : ConversionPattern(tc, opName, /*benefit=*/1, ctx) {
-    }
+    PyIROpConversion(llvm::StringRef opName, const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        ConversionPattern(tc, opName, /*benefit=*/1, ctx) {}
 
-    static mlir::ModuleOp getModule(mlir::Operation* op) {
-        return op->getParentOfType<mlir::ModuleOp>();
-    }
+    static mlir::ModuleOp getModule(mlir::Operation* op) { return op->getParentOfType<mlir::ModuleOp>(); }
 
     /**
      * A helper function for directly linking ops to functions in the runtime standard library
@@ -103,4 +101,4 @@ struct PyIROpConversion : mlir::ConversionPattern {
                                                    mlir::ConversionPatternRewriter& rewriter, size_t argc);
 };
 
-#endif //PYCOMPILE_PYIR_CONVERSION_UTILS_H
+#endif // PYCOMPILE_PYIR_CONVERSION_UTILS_H

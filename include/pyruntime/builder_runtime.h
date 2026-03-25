@@ -10,7 +10,6 @@
 extern "C" {
 
 Value* pyir_buildString(Value** parts, int64_t count);
-
 }
 
-#endif //PYCOMPILE_BUILDER_RUNTIME_H
+#endif // PYCOMPILE_BUILDER_RUNTIME_H

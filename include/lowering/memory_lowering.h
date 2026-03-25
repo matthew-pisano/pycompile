@@ -5,8 +5,8 @@
 #ifndef PYCOMPILE_MEMORY_LOWERING_H
 #define PYCOMPILE_MEMORY_LOWERING_H
 
-#include "pyir/pyir_ops.h"
 #include "lowering/pyir_conversion_utils.h"
+#include "pyir/pyir_ops.h"
 
 
 /**
@@ -17,11 +17,11 @@
  *
  * pyir.load_fast "arg"
  *     %ptr = llvm.mlir.addressof @__pyir_str_arg
-  *    %val = llvm.call @pyir_loadFast(%ptr)
+ *    %val = llvm.call @pyir_loadFast(%ptr)
  */
 struct LoadFastLowering : PyIROpConversion {
-    LoadFastLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::LoadFast::getOperationName(), tc, ctx) {
-    }
+    LoadFastLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::LoadFast::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
@@ -40,8 +40,8 @@ struct LoadFastLowering : PyIROpConversion {
  *          llvm.call @pyir_storeFast(%ptr, %val)
  */
 struct StoreFastLowering : PyIROpConversion {
-    StoreFastLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::StoreFast::getOperationName(), tc, ctx) {
-    }
+    StoreFastLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::StoreFast::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
@@ -59,8 +59,8 @@ struct StoreFastLowering : PyIROpConversion {
  *     %val = llvm.call @pyir_loadName(%ptr)
  */
 struct LoadNameLowering : PyIROpConversion {
-    LoadNameLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::LoadName::getOperationName(), tc, ctx) {
-    }
+    LoadNameLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::LoadName::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
@@ -79,8 +79,8 @@ struct LoadNameLowering : PyIROpConversion {
  *            llvm.call @pyir_storeName(%ptr, %val)
  */
 struct StoreNameLowering : PyIROpConversion {
-    StoreNameLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::StoreName::getOperationName(), tc, ctx) {
-    }
+    StoreNameLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::StoreName::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
@@ -97,8 +97,8 @@ struct StoreNameLowering : PyIROpConversion {
  * heap-allocated Value*.
  */
 struct LoadConstLowering : PyIROpConversion {
-    LoadConstLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::LoadConst::getOperationName(), tc, ctx) {
-    }
+    LoadConstLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::LoadConst::getOperationName(), tc, ctx) {}
 
     static mlir::Value loadStringConst(mlir::ConversionPatternRewriter& rewriter, mlir::MLIRContext* ctx,
                                        const mlir::Location& loc, const mlir::ModuleOp& module,
@@ -132,11 +132,11 @@ struct LoadConstLowering : PyIROpConversion {
  *     %val = llvm.load %gep
  */
 struct LoadArgLowering : PyIROpConversion {
-    LoadArgLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::LoadArg::getOperationName(), tc, ctx) {
-    }
+    LoadArgLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::LoadArg::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
 };
 
-#endif //PYCOMPILE_MEMORY_LOWERING_H
+#endif // PYCOMPILE_MEMORY_LOWERING_H

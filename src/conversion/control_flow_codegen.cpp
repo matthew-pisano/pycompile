@@ -4,11 +4,11 @@
 
 #include "conversion/control_flow_codegen.h"
 
-#include <variant>
 #include <mlir/Dialect/ControlFlow/IR/ControlFlowOps.h>
+#include <variant>
 
-#include "utils.h"
 #include "pyir/pyir_ops.h"
+#include "utils.h"
 
 
 void jumpForwardCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const ByteCodeInstruction& instr,
@@ -42,8 +42,8 @@ inline void popJumpIfCodegen(mlir::OpBuilder& builder, const mlir::Location& loc
             ifBlock->addArgument(t, loc);
 
     if (truthy)
-        builder.create<mlir::cf::CondBranchOp>(loc, i1cond, ifBlock, mlir::ValueRange{ifArgs},
-                                               elseBlock, mlir::ValueRange{});
+        builder.create<mlir::cf::CondBranchOp>(loc, i1cond, ifBlock, mlir::ValueRange{ifArgs}, elseBlock,
+                                               mlir::ValueRange{});
     else
         builder.create<mlir::cf::CondBranchOp>(loc, i1cond, elseBlock, mlir::ValueRange{}, ifBlock,
                                                mlir::ValueRange{ifArgs});

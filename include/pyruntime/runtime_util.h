@@ -14,4 +14,4 @@ std::string valueToString(const Value* v);
 
 bool valueToBool(const Value* val);
 
-#endif //PYCOMPILE_RUNTIME_UTIL_H
+#endif // PYCOMPILE_RUNTIME_UTIL_H

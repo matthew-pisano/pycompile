@@ -24,7 +24,6 @@ Value* pyir_pushNull();
 
 // Decrease reference counting for v
 void pyir_decref(Value* v);
-
 }
 
-#endif //PYCOMPILE_FUNCTION_RUNTIME_H
+#endif // PYCOMPILE_FUNCTION_RUNTIME_H

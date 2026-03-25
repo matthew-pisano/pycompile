@@ -20,6 +20,6 @@ mlir::OwningOpRef<mlir::ModuleOp> generatePyIR(mlir::MLIRContext& ctx, const Byt
 
 /// Wraps multiple modules into a single mlir::ModuleOp
 mlir::OwningOpRef<mlir::ModuleOp> mergePyIRModules(mlir::MLIRContext& ctx,
-                                                   std::vector<mlir::OwningOpRef<mlir::ModuleOp> >& mlirModules);
+                                                   std::vector<mlir::OwningOpRef<mlir::ModuleOp>>& mlirModules);
 
-#endif //PYCOMPILE_PYIR_CODEGEN_H
+#endif // PYCOMPILE_PYIR_CODEGEN_H

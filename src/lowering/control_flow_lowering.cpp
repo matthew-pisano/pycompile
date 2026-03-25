@@ -18,8 +18,8 @@ mlir::LogicalResult PopTopLowering::matchAndRewrite(mlir::Operation* op, const m
     const mlir::ModuleOp module = getModule(op);
     const mlir::Location loc = op->getLoc();
 
-    const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
-            mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx)});
+    const mlir::LLVM::LLVMFunctionType fnType =
+            mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx)});
     mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_decref", fnType);
 
     rewriter.create<mlir::LLVM::CallOp>(loc, fn, operands[0]);

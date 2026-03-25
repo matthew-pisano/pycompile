@@ -12,15 +12,15 @@ mlir::LogicalResult IsTruthyLowering::matchAndRewrite(mlir::Operation* op, const
     const mlir::Location loc = op->getLoc();
 
     // declare: extern int8_t pyir_isTruthy(Value* val)
-    const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
-        mlir::IntegerType::get(ctx, 8), {ptrType(ctx)});
+    const mlir::LLVM::LLVMFunctionType fnType =
+            mlir::LLVM::LLVMFunctionType::get(mlir::IntegerType::get(ctx, 8), {ptrType(ctx)});
     mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_isTruthy", fnType);
 
     mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{operands[0]});
 
     // truncate i8 to i1 for cf.cond_br
-    const mlir::Value i1val = rewriter.create<mlir::LLVM::TruncOp>(
-        loc, mlir::IntegerType::get(ctx, 1), call.getResult());
+    const mlir::Value i1val =
+            rewriter.create<mlir::LLVM::TruncOp>(loc, mlir::IntegerType::get(ctx, 1), call.getResult());
 
     rewriter.replaceOp(op, i1val);
     return mlir::success();
@@ -59,14 +59,8 @@ mlir::LogicalResult BinaryOpLowering::matchAndRewrite(mlir::Operation* op, const
 
     // Map operator string to runtime function name
     static const std::unordered_map<std::string, std::string> opToFn = {
-        {"+", "pyir_add"},
-        {"-", "pyir_sub"},
-        {"*", "pyir_mul"},
-        {"/", "pyir_div"},
-        {"^", "pyir_xor"},
-        {"//", "pyir_floorDiv"},
-        {"**", "pyir_exp"},
-        {"%", "pyir_mod"},
+            {"+", "pyir_add"}, {"-", "pyir_sub"},       {"*", "pyir_mul"},  {"/", "pyir_div"},
+            {"^", "pyir_xor"}, {"//", "pyir_floorDiv"}, {"**", "pyir_exp"}, {"%", "pyir_mod"},
     };
 
     const std::string opStr = binaryOp.getOp().str();
@@ -84,12 +78,8 @@ mlir::LogicalResult CompareOpLowering::matchAndRewrite(mlir::Operation* op, cons
 
     // Map operator string to runtime function name
     static const std::unordered_map<std::string, std::string> opToFn = {
-        {"==", "pyir_eq"},
-        {"!=", "pyir_ne"},
-        {"<", "pyir_lt"},
-        {"<=", "pyir_le"},
-        {">", "pyir_gt"},
-        {">=", "pyir_ge"},
+            {"==", "pyir_eq"}, {"!=", "pyir_ne"}, {"<", "pyir_lt"},
+            {"<=", "pyir_le"}, {">", "pyir_gt"},  {">=", "pyir_ge"},
     };
 
     std::string opStr = compareOp.getOp().str();

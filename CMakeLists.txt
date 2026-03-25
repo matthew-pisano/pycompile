@@ -4,6 +4,12 @@ project(pycompile)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
+add_compile_options(-Wall -Wextra -pedantic)
+include_directories(include)
+
+# ================
+# Versioning
+# ================
 
 # Function to extract value from JSON
 function(get_json_value JSON_FILE KEY OUTPUT_VAR)
@@ -29,6 +35,9 @@ configure_file(
         @ONLY
 )
 
+# ================
+# Fetch Main Packages
+# ================
 
 include(FetchContent)
 FetchContent_Declare(
@@ -38,15 +47,17 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(cli11)
 
-add_compile_options(-Wall -Wextra -pedantic)
-
-include_directories(include)
+find_package(Python REQUIRED COMPONENTS Interpreter Development)
 
 find_package(MLIR REQUIRED CONFIG)
 
 list(APPEND CMAKE_MODULE_PATH "${MLIR_CMAKE_DIR}")
 include(AddMLIR)
 include(AddLLVM)
+
+# ================
+# MLIR Tablegen
+# ================
 
 set(LLVM_TARGET_DEFINITIONS include/pyir/pyir.td)
 
@@ -64,7 +75,6 @@ mlir_tablegen(pyir_attrs.cpp.inc -gen-attrdef-defs EXTRA_INCLUDES ${MLIR_INCLUDE
 # Collects all the above into a single target: pyirIncGen
 add_public_tablegen_target(pyirIncGen)
 
-# The actual compiled library
 add_mlir_library(pyir
         src/pyir/pyir.cpp
         src/pyir/pyir_ops.cpp
@@ -80,6 +90,9 @@ add_mlir_library(pyir
 )
 target_include_directories(pyir SYSTEM PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
+# ================
+# Runtime Standard Library
+# ================
 
 add_library(stdpyir STATIC
         src/pyruntime/pyir_runtime.cpp
@@ -88,8 +101,9 @@ set_target_properties(stdpyir PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
 )
 
-
-find_package(Python REQUIRED COMPONENTS Interpreter Development)
+# ================
+# Source Files and Libraries
+# ================
 
 set(PYCOMPILE_SOURCES
         src/bytecode/bytecode.cpp
@@ -131,6 +145,10 @@ set(PYCOMPILE_LIBS
         LLVM
 )
 
+# ================
+# Pycompile
+# ================
+
 add_executable(pycompile src/main.cpp ${PYCOMPILE_SOURCES})
 target_link_libraries(pycompile PRIVATE ${PYCOMPILE_LIBS} CLI11::CLI11)
 target_include_directories(pycompile SYSTEM PRIVATE
@@ -142,6 +160,11 @@ target_compile_definitions(pycompile PRIVATE
         "PYIR_RUNTIME_LIB_PATH=\"${CMAKE_BINARY_DIR}/lib/libstdpyir.a\""
 )
 add_dependencies(pycompile stdpyir)
+
+
+# ================
+# Pycompile Tests
+# ================
 
 FetchContent_Declare(
         Catch2

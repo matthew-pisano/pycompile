@@ -6,8 +6,6 @@
 
 #include <stdexcept>
 
-extern "C" {
-
 Value* pyir_buildString(Value** parts, const int64_t count) {
     std::string result;
     for (int64_t i = 0; i < count; i++) {
@@ -16,6 +14,4 @@ Value* pyir_buildString(Value** parts, const int64_t count) {
         result += std::get<std::string>(parts[i]->data);
     }
     return new Value(result);
-}
-
 }

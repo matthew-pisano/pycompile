@@ -8,16 +8,17 @@
 
 #include "pyruntime/runtime_state.h"
 
-extern "C" {
 
 void pyir_pushScope() {
     scopeStack.emplace_back();
 }
 
+
 void pyir_popScope() {
     if (!scopeStack.empty())
         scopeStack.pop_back();
 }
+
 
 Value* pyir_makeFunction(void* fn_ptr) {
     return new Value(reinterpret_cast<Value::Fn>(fn_ptr));
@@ -32,13 +33,14 @@ Value* pyir_call(const Value* callee, Value** args, const int64_t argc) {
     return result.release();
 }
 
+
 void pyir_decref(Value* v) {
     if (v)
         v->decref();
 }
 
+
 Value* pyir_pushNull() {
     return nullptr;
 }
 
-}

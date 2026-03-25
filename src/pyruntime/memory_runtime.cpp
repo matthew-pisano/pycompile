@@ -9,7 +9,6 @@
 
 #include "pyruntime/runtime_state.h"
 
-extern "C" {
 
 Value* pyir_loadFast(const char* name) {
     if (scopeStack.empty())
@@ -24,11 +23,13 @@ Value* pyir_loadFast(const char* name) {
     return it->second;
 }
 
+
 void pyir_storeFast(const char* name, Value* val) {
     if (scopeStack.empty())
         throw std::runtime_error(std::string("No active scope to store '") + name + "'");
     scopeStack.back()[name] = val;
 }
+
 
 Value* pyir_loadName(const char* name) {
     // Check for builtins
@@ -42,6 +43,7 @@ Value* pyir_loadName(const char* name) {
     throw std::runtime_error(std::string("name '") + name + "' is not defined");
 }
 
+
 void pyir_storeName(const char* name, Value* val) {
     if (const auto it = moduleScope.find(name); it != moduleScope.end())
         it->second->decref(); // Release old value
@@ -49,24 +51,27 @@ void pyir_storeName(const char* name, Value* val) {
     moduleScope[name] = val;
 }
 
+
 Value* pyir_loadConstStr(const char* str) {
     return new Value(std::string(str));
 }
+
 
 Value* pyir_loadConstInt(const int64_t val) {
     return new Value(val);
 }
 
+
 Value* pyir_loadConstFloat(const double_t val) {
     return new Value(val);
 }
+
 
 Value* pyir_loadConstBool(const int8_t val) {
     return new Value(val == 1);
 }
 
+
 Value* pyir_loadConstNone() {
     return new Value(NoneType{});
-}
-
 }

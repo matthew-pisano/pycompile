@@ -10,7 +10,6 @@
 #include "pyir/pyir_value.h"
 #include "pyruntime/runtime_util.h"
 
-extern "C" {
 
 Value* pyir_builtinPrint(Value** args, const int64_t argc) {
     for (int64_t i = 0; i < argc; i++) {
@@ -22,6 +21,7 @@ Value* pyir_builtinPrint(Value** args, const int64_t argc) {
     return new Value(NoneType{});
 }
 
+
 Value* pyir_builtinLen(Value** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("Too many arguments for len()");
@@ -29,6 +29,7 @@ Value* pyir_builtinLen(Value** args, const int64_t argc) {
         return new Value(static_cast<int64_t>(std::get<std::string>(args[0]->data).size()));
     throw std::runtime_error("object has no len()");
 }
+
 
 Value* pyir_builtinInt(Value** args, const int64_t argc) {
     if (argc != 1)
@@ -47,6 +48,7 @@ Value* pyir_builtinInt(Value** args, const int64_t argc) {
     }, args[0]->data);
 }
 
+
 Value* pyir_builtinFloat(Value** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("Too many arguments for float()");
@@ -64,16 +66,16 @@ Value* pyir_builtinFloat(Value** args, const int64_t argc) {
     }, args[0]->data);
 }
 
+
 Value* pyir_builtinStr(Value** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("Too many arguments for str()");
     return new Value(valueToString(args[0]));
 }
 
+
 Value* pyir_builtinBool(Value** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("Too many arguments for bool()");
     return new Value(valueToBool(args[0]));
-}
-
 }

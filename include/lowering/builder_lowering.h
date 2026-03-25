@@ -10,7 +10,7 @@
 
 
 /**
- * Lowers pyir.pyir_build_string to allocate memory and construct a new string using the runtime function pyir_build_string
+ * Lowers pyir.pyir_buildString to allocate memory and construct a new string using the runtime function pyir_buildString
  *
  * Parts are stack-allocated as a Value*[] array and passed by pointer along with the part count.
  * The runtime concatenates all parts into a single string Value*.
@@ -22,11 +22,10 @@
  *     %gep1  = llvm.gep %arr[1]
  *              llvm.store %part1, %gep1
  *     ...
- *     %result = llvm.call @pyir_build_string(%arr, n)
+ *     %result = llvm.call @pyir_buildString(%arr, n)
  */
 struct BuildStringLowering : PyIROpConversion {
-    BuildStringLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
-        PyIROpConversion(pyir::BuildString::getOperationName(), tc, ctx) {
+    BuildStringLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) : PyIROpConversion(pyir::BuildString::getOperationName(), tc, ctx) {
     }
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,

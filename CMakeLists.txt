@@ -95,7 +95,12 @@ target_include_directories(pyir SYSTEM PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 # ================
 
 add_library(stdpyir STATIC
-        src/pyruntime/pyir_runtime.cpp
+        src/pyruntime/builder_runtime.cpp
+        src/pyruntime/logical_runtime.cpp
+        src/pyruntime/memory_runtime.cpp
+        src/pyruntime/builtin_runtime.cpp
+        src/pyruntime/runtime_util.cpp
+        src/pyruntime/function_runtime.cpp
 )
 set_target_properties(stdpyir PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"

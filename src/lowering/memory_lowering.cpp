@@ -13,9 +13,9 @@ mlir::LogicalResult LoadFastLowering::matchAndRewrite(mlir::Operation* op, mlir:
     const mlir::ModuleOp module = getModule(op);
     const mlir::Location loc = op->getLoc();
 
-    // declare: extern Value* pyir_load_fast(const char* name)
+    // declare: extern Value* pyir_loadFast(const char* name)
     const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
-    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_load_fast", fnType);
+    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_loadFast", fnType);
 
     const std::string globalName = "__pyir_str_" + loadFast.getVarName().str();
     const mlir::Value strPtr = getOrInsertStringConstant(rewriter, module, loc, globalName, loadFast.getVarName());
@@ -32,10 +32,10 @@ mlir::LogicalResult StoreFastLowering::matchAndRewrite(mlir::Operation* op, cons
     const mlir::ModuleOp module = getModule(op);
     const mlir::Location loc = op->getLoc();
 
-    // declare: extern void pyir_store_fast(const char* name, Value* val)
+    // declare: extern void pyir_storeFast(const char* name, Value* val)
     const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
-            mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
-    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_store_fast", fnType);
+        mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
+    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_storeFast", fnType);
 
     const std::string globalName = "__pyir_str_" + storeFast.getVarName().str();
     const mlir::Value strPtr = getOrInsertStringConstant(rewriter, module, loc, globalName, storeFast.getVarName());
@@ -52,9 +52,9 @@ mlir::LogicalResult LoadNameLowering::matchAndRewrite(mlir::Operation* op, mlir:
     const mlir::ModuleOp module = getModule(op);
     const mlir::Location loc = op->getLoc();
 
-    // declare: extern Value* pyir_load_name(const char* name)
+    // declare: extern Value* pyir_loadName(const char* name)
     const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
-    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_load_name", fnType);
+    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_loadName", fnType);
 
     const std::string globalName = "__pyir_str_" + loadName.getVarName().str();
     const mlir::Value strPtr = getOrInsertStringConstant(rewriter, module, loc, globalName, loadName.getVarName());
@@ -71,10 +71,10 @@ mlir::LogicalResult StoreNameLowering::matchAndRewrite(mlir::Operation* op, cons
     const mlir::ModuleOp module = getModule(op);
     const mlir::Location loc = op->getLoc();
 
-    // declare: extern void pyir_store_name(const char* name, Value* val)
+    // declare: extern void pyir_storeName(const char* name, Value* val)
     const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
-            mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
-    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_store_name", fnType);
+        mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
+    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_storeName", fnType);
 
     const std::string globalName = "__pyir_str_" + storeName.getVarName().str();
     const mlir::Value strPtr = getOrInsertStringConstant(rewriter, module, loc, globalName, storeName.getVarName());
@@ -87,9 +87,9 @@ mlir::LogicalResult StoreNameLowering::matchAndRewrite(mlir::Operation* op, cons
 mlir::Value LoadConstLowering::loadStringConst(mlir::ConversionPatternRewriter& rewriter, mlir::MLIRContext* ctx,
                                                const mlir::Location& loc, const mlir::ModuleOp& module,
                                                const mlir::StringAttr& strAttr) {
-    // declare: extern Value* pyir_load_const_str(const char* str)
+    // declare: extern Value* pyir_loadConstStr(const char* str)
     const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
-    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_load_const_str", fnType);
+    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_loadConstStr", fnType);
 
     // create global string constant
     const std::string str = strAttr.getValue().str();
@@ -103,12 +103,12 @@ mlir::Value LoadConstLowering::loadStringConst(mlir::ConversionPatternRewriter& 
 mlir::Value LoadConstLowering::loadBoolConst(mlir::ConversionPatternRewriter& rewriter, mlir::MLIRContext* ctx,
                                              const mlir::Location& loc, const mlir::ModuleOp& module,
                                              const mlir::BoolAttr& boolAttr) {
-    // declare: extern Value* pyir_load_const_bool(int_8 val)
+    // declare: extern Value* pyir_loadConstBool(int_8 val)
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {boolType(ctx)});
-    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_load_const_bool", fnType);
+    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_loadConstBool", fnType);
     mlir::LLVM::ConstantOp boolVal = rewriter.create<mlir::LLVM::ConstantOp>(
-            loc, boolType(ctx), rewriter.getI8IntegerAttr(boolAttr.getValue() ? 1 : 0));
+        loc, boolType(ctx), rewriter.getI8IntegerAttr(boolAttr.getValue() ? 1 : 0));
     mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{boolVal});
     return call.getResult();
 }
@@ -117,11 +117,11 @@ mlir::Value LoadConstLowering::loadBoolConst(mlir::ConversionPatternRewriter& re
 mlir::Value LoadConstLowering::loadIntConst(mlir::ConversionPatternRewriter& rewriter, mlir::MLIRContext* ctx,
                                             const mlir::Location& loc, const mlir::ModuleOp& module,
                                             const mlir::IntegerAttr& intAttr) {
-    // declare: extern Value* pyir_load_const_int(int64_t val)
+    // declare: extern Value* pyir_loadConstInt(int64_t val)
     const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {i64Type(ctx)});
-    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_load_const_int", fnType);
+    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_loadConstInt", fnType);
     mlir::LLVM::ConstantOp intVal = rewriter.create<mlir::LLVM::ConstantOp>(
-            loc, i64Type(ctx), rewriter.getI64IntegerAttr(intAttr.getInt()));
+        loc, i64Type(ctx), rewriter.getI64IntegerAttr(intAttr.getInt()));
     mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{intVal});
     return call.getResult();
 }
@@ -130,11 +130,11 @@ mlir::Value LoadConstLowering::loadIntConst(mlir::ConversionPatternRewriter& rew
 mlir::Value LoadConstLowering::loadFloatConst(mlir::ConversionPatternRewriter& rewriter, mlir::MLIRContext* ctx,
                                               const mlir::Location& loc, const mlir::ModuleOp& module,
                                               const mlir::FloatAttr& floatAttr) {
-    // declare: extern Value* pyir_load_const_float(double_t val)
+    // declare: extern Value* pyir_loadConstFloat(double_t val)
     const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {f64Type(ctx)});
-    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_load_const_float", fnType);
+    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_loadConstFloat", fnType);
     mlir::LLVM::ConstantOp floatVal = rewriter.create<mlir::LLVM::ConstantOp>(
-            loc, f64Type(ctx), rewriter.getF64FloatAttr(floatAttr.getValueAsDouble()));
+        loc, f64Type(ctx), rewriter.getF64FloatAttr(floatAttr.getValueAsDouble()));
     mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{floatVal});
     return call.getResult();
 }
@@ -142,9 +142,9 @@ mlir::Value LoadConstLowering::loadFloatConst(mlir::ConversionPatternRewriter& r
 
 mlir::Value LoadConstLowering::loadNoneConst(mlir::ConversionPatternRewriter& rewriter, mlir::MLIRContext* ctx,
                                              const mlir::Location& loc, const mlir::ModuleOp& module) {
-    // declare: extern Value* pyir_load_const_none()
+    // declare: extern Value* pyir_loadConstNone()
     const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {});
-    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_load_const_none", fnType);
+    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_loadConstNone", fnType);
     mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{});
     return call.getResult();
 }
@@ -190,9 +190,9 @@ mlir::LogicalResult LoadArgLowering::matchAndRewrite(mlir::Operation* op, const 
 
     // GEP into args[index]
     mlir::LLVM::ConstantOp idx = rewriter.create<mlir::LLVM::ConstantOp>(
-            loc, i64Type(ctx), rewriter.getI64IntegerAttr(index));
+        loc, i64Type(ctx), rewriter.getI64IntegerAttr(index));
     mlir::LLVM::GEPOp gep = rewriter.create<mlir::LLVM::GEPOp>(
-            loc, ptrType(ctx), ptrType(ctx), argsPtr, mlir::ValueRange{idx});
+        loc, ptrType(ctx), ptrType(ctx), argsPtr, mlir::ValueRange{idx});
 
     // Load Value* from args[index]
     mlir::LLVM::LoadOp load = rewriter.create<mlir::LLVM::LoadOp>(loc, ptrType(ctx), gep);

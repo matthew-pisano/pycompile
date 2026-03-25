@@ -81,8 +81,14 @@ add_mlir_library(pyir
 target_include_directories(pyir SYSTEM PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(pyir_lowering
-        src/lowering/pyir_to_llvm.cpp
+        src/lowering/pyir_lowering.cpp
         src/lowering/llvm_export.cpp
+        src/lowering/builder_lowering.cpp
+        src/lowering/control_flow_lowering.cpp
+        src/lowering/function_lowering.cpp
+        src/lowering/logical_lowering.cpp
+        src/lowering/memory_lowering.cpp
+        src/lowering/pyir_conversion_utils.cpp
 )
 target_include_directories(pyir_lowering SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 

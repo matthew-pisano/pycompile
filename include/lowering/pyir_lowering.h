@@ -2,8 +2,8 @@
 // Created by matthew on 3/9/26.
 //
 
-#ifndef PYCOMPILE_PYIR_TO_LLVM_H
-#define PYCOMPILE_PYIR_TO_LLVM_H
+#ifndef PYCOMPILE_PYIR_LOWERING_H
+#define PYCOMPILE_PYIR_LOWERING_H
 
 #include <mlir/IR/MLIRContext.h>
 #include <mlir/Pass/Pass.h>
@@ -35,4 +35,4 @@ std::unique_ptr<mlir::Pass> createPyIRToLLVMPass();
  */
 void lowerToLLVMDialect(mlir::MLIRContext& ctx, const mlir::OwningOpRef<mlir::ModuleOp>& module);
 
-#endif //PYCOMPILE_PYIR_TO_LLVM_H
+#endif //PYCOMPILE_PYIR_LOWERING_H

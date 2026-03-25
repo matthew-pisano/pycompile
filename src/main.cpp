@@ -10,7 +10,7 @@
 #include "utils.h"
 #include "version.h"
 #include "lowering/llvm_export.h"
-#include "lowering/pyir_to_llvm.h"
+#include "lowering/pyir_lowering.h"
 #include "conversion/pyir_codegen.h"
 
 

@@ -80,38 +80,6 @@ add_mlir_library(pyir
 )
 target_include_directories(pyir SYSTEM PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(pyir_lowering
-        src/lowering/pyir_lowering.cpp
-        src/lowering/llvm_export.cpp
-        src/lowering/builder_lowering.cpp
-        src/lowering/control_flow_lowering.cpp
-        src/lowering/function_lowering.cpp
-        src/lowering/logical_lowering.cpp
-        src/lowering/memory_lowering.cpp
-        src/lowering/pyir_conversion_utils.cpp
-)
-target_include_directories(pyir_lowering SYSTEM PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-
-target_include_directories(pyir_lowering PRIVATE
-        ${MLIR_INCLUDE_DIRS}
-        ${LLVM_INCLUDE_DIRS}
-)
-
-target_link_libraries(pyir_lowering PRIVATE
-        pyir
-        MLIRIR
-        MLIRLLVMDialect
-        MLIRLLVMToLLVMIRTranslation
-        MLIRBuiltinToLLVMIRTranslation
-        MLIRFuncToLLVM
-        MLIRArithToLLVM
-        MLIRArithDialect
-        LLVM
-)
-target_compile_definitions(pyir_lowering PRIVATE
-        "PYIR_RUNTIME_LIB_PATH=\"${CMAKE_BINARY_DIR}/lib/libstdpyir.a\""
-)
-
 
 add_library(stdpyir STATIC
         src/pyruntime/pyir_runtime.cpp
@@ -135,23 +103,45 @@ set(PYCOMPILE_SOURCES
         src/conversion/function_codegen.cpp
         src/conversion/control_flow_codegen.cpp
         src/conversion/builder_codegen.cpp
+        src/lowering/pyir_lowering.cpp
+        src/lowering/llvm_export.cpp
+        src/lowering/builder_lowering.cpp
+        src/lowering/control_flow_lowering.cpp
+        src/lowering/function_lowering.cpp
+        src/lowering/logical_lowering.cpp
+        src/lowering/memory_lowering.cpp
+        src/lowering/pyir_conversion_utils.cpp
 )
 
 set(PYCOMPILE_LIBS
         Python::Python
         pyir
-        pyir_lowering
         MLIRFuncDialect
         MLIRControlFlowDialect
         MLIRArithDialect
         MLIRLLVMDialect
         MLIRTransforms
+        MLIRIR
+        MLIRLLVMDialect
+        MLIRLLVMToLLVMIRTranslation
+        MLIRBuiltinToLLVMIRTranslation
+        MLIRFuncToLLVM
+        MLIRArithToLLVM
+        MLIRArithDialect
+        LLVM
 )
 
 add_executable(pycompile src/main.cpp ${PYCOMPILE_SOURCES})
 target_link_libraries(pycompile PRIVATE ${PYCOMPILE_LIBS} CLI11::CLI11)
+target_include_directories(pycompile SYSTEM PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}
+        ${MLIR_INCLUDE_DIRS}
+        ${LLVM_INCLUDE_DIRS}
+)
+target_compile_definitions(pycompile PRIVATE
+        "PYIR_RUNTIME_LIB_PATH=\"${CMAKE_BINARY_DIR}/lib/libstdpyir.a\""
+)
 add_dependencies(pycompile stdpyir)
-
 
 FetchContent_Declare(
         Catch2
@@ -168,6 +158,14 @@ add_executable(pycompile-tests
         test/test_code_execution.cpp
 )
 target_link_libraries(pycompile-tests PRIVATE ${PYCOMPILE_LIBS} stdpyir Catch2::Catch2WithMain)
+target_include_directories(pycompile-tests SYSTEM PRIVATE
+        ${CMAKE_CURRENT_BINARY_DIR}
+        ${MLIR_INCLUDE_DIRS}
+        ${LLVM_INCLUDE_DIRS}
+)
+target_compile_definitions(pycompile-tests PRIVATE
+        "PYIR_RUNTIME_LIB_PATH=\"${CMAKE_BINARY_DIR}/lib/libstdpyir.a\""
+)
 
 include(CTest)
 include(Catch)

@@ -8,7 +8,6 @@
 #include "bytecode/bytecode.h"
 
 #include <filesystem>
-#include <iomanip>
 #include <iostream>
 
 #include "bytecode/python_error.h"
@@ -173,7 +172,7 @@ ByteCodeInstruction decodeByteCodeInstruction(PyObject* pyobject, const std::str
     PyObject* argval = PyObject_GetAttrString(pyobject, "argval"); // borrowed reference
     if (PyBool_Check(argval)) {
         instr.argvalType = ArgvalType::Bool;
-        instr.argval = (argval == Py_True);
+        instr.argval = argval == Py_True;
     } else if (PyLong_Check(argval)) {
         instr.argvalType = ArgvalType::Int;
         instr.argval = PyLong_AsLong(argval);

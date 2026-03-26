@@ -123,16 +123,29 @@ TEST_CASE_METHOD(LLVMFixture, "Test Conditional LLVM") {
 
 
 TEST_CASE_METHOD(LLVMFixture, "Test Function Definition LLVM") {
-    SECTION("Simple Function") {
+    SECTION("Test Simple Function") {
         const std::unique_ptr<llvm::Module> module = compile("def foo():\n  print('bar')\nfoo()");
     }
 
-    SECTION("Function with Args") {
+    SECTION("Test Function with Args") {
         const std::unique_ptr<llvm::Module> module = compile("def foo(arg):\n  print(arg)\nfoo('bar')");
     }
 
-    SECTION("Function with Return") {
+    SECTION("Test Function with Return") {
         const std::unique_ptr<llvm::Module> module = compile("def foo():\n  return 'bar'\nprint(foo())");
+    }
+}
+
+
+TEST_CASE_METHOD(LLVMFixture, "Test Build List LLVM") {
+
+    SECTION("Test Empty List") { const std::unique_ptr<llvm::Module> module = compile("a = []"); }
+
+    SECTION("Test Small List") { const std::unique_ptr<llvm::Module> module = compile("a = [1, 2, 3]"); }
+
+    SECTION("Test Large List") {
+        const std::unique_ptr<llvm::Module> module = compile(
+                "a = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]");
     }
 }
 

@@ -88,10 +88,14 @@ struct ArgvalNone {};
 struct ByteCodeModule;
 
 /**
- * A variant type to represent the possible types of instruction arguments, which can be ArgvalNone, a bool, an int64_t,
- * a double_t, a string, a tuple of strings, or a nested code object (represented as a bytecode module).
+ * Basic arg types which can appear in a data structure
  */
-using Argval = std::variant<ArgvalNone, bool, int64_t, double_t, std::string, std::vector<std::string>,
+using PrimitiveArgvals = std::variant<ArgvalNone, bool, int64_t, double_t, std::string>;
+
+/**
+ * A variant type to represent the possible types of instruction arguments.
+ */
+using Argval = std::variant<ArgvalNone, bool, int64_t, double_t, std::string, std::vector<PrimitiveArgvals>,
                             std::shared_ptr<ByteCodeModule>>;
 
 

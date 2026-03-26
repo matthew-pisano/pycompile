@@ -7,7 +7,7 @@
 #include <cmath>
 #include <stdexcept>
 
-#include "pyir/pyir_value.h"
+#include "../../include/pyruntime/pyir_value.h"
 #include "pyruntime/runtime_util.h"
 
 

@@ -6,7 +6,7 @@
 #define PYCOMPILE_MEMORY_RUNTIME_H
 #include <cmath>
 
-#include "pyir/pyir_value.h"
+#include "pyir_value.h"
 
 extern "C" {
 

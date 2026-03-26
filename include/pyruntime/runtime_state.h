@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "builtin_runtime.h"
-#include "pyir/pyir_value.h"
+#include "pyir_value.h"
 
 const std::unordered_map<std::string, Value::Fn> builtins = {
         {"print", pyir_builtinPrint}, {"len", pyir_builtinLen}, {"int", pyir_builtinInt},

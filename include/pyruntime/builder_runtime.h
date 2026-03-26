@@ -5,7 +5,7 @@
 #ifndef PYCOMPILE_BUILDER_RUNTIME_H
 #define PYCOMPILE_BUILDER_RUNTIME_H
 
-#include "pyir/pyir_value.h"
+#include "pyir_value.h"
 
 extern "C" {
 

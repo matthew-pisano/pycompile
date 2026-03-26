@@ -187,6 +187,7 @@ add_executable(pycompile-tests
         test/conversion/test_logical_codegen.cpp
         test/conversion/test_function_codegen.cpp
         test/conversion/test_control_flow_codegen.cpp
+        test/conversion/test_builder_codegen.cpp
 )
 target_link_libraries(pycompile-tests PRIVATE ${PYCOMPILE_LIBS} stdpyir Catch2::Catch2WithMain)
 target_include_directories(pycompile-tests SYSTEM PRIVATE

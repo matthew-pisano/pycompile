@@ -36,7 +36,9 @@ TEST_CASE_METHOD(MLIRFixture, "Test F String Format MLIR") {
     REQUIRE(strAttr);
     REQUIRE(strAttr.getValue() == ">>");
 
-    REQUIRE(mlir::isa<pyir::BuildString>(getOp(fn, 4)));
+    pyir::BuildString buildStr = mlir::cast<pyir::BuildString>(getOp(fn, 4));
+    REQUIRE(buildStr);
+    REQUIRE(buildStr.getParts().size() == 3);
 }
 
 
@@ -45,6 +47,10 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build List MLIR") {
     SECTION("Test Empty List") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = []");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+
+        pyir::BuildList buildListOp = mlir::dyn_cast<pyir::BuildList>(getOp(fn, 0));
+        REQUIRE(buildListOp);
+        REQUIRE(buildListOp.getParts().size() == 0);
     }
 
     SECTION("Test Small List") {

@@ -21,6 +21,7 @@ struct MLIRFixture {
     mlir::OwningOpRef<mlir::ModuleOp> compile(const std::string& source) {
         const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
         mlir::OwningOpRef<mlir::ModuleOp> mlirModule = generatePyIR(mlirCtx, bytecodeModule);
+        mlirModule.get().getOperation()->print(llvm::errs());
         return mlirModule;
     }
 };

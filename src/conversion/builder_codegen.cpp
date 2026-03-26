@@ -27,12 +27,12 @@ void buildListCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ml
     pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const int64_t* count = std::get_if<int64_t>(&instr.argval);
     if (!count)
-        throw std::runtime_error("BUILD_STRING must have an int argval");
+        throw std::runtime_error("BUILD_LIST must have an int argval");
 
     std::vector<mlir::Value> parts(*count);
     for (int64_t i = *count - 1; i >= 0; i--) {
         parts[i] = meta.stack.back();
         meta.stack.pop_back();
     }
-    meta.stack.push_back(builder.create<pyir::BuildString>(loc, pyType, parts).getResult());
+    meta.stack.push_back(builder.create<pyir::BuildList>(loc, pyType, parts).getResult());
 }

@@ -31,4 +31,3 @@ public:
 };
 
 #endif // PYCOMPILE_PYTHON_RAII_H
-

@@ -39,4 +39,4 @@ inline std::ostream& operator<<(std::ostream& os, const PythonOpcode& opcode) {
     return os;
 }
 
-#endif //PYCOMPILE_PYTHON_OPCODES_H
+#endif // PYCOMPILE_PYTHON_OPCODES_H

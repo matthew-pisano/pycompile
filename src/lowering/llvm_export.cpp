@@ -4,21 +4,21 @@
 
 #include "lowering/llvm_export.h"
 
-#include <mlir/Target/LLVMIR/Dialect/LLVMIR/LLVMToLLVMIRTranslation.h>
 #include <mlir/Target/LLVMIR/Dialect/Builtin/BuiltinToLLVMIRTranslation.h>
+#include <mlir/Target/LLVMIR/Dialect/LLVMIR/LLVMToLLVMIRTranslation.h>
 #include <mlir/Target/LLVMIR/Export.h>
 
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Module.h>
-#include <llvm/TargetParser/Host.h>
 #include <llvm/MC/TargetRegistry.h>
+#include <llvm/Passes/PassBuilder.h>
 #include <llvm/Support/FileSystem.h>
+#include <llvm/Support/Program.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
-#include <llvm/Passes/PassBuilder.h>
-#include <llvm/Support/Program.h>
+#include <llvm/TargetParser/Host.h>
 
 #include <stdexcept>
 
@@ -48,14 +48,12 @@ static void initializeLLVMTargets() {
 static std::unique_ptr<llvm::TargetMachine> createTargetMachine(const LLVMExportOptions& options) {
     initializeLLVMTargets();
 
-    const std::string tripleStr = options.targetTriple.empty()
-                                      ? llvm::sys::getDefaultTargetTriple()
-                                      : options.targetTriple;
+    const std::string tripleStr =
+            options.targetTriple.empty() ? llvm::sys::getDefaultTargetTriple() : options.targetTriple;
     const llvm::Triple triple(llvm::Triple::normalize(tripleStr));
 
-    const std::string cpu = options.cpu.empty() || options.cpu == "native"
-                                ? llvm::sys::getHostCPUName().str()
-                                : options.cpu;
+    const std::string cpu =
+            options.cpu.empty() || options.cpu == "native" ? llvm::sys::getHostCPUName().str() : options.cpu;
 
     std::string err;
     const llvm::Target* target = llvm::TargetRegistry::lookupTarget(triple.str(), err);
@@ -65,9 +63,8 @@ static std::unique_ptr<llvm::TargetMachine> createTargetMachine(const LLVMExport
     const llvm::TargetOptions targetOptions;
     const llvm::CodeGenOptLevel optLevel = static_cast<llvm::CodeGenOptLevel>(options.optLevel);
 
-    llvm::TargetMachine* tm = target->createTargetMachine(
-            triple, cpu, /*features=*/"", targetOptions,
-            llvm::Reloc::PIC_, llvm::CodeModel::Small, optLevel);
+    llvm::TargetMachine* tm = target->createTargetMachine(triple, cpu, /*features=*/"", targetOptions,
+                                                          llvm::Reloc::PIC_, llvm::CodeModel::Small, optLevel);
     if (!tm)
         throw std::runtime_error("failed to create LLVM target machine");
 
@@ -188,8 +185,7 @@ void linkObjectFile(const std::filesystem::path& obj, const std::filesystem::pat
     const std::string objStr = obj.string();
     const std::string outStr = output.string();
     const std::string runtimeLib = PYIR_RUNTIME_LIB_PATH;
-    const std::vector<llvm::StringRef> args = {*cppCompiler, objStr, runtimeLib, "-o", outStr
-    };
+    const std::vector<llvm::StringRef> args = {*cppCompiler, objStr, runtimeLib, "-o", outStr};
 
     std::string errMsg;
     int ret = llvm::sys::ExecuteAndWait(*cppCompiler, args, std::nullopt, {}, 0, 0, &errMsg);

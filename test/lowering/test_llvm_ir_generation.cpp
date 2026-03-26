@@ -7,17 +7,17 @@
  * Fixture that initializes the MLIR context and compiles python strings to MLIR modules
  */
 
-#include <iostream>
 #include <catch2/catch_all.hpp>
+#include <iostream>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <mlir/Dialect/LLVMIR/LLVMDialect.h>
 
 
-#include "pyir/pyir_codegen.h"
 #include "bytecode/bytecode.h"
+#include "conversion/pyir_codegen.h"
 #include "lowering/llvm_export.h"
-#include "lowering/pyir_to_llvm.h"
+#include "lowering/pyir_lowering.h"
 
 
 /**
@@ -29,7 +29,7 @@ struct LLVMFixture {
 
     std::unique_ptr<llvm::Module> compile(const std::string& source) {
         const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
-        const mlir::OwningOpRef<mlir::ModuleOp> mlirModule = pyir::generatePyIR(mlirCtx, bytecodeModule);
+        const mlir::OwningOpRef<mlir::ModuleOp> mlirModule = generatePyIR(mlirCtx, bytecodeModule);
         lowerToLLVMDialect(mlirCtx, mlirModule);
         std::unique_ptr<llvm::Module> llvmModule = translateToLLVMIR(llvmCtx, mlirModule);
         return llvmModule;
@@ -43,47 +43,27 @@ TEST_CASE_METHOD(LLVMFixture, "Test F String Format LLVM") {
 
 
 TEST_CASE_METHOD(LLVMFixture, "Test Arithmetic Operators LLVM") {
-    SECTION("Test Addition") {
-        const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a + b");
-    }
+    SECTION("Test Addition") { const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a + b"); }
 
-    SECTION("Test Subtraction") {
-        const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a - b");
-    }
+    SECTION("Test Subtraction") { const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a - b"); }
 
-    SECTION("Test Multiplication") {
-        const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a * b");
-    }
-    SECTION("Test Division") {
-        const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a / b");
-    }
+    SECTION("Test Multiplication") { const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a * b"); }
+    SECTION("Test Division") { const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a / b"); }
 
-    SECTION("Test Floor Division") {
-        const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a // b");
-    }
+    SECTION("Test Floor Division") { const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a // b"); }
 
-    SECTION("Test Exponentiation") {
-        const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a ** b");
-    }
+    SECTION("Test Exponentiation") { const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a ** b"); }
 
-    SECTION("Test Modulo") {
-        const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a % b");
-    }
+    SECTION("Test Modulo") { const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a % b"); }
 
-    SECTION("Test Integer Negation") {
-        const std::unique_ptr<llvm::Module> module = compile("a = True\nb = -a");
-    }
+    SECTION("Test Integer Negation") { const std::unique_ptr<llvm::Module> module = compile("a = True\nb = -a"); }
 
-    SECTION("Test Binary Negation") {
-        const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = ~a");
-    }
+    SECTION("Test Binary Negation") { const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = ~a"); }
 }
 
 
 TEST_CASE_METHOD(LLVMFixture, "Test Boolean Operators LLVM") {
-    SECTION("Test Boolean Negation") {
-        const std::unique_ptr<llvm::Module> module = compile("a = True\nb = not a");
-    }
+    SECTION("Test Boolean Negation") { const std::unique_ptr<llvm::Module> module = compile("a = True\nb = not a"); }
 
     SECTION("Test Boolean AND") {
         const std::unique_ptr<llvm::Module> module = compile("a = True\nb = True\nc = a and b");
@@ -97,16 +77,12 @@ TEST_CASE_METHOD(LLVMFixture, "Test Boolean Operators LLVM") {
         const std::unique_ptr<llvm::Module> module = compile("a = True\nb = True\nc = a ^ b");
     }
 
-    SECTION("Test Bool()") {
-        const std::unique_ptr<llvm::Module> module = compile("a = bool(5)");
-    }
+    SECTION("Test Bool()") { const std::unique_ptr<llvm::Module> module = compile("a = bool(5)"); }
 }
 
 
 TEST_CASE_METHOD(LLVMFixture, "Test Comparators LLVM") {
-    SECTION("Test Boolean Negation") {
-        const std::unique_ptr<llvm::Module> module = compile("a = True\nb = not a");
-    }
+    SECTION("Test Boolean Negation") { const std::unique_ptr<llvm::Module> module = compile("a = True\nb = not a"); }
 
     SECTION("Test Boolean Equality") {
         const std::unique_ptr<llvm::Module> module = compile("a = True\nb = True\nc = a == b");
@@ -128,16 +104,12 @@ TEST_CASE_METHOD(LLVMFixture, "Test Comparators LLVM") {
         const std::unique_ptr<llvm::Module> module = compile("a = True\nb = True\nc = a != b");
     }
 
-    SECTION("Test Less Than") {
-        const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a < b");
-    }
+    SECTION("Test Less Than") { const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a < b"); }
     SECTION("Test Less Than Equal") {
         const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a <= b");
     }
 
-    SECTION("Test Greater Than") {
-        const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a > b");
-    }
+    SECTION("Test Greater Than") { const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a > b"); }
 
     SECTION("Test Greater Than Equal") {
         const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a >= b");

@@ -19,4 +19,4 @@
 #include "pyir_ops.h.inc"
 #undef GET_OP_CLASSES
 
-#endif //PYCOMPILE_PYIR_OPS_H
+#endif // PYCOMPILE_PYIR_OPS_H

@@ -8,8 +8,8 @@
 #include <mlir/IR/BuiltinOps.h>
 
 #include <filesystem>
-#include <string>
 #include <llvm/IR/LLVMContext.h>
+#include <string>
 
 /**
  * Options controlling how LLVM IR is exported from an MLIR module.
@@ -46,8 +46,7 @@ std::unique_ptr<llvm::Module> translateToLLVMIR(llvm::LLVMContext& llvmCtx,
  * @param options Export options controlling target and optimization level.
  * @throws std::runtime_error if translation or compilation fails.
  */
-void exportObjectFile(const std::unique_ptr<llvm::Module>& llvmModule,
-                      const std::filesystem::path& output,
+void exportObjectFile(const std::unique_ptr<llvm::Module>& llvmModule, const std::filesystem::path& output,
                       const LLVMExportOptions& options = {});
 
 
@@ -58,4 +57,4 @@ void exportObjectFile(const std::unique_ptr<llvm::Module>& llvmModule,
  */
 void linkObjectFile(const std::filesystem::path& obj, const std::filesystem::path& output);
 
-#endif //PYCOMPILE_LLVM_EXPORT_H
+#endif // PYCOMPILE_LLVM_EXPORT_H

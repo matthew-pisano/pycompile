@@ -2,18 +2,18 @@
 // Created by matthew on 3/22/26.
 //
 
+#include <catch2/catch_all.hpp>
 #include <llvm/ExecutionEngine/Orc/LLJIT.h>
 #include <llvm/ExecutionEngine/Orc/ThreadSafeModule.h>
 #include <llvm/Support/TargetSelect.h>
-#include <catch2/catch_all.hpp>
 #include <mlir/IR/MLIRContext.h>
 #include <mlir/IR/OwningOpRef.h>
 
 #include "bytecode/bytecode.h"
+#include "conversion/pyir_codegen.h"
 #include "lowering/llvm_export.h"
-#include "lowering/pyir_to_llvm.h"
-#include "pyir/pyir_codegen.h"
-#include "pyir/pyir_runtime.h"
+#include "lowering/pyir_lowering.h"
+#include "pyruntime/pyir_runtime.h"
 
 
 /**
@@ -59,7 +59,7 @@ struct JITFixture {
 
     std::unique_ptr<llvm::Module> compile(const std::string& source) {
         const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
-        const mlir::OwningOpRef<mlir::ModuleOp> mlirModule = pyir::generatePyIR(mlirCtx, bytecodeModule);
+        const mlir::OwningOpRef<mlir::ModuleOp> mlirModule = generatePyIR(mlirCtx, bytecodeModule);
         lowerToLLVMDialect(mlirCtx, mlirModule);
         return translateToLLVMIR(llvmCtx, mlirModule);
     }
@@ -87,25 +87,25 @@ struct JITFixture {
         llvm::orc::JITDylib& dylib = (*jit)->getMainJITDylib();
         llvm::orc::SymbolMap symbols;
         auto addSymbol = [&](const char* name, void* ptr) {
-            const llvm::orc::ExecutorSymbolDef sym = llvm::orc::ExecutorSymbolDef(llvm::orc::ExecutorAddr::fromPtr(ptr),
-                llvm::JITSymbolFlags::Exported);
+            const llvm::orc::ExecutorSymbolDef sym =
+                    llvm::orc::ExecutorSymbolDef(llvm::orc::ExecutorAddr::fromPtr(ptr), llvm::JITSymbolFlags::Exported);
             symbols[(*jit)->getExecutionSession().intern(name)] = sym;
         };
 
         // Register all runtime functions
-        addSymbol("pyir_load_name", reinterpret_cast<void*>(pyir_load_name));
-        addSymbol("pyir_store_name", reinterpret_cast<void*>(pyir_store_name));
-        addSymbol("pyir_load_fast", reinterpret_cast<void*>(pyir_load_fast));
-        addSymbol("pyir_store_fast", reinterpret_cast<void*>(pyir_store_fast));
-        addSymbol("pyir_push_scope", reinterpret_cast<void*>(pyir_push_scope));
-        addSymbol("pyir_pop_scope", reinterpret_cast<void*>(pyir_pop_scope));
-        addSymbol("pyir_make_function", reinterpret_cast<void*>(pyir_make_function));
+        addSymbol("pyir_loadName", reinterpret_cast<void*>(pyir_loadName));
+        addSymbol("pyir_storeName", reinterpret_cast<void*>(pyir_storeName));
+        addSymbol("pyir_loadFast", reinterpret_cast<void*>(pyir_loadFast));
+        addSymbol("pyir_storeFast", reinterpret_cast<void*>(pyir_storeFast));
+        addSymbol("pyir_pushScope", reinterpret_cast<void*>(pyir_pushScope));
+        addSymbol("pyir_popScope", reinterpret_cast<void*>(pyir_popScope));
+        addSymbol("pyir_makeFunction", reinterpret_cast<void*>(pyir_makeFunction));
         addSymbol("pyir_call", reinterpret_cast<void*>(pyir_call));
-        addSymbol("pyir_load_const_int", reinterpret_cast<void*>(pyir_load_const_int));
-        addSymbol("pyir_load_const_str", reinterpret_cast<void*>(pyir_load_const_str));
-        addSymbol("pyir_load_const_float", reinterpret_cast<void*>(pyir_load_const_float));
-        addSymbol("pyir_load_const_bool", reinterpret_cast<void*>(pyir_load_const_bool));
-        addSymbol("pyir_load_const_none", reinterpret_cast<void*>(pyir_load_const_none));
+        addSymbol("pyir_loadConstInt", reinterpret_cast<void*>(pyir_loadConstInt));
+        addSymbol("pyir_loadConstStr", reinterpret_cast<void*>(pyir_loadConstStr));
+        addSymbol("pyir_loadConstFloat", reinterpret_cast<void*>(pyir_loadConstFloat));
+        addSymbol("pyir_loadConstBool", reinterpret_cast<void*>(pyir_loadConstBool));
+        addSymbol("pyir_loadConstNone", reinterpret_cast<void*>(pyir_loadConstNone));
         addSymbol("pyir_add", reinterpret_cast<void*>(pyir_add));
         addSymbol("pyir_sub", reinterpret_cast<void*>(pyir_sub));
         addSymbol("pyir_mul", reinterpret_cast<void*>(pyir_mul));
@@ -117,14 +117,14 @@ struct JITFixture {
         addSymbol("pyir_gt", reinterpret_cast<void*>(pyir_gt));
         addSymbol("pyir_ge", reinterpret_cast<void*>(pyir_ge));
         addSymbol("pyir_xor", reinterpret_cast<void*>(pyir_xor));
-        addSymbol("pyir_is_truthy", reinterpret_cast<void*>(pyir_is_truthy));
-        addSymbol("pyir_to_bool", reinterpret_cast<void*>(pyir_to_bool));
-        addSymbol("pyir_unary_not", reinterpret_cast<void*>(pyir_unary_not));
-        addSymbol("pyir_unary_negative", reinterpret_cast<void*>(pyir_unary_negative));
-        addSymbol("pyir_unary_invert", reinterpret_cast<void*>(pyir_unary_invert));
+        addSymbol("pyir_isTruthy", reinterpret_cast<void*>(pyir_isTruthy));
+        addSymbol("pyir_toBool", reinterpret_cast<void*>(pyir_toBool));
+        addSymbol("pyir_unaryNot", reinterpret_cast<void*>(pyir_unaryNot));
+        addSymbol("pyir_unaryNegative", reinterpret_cast<void*>(pyir_unaryNegative));
+        addSymbol("pyir_unaryInvert", reinterpret_cast<void*>(pyir_unaryInvert));
         addSymbol("pyir_decref", reinterpret_cast<void*>(pyir_decref));
-        addSymbol("pyir_format_simple", reinterpret_cast<void*>(pyir_format_simple));
-        addSymbol("pyir_build_string", reinterpret_cast<void*>(pyir_build_string));
+        addSymbol("pyir_formatSimple", reinterpret_cast<void*>(pyir_formatSimple));
+        addSymbol("pyir_buildString", reinterpret_cast<void*>(pyir_buildString));
 
         llvm::Error defineErr = dylib.define(llvm::orc::absoluteSymbols(symbols));
         REQUIRE(!defineErr);

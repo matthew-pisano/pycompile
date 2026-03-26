@@ -9,4 +9,4 @@
 
 #include "pyir.h.inc"
 
-#endif //PYCOMPILE_PYIR_H
+#endif // PYCOMPILE_PYIR_H

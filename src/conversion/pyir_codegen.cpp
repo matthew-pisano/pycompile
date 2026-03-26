@@ -124,6 +124,8 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             return formatSimpleCodegen(builder, ctx, loc, meta);
         case PythonOpcode::BUILD_STRING:
             return buildStringCodegen(builder, ctx, loc, instr, meta);
+        case PythonOpcode::BUILD_LIST:
+            return buildListCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::UNKNOWN:
         default:
             throw PyCompileError("Unsupported opcode '" + pythonOpcodeToString(instr.opcode) + "'", loc);

@@ -14,4 +14,8 @@
 void buildStringCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                         const ByteCodeInstruction& instr, ConversionMeta& meta);
 
+
+void buildListCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
+                      const ByteCodeInstruction& instr, ConversionMeta& meta);
+
 #endif // PYCOMPILE_BUILDER_CODEGEN_H

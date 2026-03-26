@@ -180,10 +180,13 @@ FetchContent_MakeAvailable(Catch2)
 
 add_executable(pycompile-tests
         ${PYCOMPILE_SOURCES}
-        test/test_bytecode.cpp
-        test/test_pyir_codegen.cpp
-        test/test_llvm_ir_generation.cpp
-        test/test_code_execution.cpp
+        test/bytecode/test_bytecode.cpp
+        test/conversion/test_pyir_codegen.cpp
+        test/lowering/test_llvm_ir_generation.cpp
+        test/lowering/test_code_execution.cpp
+        test/conversion/test_logical_codegen.cpp
+        test/conversion/test_function_codegen.cpp
+        test/conversion/test_control_flow_codegen.cpp
 )
 target_link_libraries(pycompile-tests PRIVATE ${PYCOMPILE_LIBS} stdpyir Catch2::Catch2WithMain)
 target_include_directories(pycompile-tests SYSTEM PRIVATE

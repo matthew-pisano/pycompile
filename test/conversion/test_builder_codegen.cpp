@@ -63,9 +63,9 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build List MLIR") {
 
         pyir::LoadConst loadTupleOp = mlir::dyn_cast<pyir::LoadConst>(getOp(fn, 1));
         REQUIRE(loadTupleOp);
-        // mlir::IntegerAttr intAttr = mlir::dyn_cast<mlir::IntegerAttr>(loadTupleOp.getValue());
-        // REQUIRE(intAttr);
-        // REQUIRE(intAttr.getInt() == 24);
+        mlir::ArrayAttr arrayAttr = mlir::dyn_cast<mlir::ArrayAttr>(loadTupleOp.getValue());
+        REQUIRE(arrayAttr);
+        REQUIRE(arrayAttr.getValue().size() == 3);
 
         pyir::ListExtend listExtendOp = mlir::dyn_cast<pyir::ListExtend>(getOp(fn, 2));
         REQUIRE(listExtendOp);
@@ -76,5 +76,19 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build List MLIR") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile(
                 "a = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+
+        pyir::BuildList buildListOp = mlir::dyn_cast<pyir::BuildList>(getOp(fn, 0));
+        REQUIRE(buildListOp);
+        REQUIRE(buildListOp.getParts().size() == 0);
+
+        pyir::LoadConst loadNumOp = mlir::dyn_cast<pyir::LoadConst>(getOp(fn, 1));
+        REQUIRE(loadNumOp);
+        mlir::IntegerAttr intAttr = mlir::dyn_cast<mlir::IntegerAttr>(loadNumOp.getValue());
+        REQUIRE(intAttr);
+        REQUIRE(intAttr.getInt() == 1);
+
+        pyir::ListAppend listAppendOp = mlir::dyn_cast<pyir::ListAppend>(getOp(fn, 2));
+        REQUIRE(listAppendOp);
+        REQUIRE(listAppendOp.getParts().size() == 1);
     }
 }

@@ -228,3 +228,11 @@ def PyIR_BuildList : PyIR_Op<"build_list"> {
     let results   = (outs ByteCodeObject_Type:$result);
     let assemblyFormat = "$parts attr-dict `:` functional-type($parts, $result)";
 }
+
+
+def PyIR_ListExtend : PyIR_Op<"list_extend"> {
+    let summary = "Extends a list with the last N items on the stack";
+    let arguments = (ins Variadic<ByteCodeObject_Type>:$parts);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$parts attr-dict `:` functional-type($parts, $result)";
+}

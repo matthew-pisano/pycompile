@@ -56,6 +56,20 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build List MLIR") {
     SECTION("Test Small List") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = [1, 2, 3]");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+
+        pyir::BuildList buildListOp = mlir::dyn_cast<pyir::BuildList>(getOp(fn, 0));
+        REQUIRE(buildListOp);
+        REQUIRE(buildListOp.getParts().size() == 0);
+
+        pyir::LoadConst loadTupleOp = mlir::dyn_cast<pyir::LoadConst>(getOp(fn, 1));
+        REQUIRE(loadTupleOp);
+        // mlir::IntegerAttr intAttr = mlir::dyn_cast<mlir::IntegerAttr>(loadTupleOp.getValue());
+        // REQUIRE(intAttr);
+        // REQUIRE(intAttr.getInt() == 24);
+
+        pyir::ListExtend listExtendOp = mlir::dyn_cast<pyir::ListExtend>(getOp(fn, 2));
+        REQUIRE(listExtendOp);
+        REQUIRE(listExtendOp.getParts().size() == 1);
     }
 
     SECTION("Test Large List") {

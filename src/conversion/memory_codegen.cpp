@@ -209,5 +209,7 @@ void loadAttrCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mli
     if (!name)
         throw PyCompileError("LOAD_ATTR must have a string argval", loc);
     mlir::Value obj = meta.stack.back();
+    meta.stack.pop_back();
     meta.stack.push_back(builder.create<pyir::LoadAttr>(loc, pyType, obj, *name).getResult());
+    meta.stack.push_back(builder.create<pyir::PushNull>(loc, pyType).getResult());
 }

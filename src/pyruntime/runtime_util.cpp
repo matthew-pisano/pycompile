@@ -7,16 +7,18 @@
 #include <format>
 #include <stdexcept>
 
-double_t valueToFloat(const Value* v) {
+
+double_t valueToFloat(const Value* val) {
     // Promote int to float if either operand is a float
-    if (v->isFloat())
-        return std::get<double_t>(v->data);
-    if (v->isInt())
-        return static_cast<double_t>(std::get<int64_t>(v->data));
+    if (val->isFloat())
+        return std::get<double_t>(val->data);
+    if (val->isInt())
+        return static_cast<double_t>(std::get<int64_t>(val->data));
     throw std::runtime_error("Cannot convert to float");
 }
 
-std::string valueToString(const Value* v) {
+
+std::string valueToString(const Value* val) {
     return std::visit(
             []<typename T>(const T& x) -> std::string {
                 using ValType = std::decay_t<T>;
@@ -35,20 +37,20 @@ std::string valueToString(const Value* v) {
                 if constexpr (std::is_same_v<ValType, Value::BoundMethod>)
                     return "<built-in method>";
                 if constexpr (std::is_same_v<ValType, Value::List>) {
-                    const Value::List& list = x;
-                    if (list.empty())
+                    if (x.empty())
                         return "[]";
 
                     std::string result = "[";
-                    for (size_t i = 0; i < list.size() - 1; i++)
-                        result += valueToString(list[i]) + ", ";
-                    result += valueToString(list[list.size() - 1]) + "]";
+                    for (size_t i = 0; i < x.size() - 1; i++)
+                        result += valueToString(x[i]) + ", ";
+                    result += valueToString(x[x.size() - 1]) + "]";
                     return result;
                 }
                 throw std::runtime_error("Unable to convert type to string");
             },
-            v->data);
+            val->data);
 }
+
 
 bool valueToBool(const Value* val) {
     return std::visit(
@@ -66,7 +68,30 @@ bool valueToBool(const Value* val) {
                     return !x.empty();
                 if constexpr (std::is_same_v<ValType, Value::Function>)
                     return true;
+                if constexpr (std::is_same_v<ValType, Value::BoundMethod>)
+                    return true;
+                if constexpr (std::is_same_v<ValType, Value::List>)
+                    return x.size() > 0;
                 return false;
+            },
+            val->data);
+}
+
+
+Value::List valueToList(const Value* val) {
+    return std::visit(
+            []<typename T>(const T& x) -> Value::List {
+                using ValType = std::decay_t<T>;
+                if constexpr (std::is_same_v<ValType, std::string>) {
+                    Value::List result;
+                    for (const char c : x)
+                        result.push_back(new Value(c));
+                    return result;
+                }
+                if constexpr (std::is_same_v<ValType, Value::List>) {
+                    return x;
+                }
+                throw std::runtime_error("Unable to convert type to list");
             },
             val->data);
 }

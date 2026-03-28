@@ -7,7 +7,7 @@
 #include <cmath>
 #include <stdexcept>
 
-#include "../../include/pyruntime/pyir_value.h"
+#include "pyruntime/pyir_value.h"
 #include "pyruntime/runtime_util.h"
 
 
@@ -84,4 +84,14 @@ Value* pyir_builtinBool(Value** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("Too many arguments for bool()");
     return new Value(valueToBool(args[0]));
+}
+
+
+Value* pyir_builtinList(Value** args, const int64_t argc) {
+    if (argc > 1)
+        throw std::runtime_error("Too many arguments for list()");
+    if (argc == 0)
+        return new Value(Value::List{});
+
+    return new Value(valueToList(args[0]));
 }

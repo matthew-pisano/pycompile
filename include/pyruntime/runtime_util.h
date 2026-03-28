@@ -8,10 +8,12 @@
 
 #include "pyir_value.h"
 
-double_t valueToFloat(const Value* v);
+double_t valueToFloat(const Value* val);
 
-std::string valueToString(const Value* v);
+std::string valueToString(const Value* val);
 
 bool valueToBool(const Value* val);
+
+Value::List valueToList(const Value* val);
 
 #endif // PYCOMPILE_RUNTIME_UTIL_H

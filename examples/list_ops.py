@@ -1,4 +1,4 @@
-print("Empty List:", [])
+print("Empty List:", list())
 
 print("Short List:", [1, 2, 3])
 
@@ -15,3 +15,5 @@ a.extend([3])
 print("List Extend:", a)
 
 print("List Index:", [1, 2][0])
+
+print("List of Strings:", list("Hello"))

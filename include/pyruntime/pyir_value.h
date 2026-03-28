@@ -56,6 +56,8 @@ struct Value {
 
     explicit Value(std::string s) : data(std::move(s)) {}
 
+    explicit Value(const char c) : data(std::string(1, c)) {}
+
     explicit Value(List list) : data(std::move(list)) {}
 
     explicit Value(Function f) : data(f) {}

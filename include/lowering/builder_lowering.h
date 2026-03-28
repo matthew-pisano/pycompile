@@ -33,4 +33,29 @@ struct BuildStringLowering : PyIROpConversion {
                                         mlir::ConversionPatternRewriter& rewriter) const override;
 };
 
+
+/**
+ * Lowers pyir.pyir_buildList to allocate memory and construct a new list using the runtime function
+ * pyir_buildList
+ *
+ * Parts are stack-allocated as a Value*[] array and passed by pointer along with the part count.
+ * The runtime appends all parts into a single string Value*.
+ *
+ * pyir.build_list %part0, %part1, ... : (!pyir.object, !pyir.object, ...) -> !pyir.object
+ *     %arr   = llvm.alloca [n x !llvm.ptr]
+ *     %gep0  = llvm.gep %arr[0]
+ *              llvm.store %part0, %gep0
+ *     %gep1  = llvm.gep %arr[1]
+ *              llvm.store %part1, %gep1
+ *     ...
+ *     %result = llvm.call @pyir_buildList(%arr, n)
+ */
+struct BuildListLowering : PyIROpConversion {
+    BuildListLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::BuildList::getOperationName(), tc, ctx) {}
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override;
+};
+
 #endif // PYCOMPILE_BUILDER_LOWERING_H

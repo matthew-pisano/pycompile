@@ -7,6 +7,7 @@
 #include <atomic>
 #include <string>
 #include <variant>
+#include <vector>
 
 
 struct NoneType {};
@@ -20,7 +21,8 @@ inline bool operator==(NoneType, NoneType) {
 
 struct Value {
     using Fn = Value* (*) (Value**, int64_t);
-    using Data = std::variant<NoneType, bool, int64_t, double, std::string, Fn>;
+    using List = std::vector<Value*>;
+    using Data = std::variant<NoneType, bool, int64_t, double, std::string, List, Fn>;
 
     Data data;
     std::atomic<int32_t> refcount{1};
@@ -40,6 +42,8 @@ struct Value {
 
     explicit Value(std::string s) : data(std::move(s)) {}
 
+    explicit Value(std::vector<Value*> list) : data(std::move(list)) {}
+
     explicit Value(Fn f) : data(f) {}
 
     void incref() { refcount.fetch_add(1, std::memory_order_relaxed); }
@@ -54,6 +58,7 @@ struct Value {
     [[nodiscard]] bool isInt() const { return std::holds_alternative<int64_t>(data); }
     [[nodiscard]] bool isFloat() const { return std::holds_alternative<double>(data); }
     [[nodiscard]] bool isStr() const { return std::holds_alternative<std::string>(data); }
+    [[nodiscard]] bool isList() const { return std::holds_alternative<std::vector<Value*>>(data); }
     [[nodiscard]] bool isFn() const { return std::holds_alternative<Fn>(data); }
 };
 

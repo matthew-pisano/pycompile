@@ -35,8 +35,10 @@ void pyir_listExtend(Value* list, const Value* items) {
 
     Value::List& dest = std::get<Value::List>(list->data);
     const Value::List& src = std::get<Value::List>(items->data);
-    for (Value* v : src)
+    for (Value* v : src) {
+        v->incref();
         dest.push_back(v);
+    }
 }
 
 
@@ -45,5 +47,6 @@ void pyir_listAppend(Value* list, Value* item) {
         throw std::runtime_error("Can only append to list types");
 
     Value::List& dest = std::get<Value::List>(list->data);
+    item->incref();
     dest.push_back(item);
 }

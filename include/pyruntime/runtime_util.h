@@ -10,7 +10,7 @@
 
 double_t valueToFloat(const Value* val);
 
-std::string valueToString(const Value* val);
+std::string valueToString(const Value* val, bool quoteStrings = false);
 
 bool valueToBool(const Value* val);
 

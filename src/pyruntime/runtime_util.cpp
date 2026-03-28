@@ -9,7 +9,6 @@
 
 
 double_t valueToFloat(const Value* val) {
-    // Promote int to float if either operand is a float
     if (val->isFloat())
         return std::get<double_t>(val->data);
     if (val->isInt())
@@ -18,9 +17,9 @@ double_t valueToFloat(const Value* val) {
 }
 
 
-std::string valueToString(const Value* val) {
+std::string valueToString(const Value* val, bool quoteStrings) {
     return std::visit(
-            []<typename T>(const T& x) -> std::string {
+            [quoteStrings]<typename T>(const T& x) -> std::string {
                 using ValType = std::decay_t<T>;
                 if constexpr (std::is_same_v<ValType, NoneType>)
                     return "None";
@@ -31,7 +30,7 @@ std::string valueToString(const Value* val) {
                 if constexpr (std::is_same_v<ValType, double_t>)
                     return std::format("{}", x);
                 if constexpr (std::is_same_v<ValType, std::string>)
-                    return x;
+                    return quoteStrings ? ("'" + x + "'") : x;
                 if constexpr (std::is_same_v<ValType, Value::Function>)
                     return "<callable>";
                 if constexpr (std::is_same_v<ValType, Value::BoundMethod>)
@@ -42,8 +41,8 @@ std::string valueToString(const Value* val) {
 
                     std::string result = "[";
                     for (size_t i = 0; i < x.size() - 1; i++)
-                        result += valueToString(x[i]) + ", ";
-                    result += valueToString(x[x.size() - 1]) + "]";
+                        result += valueToString(x[i], true) + ", ";
+                    result += valueToString(x[x.size() - 1], true) + "]";
                     return result;
                 }
                 throw std::runtime_error("Unable to convert type to string");

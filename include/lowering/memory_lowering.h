@@ -88,6 +88,26 @@ struct StoreNameLowering : PyIROpConversion {
 
 
 /**
+ * Lowers pyir.load_attr to a call to the runtime function pyir_load_attr.
+ *
+ * The attribute name is stored as a global string constant and passed as a const char* pointer
+ * alongside the heap-allocated Value* object. The runtime looks up the attribute on the object
+ * and returns a heap-allocated Value* (typically a BoundMethod).
+ *
+ * pyir.load_attr %obj, "append" : !pyir.object
+ *     %name_ptr = llvm.mlir.addressof @__pyir_str_append
+ *     %result   = llvm.call @pyir_loadAttr(%obj, %name_ptr)
+ */
+struct LoadAttrLowering : PyIROpConversion {
+    LoadAttrLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::LoadAttr::getOperationName(), tc, ctx) {}
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
+                                        mlir::ConversionPatternRewriter& rewriter) const override;
+};
+
+
+/**
  * Lowers pyir.load_const to a call to the appropriate runtime constant constructor, depending on the attribute type:
  *
  *   StringAttr -> pyir_loadConstStr(const char*)

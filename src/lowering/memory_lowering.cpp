@@ -235,7 +235,7 @@ mlir::LogicalResult LoadArgLowering::matchAndRewrite(mlir::Operation* op, const 
     const mlir::Location loc = op->getLoc();
 
     pyir::LoadArg loadArg = mlir::cast<pyir::LoadArg>(op);
-    const int64_t index = loadArg.getIndex();
+    const int64_t index = static_cast<int64_t>(loadArg.getIndex());
 
     // operands[0] is the args_ptr (Value** as !llvm.ptr)
     mlir::Value argsPtr = operands[0];
@@ -250,5 +250,28 @@ mlir::LogicalResult LoadArgLowering::matchAndRewrite(mlir::Operation* op, const 
     mlir::LLVM::LoadOp load = rewriter.create<mlir::LLVM::LoadOp>(loc, ptrType(ctx), gep);
 
     rewriter.replaceOp(op, load.getResult());
+    return mlir::success();
+}
+
+
+mlir::LogicalResult LoadAttrLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
+                                                      mlir::ConversionPatternRewriter& rewriter) const {
+    pyir::LoadAttr loadAttr = mlir::cast<pyir::LoadAttr>(op);
+    mlir::MLIRContext* ctx = op->getContext();
+    const mlir::ModuleOp module = getModule(op);
+    const mlir::Location loc = op->getLoc();
+
+    // declare: extern Value* pyir_loadAttr(Value* obj, const char* name)
+    const mlir::LLVM::LLVMFunctionType fnType =
+            mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), ptrType(ctx)});
+    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_loadAttr", fnType);
+
+    const std::string globalName = "__pyir_str_" + loadAttr.getAttrName().str();
+    const mlir::Value namePtr = getOrInsertStringConstant(rewriter, module, loc, globalName, loadAttr.getAttrName());
+
+    // operands[0] is the object
+    mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{operands[0], namePtr});
+
+    rewriter.replaceOp(op, call.getResult());
     return mlir::success();
 }

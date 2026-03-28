@@ -22,9 +22,13 @@ inline bool operator==(NoneType, NoneType) {
 struct Value {
     using Function = Value* (*) (Value**, int64_t);
     using List = std::vector<Value*>;
+
+
     struct BoundMethod {
+        using SelfFunction = Value* (*) (Value*, Value**, int64_t);
+
         Value* self;
-        Function fn;
+        SelfFunction fn;
 
         bool operator==(const BoundMethod&) const = default;
     };
@@ -53,6 +57,8 @@ struct Value {
 
     explicit Value(Function f) : data(f) {}
 
+    explicit Value(BoundMethod bm) : data(bm) {}
+
     void incref() { refcount.fetch_add(1, std::memory_order_relaxed); }
 
     void decref() {
@@ -67,6 +73,7 @@ struct Value {
     [[nodiscard]] bool isStr() const { return std::holds_alternative<std::string>(data); }
     [[nodiscard]] bool isList() const { return std::holds_alternative<List>(data); }
     [[nodiscard]] bool isFn() const { return std::holds_alternative<Function>(data); }
+    [[nodiscard]] bool isBoundMethod() const { return std::holds_alternative<BoundMethod>(data); }
 };
 
 

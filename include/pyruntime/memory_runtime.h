@@ -31,6 +31,8 @@ Value* pyir_loadConstBool(int8_t val);
 Value* pyir_loadConstNone();
 
 Value* pyir_loadConstTuple(Value** items, int64_t count);
+
+Value* pyir_loadAttr(Value* obj, const char* name);
 }
 
 #endif // PYCOMPILE_MEMORY_RUNTIME_H

@@ -31,7 +31,9 @@ std::string valueToString(const Value* v) {
                 if constexpr (std::is_same_v<ValType, std::string>)
                     return x;
                 if constexpr (std::is_same_v<ValType, Value::Function>)
-                    return "<builtin>";
+                    return "<callable>";
+                if constexpr (std::is_same_v<ValType, Value::BoundMethod>)
+                    return "<built-in method>";
                 if constexpr (std::is_same_v<ValType, Value::List>) {
                     const Value::List& list = x;
                     if (list.empty())

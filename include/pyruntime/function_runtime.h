@@ -4,9 +4,16 @@
 
 #ifndef PYCOMPILE_FUNCTION_RUNTIME_H
 #define PYCOMPILE_FUNCTION_RUNTIME_H
+
 #include "pyir_value.h"
 
 extern "C" {
+
+struct PyIR_List {
+    static Value* append(Value* self, Value** args, int64_t argc);
+
+    static Value* extend(Value* self, Value** args, int64_t argc);
+};
 
 // scope management
 void pyir_pushScope();

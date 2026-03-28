@@ -4,9 +4,11 @@
 
 #include "pyruntime/memory_runtime.h"
 
+#include <format>
 #include <stdexcept>
 #include <unordered_map>
 
+#include "pyruntime/function_runtime.h"
 #include "pyruntime/runtime_state.h"
 
 
@@ -73,4 +75,20 @@ Value* pyir_loadConstTuple(Value** items, const int64_t count) {
     for (int64_t i = 0; i < count; i++)
         result.push_back(items[i]);
     return new Value(result);
+}
+
+Value* pyir_loadAttr(Value* obj, const char* name) {
+    if (obj->isList()) {
+        static const std::unordered_map<std::string, Value::BoundMethod::SelfFunction> listMethods = {
+                {"append", PyIR_List::append},
+                {"extend", PyIR_List::extend},
+        };
+        const auto it = listMethods.find(name);
+        if (it == listMethods.end())
+            throw std::runtime_error(std::string("list has no attribute '") + name + "'");
+
+        return new Value(Value::BoundMethod{obj, it->second});
+    }
+
+    throw std::runtime_error(std::format("Object has no attribute '") + name + "'");
 }

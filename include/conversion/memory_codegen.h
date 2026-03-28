@@ -50,4 +50,8 @@ void storeDerefCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, cons
 void loadConstCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                       const mlir::func::FuncOp& fn, const ByteCodeInstruction& instr, ConversionMeta& meta);
 
+
+void loadAttrCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
+                     const ByteCodeInstruction& instr, ConversionMeta& meta);
+
 #endif // PYCOMPILE_MEMORY_CODEGEN_H

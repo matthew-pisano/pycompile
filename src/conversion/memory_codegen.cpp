@@ -95,7 +95,7 @@ void loadFastCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mli
     pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const std::string* name = std::get_if<std::string>(&instr.argval);
     if (!name)
-        throw PyCompileError("LOAD_FAST must have a string argvall", loc);
+        throw PyCompileError("LOAD_FAST must have a string argval", loc);
     meta.stack.push_back(builder.create<pyir::LoadFast>(loc, pyType, *name).getResult());
 }
 
@@ -199,4 +199,15 @@ void loadConstCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ml
         attr = getTupleStrAttr(builder, tuple);
 
     meta.stack.push_back(builder.create<pyir::LoadConst>(loc, pyType, attr).getResult());
+}
+
+
+void loadAttrCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
+                     const ByteCodeInstruction& instr, ConversionMeta& meta) {
+    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const std::string* name = std::get_if<std::string>(&instr.argval);
+    if (!name)
+        throw PyCompileError("LOAD_ATTR must have a string argval", loc);
+    mlir::Value obj = meta.stack.back();
+    meta.stack.push_back(builder.create<pyir::LoadAttr>(loc, pyType, obj, *name).getResult());
 }

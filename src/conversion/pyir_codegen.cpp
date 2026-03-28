@@ -84,6 +84,8 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             return loadFastBorrowCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::LOAD_CONST:
             return loadConstCodegen(builder, ctx, loc, fn, instr, meta);
+        case PythonOpcode::LOAD_ATTR:
+            return loadAttrCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::LOAD_NAME:
             return loadNameCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::STORE_NAME:

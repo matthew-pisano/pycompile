@@ -19,11 +19,11 @@ void buildListCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ml
                       const ByteCodeInstruction& instr, ConversionMeta& meta);
 
 
-void listExtendCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
+void listExtendCodegen(mlir::OpBuilder& builder, const mlir::Location& loc,
                        const ByteCodeInstruction& instr, ConversionMeta& meta);
 
 
-void listAppendCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
+void listAppendCodegen(mlir::OpBuilder& builder, const mlir::Location& loc,
                        const ByteCodeInstruction& instr, ConversionMeta& meta);
 
 #endif // PYCOMPILE_BUILDER_CODEGEN_H

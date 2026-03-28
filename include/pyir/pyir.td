@@ -231,16 +231,14 @@ def PyIR_BuildList : PyIR_Op<"build_list"> {
 
 
 def PyIR_ListExtend : PyIR_Op<"list_extend"> {
-    let summary = "Extends a list with the last N items on the stack";
-    let arguments = (ins Variadic<ByteCodeObject_Type>:$parts);
-    let results   = (outs ByteCodeObject_Type:$result);
-    let assemblyFormat = "$parts attr-dict `:` functional-type($parts, $result)";
+    let summary = "Extends a list (at the given index) with the iterable at the top of the stack";
+    let arguments = (ins ByteCodeObject_Type:$list, ByteCodeObject_Type:$items);
+    let assemblyFormat = "$list `,` $items attr-dict `:` type($list) `,` type($items)";
 }
 
 
 def PyIR_ListAppend : PyIR_Op<"list_append"> {
-    let summary = "Appends to a list with the last N items on the stack";
-    let arguments = (ins Variadic<ByteCodeObject_Type>:$parts);
-    let results   = (outs ByteCodeObject_Type:$result);
-    let assemblyFormat = "$parts attr-dict `:` functional-type($parts, $result)";
+    let summary = "Appends to a list (at the given index) with the item at the top of the stack";
+    let arguments = (ins ByteCodeObject_Type:$list, ByteCodeObject_Type:$items);
+    let assemblyFormat = "$list `,` $items attr-dict `:` type($list) `,` type($items)";
 }

@@ -69,7 +69,8 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build List MLIR") {
 
         pyir::ListExtend listExtendOp = mlir::dyn_cast<pyir::ListExtend>(getOp(fn, 2));
         REQUIRE(listExtendOp);
-        REQUIRE(listExtendOp.getParts().size() == 1);
+        REQUIRE(mlir::isa<pyir::BuildList>(listExtendOp.getList().getDefiningOp()));
+        REQUIRE(mlir::isa<pyir::LoadConst>(listExtendOp.getItems().getDefiningOp()));
     }
 
     SECTION("Test Large List") {
@@ -89,6 +90,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build List MLIR") {
 
         pyir::ListAppend listAppendOp = mlir::dyn_cast<pyir::ListAppend>(getOp(fn, 2));
         REQUIRE(listAppendOp);
-        REQUIRE(listAppendOp.getParts().size() == 1);
+        REQUIRE(mlir::isa<pyir::BuildList>(listAppendOp.getList().getDefiningOp()));
+        REQUIRE(mlir::isa<pyir::LoadConst>(listAppendOp.getItems().getDefiningOp()));
     }
 }

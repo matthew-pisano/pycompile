@@ -10,6 +10,12 @@
 #include "pyruntime/runtime_state.h"
 
 
+const std::unordered_map<std::string, Value::BoundMethod::SelfFunction> PyIR_List::attrs = {
+        {"append", append},
+        {"extend", extend},
+};
+
+
 Value* PyIR_List::append(Value* self, Value** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("append() takes exactly one argument");

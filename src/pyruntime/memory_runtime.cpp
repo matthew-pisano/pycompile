@@ -79,14 +79,9 @@ Value* pyir_loadConstTuple(Value** items, const int64_t count) {
 
 Value* pyir_loadAttr(Value* obj, const char* name) {
     if (obj->isList()) {
-        static const std::unordered_map<std::string, Value::BoundMethod::SelfFunction> listMethods = {
-                {"append", PyIR_List::append},
-                {"extend", PyIR_List::extend},
-        };
-        const auto it = listMethods.find(name);
-        if (it == listMethods.end())
+        const auto it = PyIR_List::attrs.find(name);
+        if (it == PyIR_List::attrs.end())
             throw std::runtime_error(std::string("list has no attribute '") + name + "'");
-
         return new Value(Value::BoundMethod{obj, it->second});
     }
 

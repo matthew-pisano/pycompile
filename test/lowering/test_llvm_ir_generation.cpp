@@ -137,7 +137,7 @@ TEST_CASE_METHOD(LLVMFixture, "Test Function Definition LLVM") {
 }
 
 
-TEST_CASE_METHOD(LLVMFixture, "Test Build List LLVM") {
+TEST_CASE_METHOD(LLVMFixture, "Test List Operations LLVM") {
 
     SECTION("Test Empty List") { const std::unique_ptr<llvm::Module> module = compile("a = []"); }
 
@@ -147,6 +147,8 @@ TEST_CASE_METHOD(LLVMFixture, "Test Build List LLVM") {
         const std::unique_ptr<llvm::Module> module = compile(
                 "a = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]");
     }
+
+    SECTION("Test List Addition") { const std::unique_ptr<llvm::Module> module = compile("a = [1, 2] + [3]"); }
 }
 
 

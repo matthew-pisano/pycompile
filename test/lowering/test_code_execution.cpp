@@ -187,4 +187,9 @@ TEST_CASE_METHOD(JITFixture, "Test JIT List Operations") {
         const std::string output = runCapture(std::format("print({})", listStr));
         REQUIRE(output == listStr + "\n");
     }
+
+    SECTION("Test List Addition") {
+        const std::string output = runCapture("print([1, 2] + [3])");
+        REQUIRE(output == "[1, 2, 3]\n");
+    }
 }

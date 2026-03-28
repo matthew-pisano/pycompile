@@ -23,6 +23,14 @@ Value* pyir_add(const Value* lhs, const Value* rhs) {
     }
     if (lhs->isStr() && rhs->isStr())
         return new Value(std::get<std::string>(lhs->data) + std::get<std::string>(rhs->data));
+    if (lhs->isList() && rhs->isList()) {
+        Value::List lhsVal = std::get<Value::List>(lhs->data);
+        Value::List rhsVal = std::get<Value::List>(rhs->data);
+        Value::List result;
+        result.insert(result.end(), lhsVal.begin(), lhsVal.end());
+        result.insert(result.end(), rhsVal.begin(), rhsVal.end());
+        return new Value(result);
+    }
     throw std::runtime_error("Unsupported operand types for +");
 }
 

@@ -86,6 +86,34 @@ Value* pyir_mod(const Value* lhs, const Value* rhs) {
 }
 
 
+Value* pyir_idx(const Value* obj, const Value* idx) {
+    if (!idx->isInt())
+        throw std::runtime_error("List indices must be integers");
+
+    if (obj->isStr()) {
+        const std::string& str = std::get<std::string>(obj->data);
+        int64_t index = std::get<int64_t>(idx->data);
+        if (index < 0)
+            index += str.size();
+        if (index < 0 || static_cast<size_t>(index) >= str.size())
+            throw std::runtime_error("String index out of range");
+        return new Value(std::string(1, str[index]));
+    }
+    if (obj->isList()) {
+        const Value::List& list = std::get<Value::List>(obj->data);
+        int64_t index = std::get<int64_t>(idx->data);
+        if (index < 0)
+            index += list.size();
+        if (index < 0 || static_cast<size_t>(index) >= list.size())
+            throw std::runtime_error("List index out of range");
+        list[index]->incref(); // Return a new reference to the indexed value
+        return list[index];
+    }
+
+    throw std::runtime_error("Unsupported operand type for indexing");
+}
+
+
 Value* pyir_eq(const Value* lhs, const Value* rhs) {
     return std::visit(
             []<typename T0, typename T1>(const T0& l, const T1& r) -> Value* {

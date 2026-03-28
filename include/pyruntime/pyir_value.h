@@ -41,6 +41,9 @@ struct Value {
     // Disable copy/move: Values live on the heap and are managed by refcount
     Value(const Value&) = delete;
 
+    // Disable constructor from pointer
+    explicit Value(Value*) = delete;
+
     Value& operator=(const Value&) = delete;
 
     explicit Value(NoneType) : data(NoneType{}) {}

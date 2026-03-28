@@ -153,6 +153,8 @@ TEST_CASE_METHOD(LLVMFixture, "Test List Operations LLVM") {
     SECTION("Test List Append") { const std::unique_ptr<llvm::Module> module = compile("[1, 2].append(3)"); }
 
     SECTION("Test List Extend") { const std::unique_ptr<llvm::Module> module = compile("[1, 2].extend([3])"); }
+
+    SECTION("Test List Index") { const std::unique_ptr<llvm::Module> module = compile("[1, 2][0]"); }
 }
 
 

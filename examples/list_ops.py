@@ -14,4 +14,4 @@ a = [1, 2]
 a.extend([3])
 print("List Extend:", a)
 
-print("List Index:", [1, 2][1])
+print("List Index:", [1, 2][0])

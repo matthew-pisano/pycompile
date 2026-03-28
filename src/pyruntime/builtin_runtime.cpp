@@ -7,7 +7,7 @@
 #include <cmath>
 #include <stdexcept>
 
-#include "pyir/pyir_value.h"
+#include "pyruntime/pyir_value.h"
 #include "pyruntime/runtime_util.h"
 
 
@@ -27,7 +27,9 @@ Value* pyir_builtinLen(Value** args, const int64_t argc) {
         throw std::runtime_error("Too many arguments for len()");
     if (args[0]->isStr())
         return new Value(static_cast<int64_t>(std::get<std::string>(args[0]->data).size()));
-    throw std::runtime_error("object has no len()");
+    if (args[0]->isList())
+        return new Value(static_cast<int64_t>(std::get<Value::List>(args[0]->data).size()));
+    throw std::runtime_error("Object has no len()");
 }
 
 
@@ -82,4 +84,14 @@ Value* pyir_builtinBool(Value** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("Too many arguments for bool()");
     return new Value(valueToBool(args[0]));
+}
+
+
+Value* pyir_builtinList(Value** args, const int64_t argc) {
+    if (argc > 1)
+        throw std::runtime_error("Too many arguments for list()");
+    if (argc == 0)
+        return new Value(Value::List{});
+
+    return new Value(valueToList(args[0]));
 }

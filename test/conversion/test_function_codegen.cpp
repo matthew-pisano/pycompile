@@ -200,3 +200,11 @@ TEST_CASE_METHOD(MLIRFixture, "Test Function Definition MLIR") {
         REQUIRE(retVal.getValue().getDefiningOp() == loadConst.getOperation());
     }
 }
+
+
+TEST_CASE_METHOD(MLIRFixture, "Test Bound Method MLIR") {
+    SECTION("Test List Append") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("[1, 2].append(3)");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+    }
+}

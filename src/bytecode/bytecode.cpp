@@ -119,6 +119,30 @@ std::vector<std::string> extractPyTupleStrings(PyObject* code, const char* attr)
 // Forward declaration
 ByteCodeModule generatePythonByteCode(PyObject* code, const std::string& filename, int depth = 0);
 
+
+/**
+ * Translates a Python tuple object into a variant of C++ representations of Python primitives
+ */
+std::vector<PrimitiveArgvals> decodeTupleStr(PyObject* argval) {
+    std::vector<PrimitiveArgvals> tupleStrs;
+    const Py_ssize_t n = PyTuple_Size(argval);
+    for (Py_ssize_t i = 0; i < n; i++) {
+        PyObject* s = PyTuple_GetItem(argval, i); // Borrowed, no need to decref
+        if (PyBool_Check(s))
+            tupleStrs.emplace_back(argval == Py_True);
+        else if (PyLong_Check(s))
+            tupleStrs.emplace_back(PyLong_AsLong(s));
+        else if (PyFloat_Check(s))
+            tupleStrs.emplace_back(PyFloat_AsDouble(s));
+        else if (PyUnicode_Check(s))
+            tupleStrs.emplace_back(PyUnicode_AsUTF8(s));
+        else
+            tupleStrs.emplace_back(ArgvalNone{});
+    }
+
+    return tupleStrs;
+}
+
 /**
  * Decodes a Python object into a bytecode instruction.
  * @param pyobject The Python object to decode.
@@ -184,14 +208,7 @@ ByteCodeInstruction decodeByteCodeInstruction(PyObject* pyobject, const std::str
         instr.argval = PyUnicode_AsUTF8(argval);
     } else if (PyTuple_Check(argval)) {
         instr.argvalType = ArgvalType::TupleStr;
-        std::vector<std::string> tupleStrs;
-        const Py_ssize_t n = PyTuple_Size(argval);
-        for (Py_ssize_t i = 0; i < n; i++) {
-            PyObject* s = PyTuple_GetItem(argval, i); // Borrowed, no need to decref
-            if (PyUnicode_Check(s))
-                tupleStrs.emplace_back(PyUnicode_AsUTF8(s));
-        }
-        instr.argval = std::move(tupleStrs);
+        instr.argval = decodeTupleStr(argval);
     } else if (PyCode_Check(argval)) {
         instr.argvalType = ArgvalType::Code;
         instr.argval = std::make_shared<ByteCodeModule>(generatePythonByteCode(argval, filename, depth + 1));

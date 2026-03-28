@@ -95,7 +95,7 @@ void loadFastCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mli
     pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const std::string* name = std::get_if<std::string>(&instr.argval);
     if (!name)
-        throw PyCompileError("LOAD_FAST must have a string argvall", loc);
+        throw PyCompileError("LOAD_FAST must have a string argval", loc);
     meta.stack.push_back(builder.create<pyir::LoadFast>(loc, pyType, *name).getResult());
 }
 
@@ -131,6 +131,27 @@ void storeDerefCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, cons
     mlir::Value val = meta.stack.back();
     meta.stack.pop_back();
     builder.create<pyir::StoreDeref>(loc, name, val);
+}
+
+
+/**
+ * Translates a vector of Python primitives into an MLIR ArrayAttr object
+ */
+mlir::ArrayAttr getTupleStrAttr(mlir::OpBuilder& builder, const std::vector<PrimitiveArgvals>* tuple) {
+    llvm::SmallVector<mlir::Attribute> attrs;
+    for (const PrimitiveArgvals& val : *tuple) {
+        if (std::holds_alternative<ArgvalNone>(val))
+            attrs.push_back(pyir::NoneAttr{});
+        else if (std::holds_alternative<std::string>(val))
+            attrs.push_back(builder.getStringAttr(std::get<std::string>(val)));
+        else if (std::holds_alternative<int64_t>(val))
+            attrs.push_back(builder.getI64IntegerAttr(std::get<int64_t>(val)));
+        else if (std::holds_alternative<double_t>(val))
+            attrs.push_back(builder.getF64FloatAttr(std::get<double_t>(val)));
+        else if (std::holds_alternative<bool>(val))
+            attrs.push_back(builder.getBoolAttr(std::get<bool>(val)));
+    }
+    return builder.getArrayAttr(attrs);
 }
 
 
@@ -174,6 +195,21 @@ void loadConstCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ml
         attr = builder.getF64FloatAttr(*f);
     else if (const bool* b = std::get_if<bool>(&instr.argval))
         attr = builder.getBoolAttr(*b);
+    else if (const std::vector<PrimitiveArgvals>* tuple = std::get_if<std::vector<PrimitiveArgvals>>(&instr.argval))
+        attr = getTupleStrAttr(builder, tuple);
 
     meta.stack.push_back(builder.create<pyir::LoadConst>(loc, pyType, attr).getResult());
+}
+
+
+void loadAttrCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
+                     const ByteCodeInstruction& instr, ConversionMeta& meta) {
+    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const std::string* name = std::get_if<std::string>(&instr.argval);
+    if (!name)
+        throw PyCompileError("LOAD_ATTR must have a string argval", loc);
+    mlir::Value obj = meta.stack.back();
+    meta.stack.pop_back();
+    meta.stack.push_back(builder.create<pyir::LoadAttr>(loc, pyType, obj, *name).getResult());
+    meta.stack.push_back(builder.create<pyir::PushNull>(loc, pyType).getResult());
 }

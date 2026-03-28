@@ -23,6 +23,14 @@ Value* pyir_add(const Value* lhs, const Value* rhs) {
     }
     if (lhs->isStr() && rhs->isStr())
         return new Value(std::get<std::string>(lhs->data) + std::get<std::string>(rhs->data));
+    if (lhs->isList() && rhs->isList()) {
+        Value::List lhsVal = std::get<Value::List>(lhs->data);
+        Value::List rhsVal = std::get<Value::List>(rhs->data);
+        Value::List result;
+        result.insert(result.end(), lhsVal.begin(), lhsVal.end());
+        result.insert(result.end(), rhsVal.begin(), rhsVal.end());
+        return new Value(result);
+    }
     throw std::runtime_error("Unsupported operand types for +");
 }
 
@@ -75,6 +83,34 @@ Value* pyir_mod(const Value* lhs, const Value* rhs) {
     if ((lhs->isInt() || lhs->isFloat()) && (rhs->isInt() || rhs->isFloat()))
         return new Value(fmod(valueToFloat(lhs), valueToFloat(rhs)));
     throw std::runtime_error("Unsupported operand types for %");
+}
+
+
+Value* pyir_idx(const Value* obj, const Value* idx) {
+    if (!idx->isInt())
+        throw std::runtime_error("List indices must be integers");
+
+    if (obj->isStr()) {
+        const std::string& str = std::get<std::string>(obj->data);
+        int64_t index = std::get<int64_t>(idx->data);
+        if (index < 0)
+            index += str.size();
+        if (index < 0 || static_cast<size_t>(index) >= str.size())
+            throw std::runtime_error("String index out of range");
+        return new Value(std::string(1, str[index]));
+    }
+    if (obj->isList()) {
+        const Value::List& list = std::get<Value::List>(obj->data);
+        int64_t index = std::get<int64_t>(idx->data);
+        if (index < 0)
+            index += list.size();
+        if (index < 0 || static_cast<size_t>(index) >= list.size())
+            throw std::runtime_error("List index out of range");
+        list[index]->incref(); // Return a new reference to the indexed value
+        return list[index];
+    }
+
+    throw std::runtime_error("Unsupported operand type for indexing");
 }
 
 

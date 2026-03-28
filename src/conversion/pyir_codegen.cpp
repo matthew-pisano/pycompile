@@ -84,6 +84,8 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             return loadFastBorrowCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::LOAD_CONST:
             return loadConstCodegen(builder, ctx, loc, fn, instr, meta);
+        case PythonOpcode::LOAD_ATTR:
+            return loadAttrCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::LOAD_NAME:
             return loadNameCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::STORE_NAME:
@@ -124,6 +126,12 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             return formatSimpleCodegen(builder, ctx, loc, meta);
         case PythonOpcode::BUILD_STRING:
             return buildStringCodegen(builder, ctx, loc, instr, meta);
+        case PythonOpcode::BUILD_LIST:
+            return buildListCodegen(builder, ctx, loc, instr, meta);
+        case PythonOpcode::LIST_EXTEND:
+            return listExtendCodegen(builder, loc, instr, meta);
+        case PythonOpcode::LIST_APPEND:
+            return listAppendCodegen(builder, loc, instr, meta);
         case PythonOpcode::UNKNOWN:
         default:
             throw PyCompileError("Unsupported opcode '" + pythonOpcodeToString(instr.opcode) + "'", loc);

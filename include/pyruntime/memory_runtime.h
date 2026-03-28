@@ -6,7 +6,7 @@
 #define PYCOMPILE_MEMORY_RUNTIME_H
 #include <cmath>
 
-#include "pyir/pyir_value.h"
+#include "pyir_value.h"
 
 extern "C" {
 
@@ -29,6 +29,10 @@ Value* pyir_loadConstFloat(double_t val);
 Value* pyir_loadConstBool(int8_t val);
 
 Value* pyir_loadConstNone();
+
+Value* pyir_loadConstTuple(Value** items, int64_t count);
+
+Value* pyir_loadAttr(Value* obj, const char* name);
 }
 
 #endif // PYCOMPILE_MEMORY_RUNTIME_H

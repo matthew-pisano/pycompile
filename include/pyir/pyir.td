@@ -69,8 +69,7 @@ def PyIR_StoreName : PyIR_Op<"store_name"> {
 
 def PyIR_Call : PyIR_Op<"call", [DeclareOpInterfaceMethods<MemoryEffectsOpInterface>]> {
     let summary = "Call a callable with arguments";
-    let arguments = (ins ByteCodeObject_Type:$callee,
-                        Variadic<ByteCodeObject_Type>:$args);
+    let arguments = (ins ByteCodeObject_Type:$callee, Variadic<ByteCodeObject_Type>:$args);
     let results = (outs ByteCodeObject_Type:$result);
     let assemblyFormat = "$callee `(` $args `)` attr-dict `:` functional-type($args, $result)";
 }
@@ -177,8 +176,7 @@ def PyIR_PopScope : PyIR_Op<"pop_scope"> {
 
 def PyIR_LoadArg : PyIR_Op<"load_arg", [Pure]> {
     let summary = "Load the i-th argument from a Value** args array";
-    let arguments = (ins ByteCodeObject_Type:$args_ptr,
-                         I64Attr:$index);
+    let arguments = (ins ByteCodeObject_Type:$args_ptr, I64Attr:$index);
     let results   = (outs ByteCodeObject_Type:$result);
     let assemblyFormat = "$args_ptr `[` $index `]` attr-dict";
 }
@@ -219,4 +217,34 @@ def PyIR_BuildString : PyIR_Op<"build_string"> {
     let arguments = (ins Variadic<ByteCodeObject_Type>:$parts);
     let results   = (outs ByteCodeObject_Type:$result);
     let assemblyFormat = "$parts attr-dict `:` functional-type($parts, $result)";
+}
+
+
+def PyIR_BuildList : PyIR_Op<"build_list"> {
+    let summary = "Constructs a list using the last N items on the stack";
+    let arguments = (ins Variadic<ByteCodeObject_Type>:$parts);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$parts attr-dict `:` functional-type($parts, $result)";
+}
+
+
+def PyIR_ListExtend : PyIR_Op<"list_extend"> {
+    let summary = "Extends a list (at the given index) with the iterable at the top of the stack";
+    let arguments = (ins ByteCodeObject_Type:$list, ByteCodeObject_Type:$items);
+    let assemblyFormat = "$list `,` $items attr-dict `:` type($list) `,` type($items)";
+}
+
+
+def PyIR_ListAppend : PyIR_Op<"list_append"> {
+    let summary = "Appends to a list (at the given index) with the item at the top of the stack";
+    let arguments = (ins ByteCodeObject_Type:$list, ByteCodeObject_Type:$item);
+    let assemblyFormat = "$list `,` $item attr-dict `:` type($list) `,` type($item)";
+}
+
+
+def PyIR_LoadAttr : PyIR_Op<"load_attr"> {
+    let summary = "Load an attribute from a Python object";
+    let arguments = (ins ByteCodeObject_Type:$object, StrAttr:$attr_name);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$object `,` $attr_name attr-dict `:` type($object)";
 }

@@ -106,9 +106,11 @@ struct JITFixture {
         addSymbol("pyir_loadConstFloat", reinterpret_cast<void*>(pyir_loadConstFloat));
         addSymbol("pyir_loadConstBool", reinterpret_cast<void*>(pyir_loadConstBool));
         addSymbol("pyir_loadConstNone", reinterpret_cast<void*>(pyir_loadConstNone));
+        addSymbol("pyir_loadConstTuple", reinterpret_cast<void*>(pyir_loadConstTuple));
         addSymbol("pyir_add", reinterpret_cast<void*>(pyir_add));
         addSymbol("pyir_sub", reinterpret_cast<void*>(pyir_sub));
         addSymbol("pyir_mul", reinterpret_cast<void*>(pyir_mul));
+        addSymbol("pyir_idx", reinterpret_cast<void*>(pyir_idx));
         addSymbol("pyir_div", reinterpret_cast<void*>(pyir_div));
         addSymbol("pyir_eq", reinterpret_cast<void*>(pyir_eq));
         addSymbol("pyir_ne", reinterpret_cast<void*>(pyir_ne));
@@ -125,6 +127,9 @@ struct JITFixture {
         addSymbol("pyir_decref", reinterpret_cast<void*>(pyir_decref));
         addSymbol("pyir_formatSimple", reinterpret_cast<void*>(pyir_formatSimple));
         addSymbol("pyir_buildString", reinterpret_cast<void*>(pyir_buildString));
+        addSymbol("pyir_buildList", reinterpret_cast<void*>(pyir_buildList));
+        addSymbol("pyir_listExtend", reinterpret_cast<void*>(pyir_listExtend));
+        addSymbol("pyir_listAppend", reinterpret_cast<void*>(pyir_listAppend));
 
         llvm::Error defineErr = dylib.define(llvm::orc::absoluteSymbols(symbols));
         REQUIRE(!defineErr);
@@ -145,22 +150,60 @@ struct JITFixture {
 };
 
 
-TEST_CASE_METHOD(JITFixture, "JIT Hello World") {
+TEST_CASE_METHOD(JITFixture, "Test JIT Hello World") {
     const std::string output = runCapture("print('Hello world!')");
     REQUIRE(output == "Hello world!\n");
 }
 
-TEST_CASE_METHOD(JITFixture, "JIT Function Call") {
+TEST_CASE_METHOD(JITFixture, "Test JIT Function Call") {
     const std::string output = runCapture("def foo():\n  print('bar')\nfoo()");
     REQUIRE(output == "bar\n");
 }
 
-TEST_CASE_METHOD(JITFixture, "JIT Function With Arg") {
+TEST_CASE_METHOD(JITFixture, "Test JIT Function With Arg") {
     const std::string output = runCapture("def foo(arg):\n  print(arg)\nfoo('bar')");
     REQUIRE(output == "bar\n");
 }
 
-TEST_CASE_METHOD(JITFixture, "JIT F-String") {
-    const std::string output = runCapture("x = 42\nprint(f'Value is {x}')");
-    REQUIRE(output == "Value is 42\n");
+TEST_CASE_METHOD(JITFixture, "Test JIT String Operations") {
+
+    SECTION("Test F-String") {
+        const std::string output = runCapture("x = 42\nprint(f'Value is {x}')");
+        REQUIRE(output == "Value is 42\n");
+    }
+
+    SECTION("Test Index") {
+        const std::string output = runCapture("print('Hello there'[2])");
+        REQUIRE(output == "l\n");
+    }
+}
+
+
+TEST_CASE_METHOD(JITFixture, "Test JIT List Operations") {
+    SECTION("Test Build List") {
+        const std::string output = runCapture("print([])");
+        REQUIRE(output == "[]\n");
+    }
+
+    SECTION("Test List Extend") {
+        const std::string output = runCapture("print([1, 2, 3])");
+        REQUIRE(output == "[1, 2, 3]\n");
+    }
+
+    SECTION("Test List Append") {
+        std::string listStr =
+                "[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]";
+        const std::string output = runCapture(std::format("print({})", listStr));
+        REQUIRE(output == listStr + "\n");
+    }
+
+    SECTION("Test List Addition") {
+        const std::string output = runCapture("print([1, 2] + [3])");
+        REQUIRE(output == "[1, 2, 3]\n");
+    }
+
+    SECTION("Test List Index") {
+        const std::string output = runCapture("print([1, 2][0])");
+        REQUIRE(output == "1\n");
+    }
 }

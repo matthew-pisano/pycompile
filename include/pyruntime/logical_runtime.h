@@ -4,7 +4,7 @@
 
 #ifndef PYCOMPILE_LOGICAL_RUNTIME_H
 #define PYCOMPILE_LOGICAL_RUNTIME_H
-#include "pyir/pyir_value.h"
+#include "pyir_value.h"
 
 extern "C" {
 
@@ -24,6 +24,9 @@ Value* pyir_floorDiv(const Value* lhs, const Value* rhs);
 Value* pyir_exp(const Value* lhs, const Value* rhs);
 
 Value* pyir_mod(const Value* lhs, const Value* rhs);
+
+// index
+Value* pyir_idx(const Value* obj, const Value* idx);
 
 // comparison
 Value* pyir_eq(const Value* lhs, const Value* rhs);

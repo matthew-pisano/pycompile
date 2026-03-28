@@ -30,7 +30,7 @@ std::string valueToString(const Value* v) {
                     return std::format("{}", x);
                 if constexpr (std::is_same_v<ValType, std::string>)
                     return x;
-                if constexpr (std::is_same_v<ValType, Value::Fn>)
+                if constexpr (std::is_same_v<ValType, Value::Function>)
                     return "<builtin>";
                 if constexpr (std::is_same_v<ValType, Value::List>) {
                     const Value::List& list = x;
@@ -62,7 +62,7 @@ bool valueToBool(const Value* val) {
                     return x != 0.0;
                 if constexpr (std::is_same_v<ValType, std::string>)
                     return !x.empty();
-                if constexpr (std::is_same_v<ValType, Value::Fn>)
+                if constexpr (std::is_same_v<ValType, Value::Function>)
                     return true;
                 return false;
             },

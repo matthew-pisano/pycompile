@@ -20,9 +20,16 @@ inline bool operator==(NoneType, NoneType) {
 
 
 struct Value {
-    using Fn = Value* (*) (Value**, int64_t);
+    using Function = Value* (*) (Value**, int64_t);
     using List = std::vector<Value*>;
-    using Data = std::variant<NoneType, bool, int64_t, double, std::string, List, Fn>;
+    struct BoundMethod {
+        Value* self;
+        Function fn;
+
+        bool operator==(const BoundMethod&) const = default;
+    };
+
+    using Data = std::variant<NoneType, bool, int64_t, double, std::string, List, Function, BoundMethod>;
 
     Data data;
     std::atomic<int32_t> refcount{1};
@@ -44,7 +51,7 @@ struct Value {
 
     explicit Value(List list) : data(std::move(list)) {}
 
-    explicit Value(Fn f) : data(f) {}
+    explicit Value(Function f) : data(f) {}
 
     void incref() { refcount.fetch_add(1, std::memory_order_relaxed); }
 
@@ -59,7 +66,7 @@ struct Value {
     [[nodiscard]] bool isFloat() const { return std::holds_alternative<double>(data); }
     [[nodiscard]] bool isStr() const { return std::holds_alternative<std::string>(data); }
     [[nodiscard]] bool isList() const { return std::holds_alternative<List>(data); }
-    [[nodiscard]] bool isFn() const { return std::holds_alternative<Fn>(data); }
+    [[nodiscard]] bool isFn() const { return std::holds_alternative<Function>(data); }
 };
 
 

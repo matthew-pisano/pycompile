@@ -10,7 +10,7 @@
 #include "builtin_runtime.h"
 #include "pyir_value.h"
 
-const std::unordered_map<std::string, Value::Fn> builtins = {
+const std::unordered_map<std::string, Value::Function> builtins = {
         {"print", pyir_builtinPrint}, {"len", pyir_builtinLen}, {"int", pyir_builtinInt},
         {"float", pyir_builtinFloat}, {"str", pyir_builtinStr}, {"bool", pyir_builtinBool},
 };

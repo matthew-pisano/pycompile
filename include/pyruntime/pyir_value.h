@@ -42,7 +42,7 @@ struct Value {
 
     explicit Value(std::string s) : data(std::move(s)) {}
 
-    explicit Value(std::vector<Value*> list) : data(std::move(list)) {}
+    explicit Value(List list) : data(std::move(list)) {}
 
     explicit Value(Fn f) : data(f) {}
 
@@ -58,7 +58,7 @@ struct Value {
     [[nodiscard]] bool isInt() const { return std::holds_alternative<int64_t>(data); }
     [[nodiscard]] bool isFloat() const { return std::holds_alternative<double>(data); }
     [[nodiscard]] bool isStr() const { return std::holds_alternative<std::string>(data); }
-    [[nodiscard]] bool isList() const { return std::holds_alternative<std::vector<Value*>>(data); }
+    [[nodiscard]] bool isList() const { return std::holds_alternative<List>(data); }
     [[nodiscard]] bool isFn() const { return std::holds_alternative<Fn>(data); }
 };
 

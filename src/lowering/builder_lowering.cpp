@@ -88,3 +88,21 @@ mlir::LogicalResult BuildListLowering::matchAndRewrite(mlir::Operation* op, cons
     rewriter.replaceOp(op, call.getResult());
     return mlir::success();
 }
+
+
+mlir::LogicalResult ListExtendLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
+                                                        mlir::ConversionPatternRewriter& rewriter) const {
+    mlir::MLIRContext* ctx = op->getContext();
+    const mlir::ModuleOp module = getModule(op);
+    const mlir::Location loc = op->getLoc();
+
+    // declare: extern void pyir_listExtend(Value* list, Value* items)
+    const mlir::LLVM::LLVMFunctionType fnType =
+            mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
+    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_listExtend", fnType);
+
+    // operands[0] = list, operands[1] = items
+    rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{operands[0], operands[1]});
+    rewriter.eraseOp(op);
+    return mlir::success();
+}

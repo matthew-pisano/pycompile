@@ -12,6 +12,8 @@ extern "C" {
 Value* pyir_buildString(Value** parts, int64_t count);
 
 Value* pyir_buildList(Value** parts, int64_t count);
+
+void pyir_listExtend(Value* list, const Value* items);
 }
 
 #endif // PYCOMPILE_BUILDER_RUNTIME_H

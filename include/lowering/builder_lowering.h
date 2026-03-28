@@ -58,4 +58,21 @@ struct BuildListLowering : PyIROpConversion {
                                         mlir::ConversionPatternRewriter& rewriter) const override;
 };
 
+
+/**
+ * Lowers pyir.list_extend to a call to the runtime function pyir_listExtend.
+ *
+ * Extends a heap-allocated list Value* with the contents of another Value*.
+ *
+ * pyir.list_extend %list, %items : !pyir.object, !pyir.object
+ *     llvm.call @pyir_listExtend(%list, %items)
+ */
+struct ListExtendLowering : PyIROpConversion {
+    ListExtendLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::ListExtend::getOperationName(), tc, ctx) {}
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override;
+};
+
 #endif // PYCOMPILE_BUILDER_LOWERING_H

@@ -20,10 +20,21 @@ Value* pyir_buildString(Value** parts, const int64_t count) {
 
 
 Value* pyir_buildList(Value** parts, const int64_t count) {
-    std::vector<Value*> result;
+    Value::List result;
     for (int64_t i = 0; i < count; i++) {
         parts[i]->incref();
         result.push_back(parts[i]);
     }
     return new Value(result);
+}
+
+
+void pyir_listExtend(Value* list, const Value* items) {
+    if (!list->isList() || !items->isList())
+        throw std::runtime_error("Can only extend list types with list types");
+
+    Value::List& dest = std::get<Value::List>(list->data);
+    const Value::List& src = std::get<Value::List>(items->data);
+    for (Value* v : src)
+        dest.push_back(v);
 }

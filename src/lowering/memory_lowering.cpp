@@ -181,7 +181,7 @@ mlir::Value LoadConstLowering::loadTupleConst(mlir::ConversionPatternRewriter& r
             else if (auto floatAttr = mlir::dyn_cast<mlir::FloatAttr>(elemAttr))
                 elemVal = loadFloatConst(rewriter, ctx, loc, module, floatAttr);
             else
-                return {}; // unsupported element type
+                throw std::runtime_error("Unsupported element type in tuple");
 
             mlir::LLVM::ConstantOp idx =
                     rewriter.create<mlir::LLVM::ConstantOp>(loc, i64Type(ctx), rewriter.getI64IntegerAttr(i));

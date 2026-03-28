@@ -93,7 +93,8 @@ void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns, mlir::LLVMTyp
                  BinaryOpLowering, CompareOpLowering, LoadFastLowering, StoreFastLowering, LoadNameLowering,
                  StoreNameLowering, LoadConstLowering, PushNullLowering, CallLowering, PopTopLowering,
                  FormatSimpleLowering, BuildStringLowering, PushScopeLowering, PopScopeLowering, LoadArgLowering,
-                 MakeFunctionLowering, ReturnValueLowering, BuildListLowering, ListExtendLowering>(typeConverter, ctx);
+                 MakeFunctionLowering, ReturnValueLowering, BuildListLowering, ListExtendLowering, ListAppendLowering>(
+            typeConverter, ctx);
 }
 
 

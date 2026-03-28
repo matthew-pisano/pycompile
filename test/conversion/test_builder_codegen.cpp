@@ -91,6 +91,6 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build List MLIR") {
         pyir::ListAppend listAppendOp = mlir::dyn_cast<pyir::ListAppend>(getOp(fn, 2));
         REQUIRE(listAppendOp);
         REQUIRE(mlir::isa<pyir::BuildList>(listAppendOp.getList().getDefiningOp()));
-        REQUIRE(mlir::isa<pyir::LoadConst>(listAppendOp.getItems().getDefiningOp()));
+        REQUIRE(mlir::isa<pyir::LoadConst>(listAppendOp.getItem().getDefiningOp()));
     }
 }

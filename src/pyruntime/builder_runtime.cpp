@@ -38,3 +38,12 @@ void pyir_listExtend(Value* list, const Value* items) {
     for (Value* v : src)
         dest.push_back(v);
 }
+
+
+void pyir_listAppend(Value* list, Value* item) {
+    if (!list->isList())
+        throw std::runtime_error("Can only append to list types");
+
+    Value::List& dest = std::get<Value::List>(list->data);
+    dest.push_back(item);
+}

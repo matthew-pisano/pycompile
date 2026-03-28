@@ -14,6 +14,8 @@ Value* pyir_buildString(Value** parts, int64_t count);
 Value* pyir_buildList(Value** parts, int64_t count);
 
 void pyir_listExtend(Value* list, const Value* items);
+
+void pyir_listAppend(Value* list, Value* item);
 }
 
 #endif // PYCOMPILE_BUILDER_RUNTIME_H

@@ -239,6 +239,6 @@ def PyIR_ListExtend : PyIR_Op<"list_extend"> {
 
 def PyIR_ListAppend : PyIR_Op<"list_append"> {
     let summary = "Appends to a list (at the given index) with the item at the top of the stack";
-    let arguments = (ins ByteCodeObject_Type:$list, ByteCodeObject_Type:$items);
-    let assemblyFormat = "$list `,` $items attr-dict `:` type($list) `,` type($items)";
+    let arguments = (ins ByteCodeObject_Type:$list, ByteCodeObject_Type:$item);
+    let assemblyFormat = "$list `,` $item attr-dict `:` type($list) `,` type($item)";
 }

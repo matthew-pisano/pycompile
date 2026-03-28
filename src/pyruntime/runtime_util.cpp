@@ -32,7 +32,18 @@ std::string valueToString(const Value* v) {
                     return x;
                 if constexpr (std::is_same_v<ValType, Value::Fn>)
                     return "<builtin>";
-                return "<unknown>";
+                if constexpr (std::is_same_v<ValType, Value::List>) {
+                    const Value::List& list = x;
+                    if (list.empty())
+                        return "[]";
+
+                    std::string result = "[";
+                    for (size_t i = 0; i < list.size() - 1; i++)
+                        result += valueToString(list[i]) + ", ";
+                    result += valueToString(list[list.size() - 1]) + "]";
+                    return result;
+                }
+                throw std::runtime_error("Unable to convert type to string");
             },
             v->data);
 }

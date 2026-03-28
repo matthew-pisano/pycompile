@@ -29,6 +29,8 @@ Value* pyir_loadConstFloat(double_t val);
 Value* pyir_loadConstBool(int8_t val);
 
 Value* pyir_loadConstNone();
+
+Value* pyir_loadConstTuple(Value** items, int64_t count);
 }
 
 #endif // PYCOMPILE_MEMORY_RUNTIME_H

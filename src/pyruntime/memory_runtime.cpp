@@ -65,3 +65,12 @@ Value* pyir_loadConstBool(const int8_t val) { return new Value(val == 1); }
 
 
 Value* pyir_loadConstNone() { return new Value(NoneType{}); }
+
+
+Value* pyir_loadConstTuple(Value** items, const int64_t count) {
+    std::vector<Value*> result;
+    result.reserve(count);
+    for (int64_t i = 0; i < count; i++)
+        result.push_back(items[i]);
+    return new Value(result);
+}

@@ -149,6 +149,57 @@ mlir::Value LoadConstLowering::loadNoneConst(mlir::ConversionPatternRewriter& re
 }
 
 
+mlir::Value LoadConstLowering::loadTupleConst(mlir::ConversionPatternRewriter& rewriter, mlir::MLIRContext* ctx,
+                                              const mlir::Location& loc, const mlir::ModuleOp& module,
+                                              const mlir::ArrayAttr& arrAttr) {
+    // declare: extern Value* pyir_loadConstTuple(Value** items, int64_t count)
+    const mlir::LLVM::LLVMFunctionType fnType =
+            mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), i64Type(ctx)});
+    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_loadConstTuple", fnType);
+
+    const int64_t count = static_cast<int64_t>(arrAttr.size());
+
+    mlir::Value partsPtr;
+    if (count > 0) {
+        // Allocate stack array of Value*[count]
+        mlir::LLVM::LLVMArrayType arrType = mlir::LLVM::LLVMArrayType::get(ptrType(ctx), count);
+        mlir::LLVM::ConstantOp allocSize =
+                rewriter.create<mlir::LLVM::ConstantOp>(loc, i64Type(ctx), rewriter.getI64IntegerAttr(1));
+        mlir::LLVM::AllocaOp alloca = rewriter.create<mlir::LLVM::AllocaOp>(loc, ptrType(ctx), arrType, allocSize);
+
+        // Materialize each element as a Value* and store into the array
+        for (int64_t i = 0; i < count; i++) {
+            mlir::Attribute elemAttr = arrAttr[i];
+            mlir::Value elemVal;
+
+            if (auto strAttr = mlir::dyn_cast<mlir::StringAttr>(elemAttr))
+                elemVal = loadStringConst(rewriter, ctx, loc, module, strAttr);
+            else if (auto boolAttr = mlir::dyn_cast<mlir::BoolAttr>(elemAttr))
+                elemVal = loadBoolConst(rewriter, ctx, loc, module, boolAttr);
+            else if (auto intAttr = mlir::dyn_cast<mlir::IntegerAttr>(elemAttr))
+                elemVal = loadIntConst(rewriter, ctx, loc, module, intAttr);
+            else if (auto floatAttr = mlir::dyn_cast<mlir::FloatAttr>(elemAttr))
+                elemVal = loadFloatConst(rewriter, ctx, loc, module, floatAttr);
+            else
+                return {}; // unsupported element type
+
+            mlir::LLVM::ConstantOp idx =
+                    rewriter.create<mlir::LLVM::ConstantOp>(loc, i64Type(ctx), rewriter.getI64IntegerAttr(i));
+            mlir::LLVM::GEPOp gep =
+                    rewriter.create<mlir::LLVM::GEPOp>(loc, ptrType(ctx), ptrType(ctx), alloca, mlir::ValueRange{idx});
+            rewriter.create<mlir::LLVM::StoreOp>(loc, elemVal, gep);
+        }
+        partsPtr = alloca;
+    } else
+        partsPtr = rewriter.create<mlir::LLVM::ZeroOp>(loc, ptrType(ctx));
+
+    mlir::LLVM::ConstantOp countVal =
+            rewriter.create<mlir::LLVM::ConstantOp>(loc, i64Type(ctx), rewriter.getI64IntegerAttr(count));
+    mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{partsPtr, countVal});
+    return call.getResult();
+}
+
+
 mlir::LogicalResult LoadConstLowering::matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                                        mlir::ConversionPatternRewriter& rewriter) const {
     pyir::LoadConst loadConst = mlir::cast<pyir::LoadConst>(op);
@@ -168,6 +219,8 @@ mlir::LogicalResult LoadConstLowering::matchAndRewrite(mlir::Operation* op, mlir
         result = loadFloatConst(rewriter, ctx, loc, module, floatAttr);
     else if (mlir::isa<pyir::NoneAttr>(loadConst.getValue()))
         result = loadNoneConst(rewriter, ctx, loc, module);
+    else if (const mlir::ArrayAttr arrAttr = mlir::dyn_cast<mlir::ArrayAttr>(loadConst.getValue()))
+        result = loadTupleConst(rewriter, ctx, loc, module, arrAttr);
     else
         return mlir::failure();
 

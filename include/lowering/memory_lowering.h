@@ -119,6 +119,10 @@ struct LoadConstLowering : PyIROpConversion {
     static mlir::Value loadNoneConst(mlir::ConversionPatternRewriter& rewriter, mlir::MLIRContext* ctx,
                                      const mlir::Location& loc, const mlir::ModuleOp& module);
 
+    static mlir::Value loadTupleConst(mlir::ConversionPatternRewriter& rewriter, mlir::MLIRContext* ctx,
+                                      const mlir::Location& loc, const mlir::ModuleOp& module,
+                                      const mlir::ArrayAttr& arrAttr);
+
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                         mlir::ConversionPatternRewriter& rewriter) const override;
 };

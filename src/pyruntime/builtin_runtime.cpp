@@ -27,7 +27,9 @@ Value* pyir_builtinLen(Value** args, const int64_t argc) {
         throw std::runtime_error("Too many arguments for len()");
     if (args[0]->isStr())
         return new Value(static_cast<int64_t>(std::get<std::string>(args[0]->data).size()));
-    throw std::runtime_error("object has no len()");
+    if (args[0]->isList())
+        return new Value(static_cast<int64_t>(std::get<Value::List>(args[0]->data).size()));
+    throw std::runtime_error("Object has no len()");
 }
 
 

@@ -7,60 +7,39 @@
 #include <stdexcept>
 
 #include "pyruntime/builder_runtime.h"
+#include "pyruntime/objects/py_int.h"
+#include "pyruntime/objects/py_none.h"
 #include "pyruntime/runtime_util.h"
 
-const std::unordered_map<std::string, PyBoundMethod::SelfFunction> PyList::attrs = {
-        {"append", append},
-        {"extend", extend},
-};
-
-
-PyValue* PyList::append(PyValue* self, PyValue** args, const int64_t argc) {
+PyNone* PyList::append(PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("append() takes exactly one argument");
-    pyir_listAppend(self, args[0]);
-    return new PyValue(PyNone{});
+    pyir_listAppend(this, args[0]);
+    return new PyNone();
 }
 
-
-PyValue* PyList::extend(PyValue* self, PyValue** args, const int64_t argc) {
+PyNone* PyList::extend(PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("extend() takes exactly one argument");
-    pyir_listExtend(self, args[0]);
-    return new PyValue(PyNone{});
+    pyir_listExtend(this, args[0]);
+    return new PyNone();
 }
 
-
-PyValue* PyList::getAttr(PyValue* self, const char* name) {
-    const auto it = attrs.find(name);
-    if (it == attrs.end())
-        throw std::runtime_error(std::string("list has no attribute '") + name + "'");
-    return new PyValue(PyBoundMethod{self, it->second});
-}
-
-
-PyValue* PyList::len(const PyValue* self) {
-    return new PyValue(static_cast<int64_t>(std::get<PyList>(self->data).data().size()));
-}
-
-
-PyValue* PyList::str(const PyValue* self) { return new PyValue(std::get<PyList>(self->data).toString()); }
-
+PyInt* PyList::len() const { return new PyInt(raw.size()); }
 
 std::string PyList::toString() const {
-    if (rawData.empty())
+    if (raw.empty())
         return "[]";
 
     std::string result = "[";
-    for (size_t i = 0; i < rawData.size() - 1; i++)
-        result += valueToString(rawData[i], true) + ", ";
-    result += valueToString(rawData[rawData.size() - 1], true) + "]";
+    for (size_t i = 0; i < raw.size() - 1; i++)
+        result += valueToString(raw[i], true) + ", ";
+    result += valueToString(raw[raw.size() - 1], true) + "]";
     return result;
 }
 
+std::string PyList::typeName() const { return "list"; }
 
-const std::vector<PyValue*>& PyList::data() const { return rawData; }
-std::vector<PyValue*>& PyList::data() { return rawData; }
+const std::unordered_map<std::string, PyBoundMethod> PyList::attrs() const { return {}; }
 
-
-bool PyList::operator==(const PyList& other) const { return rawData == other.rawData; }
+bool PyList::operator==(const PyList& other) const { return raw == other.raw; }

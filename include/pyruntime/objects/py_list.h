@@ -4,33 +4,27 @@
 
 #ifndef PYCOMPILE_PY_LIST_H
 #define PYCOMPILE_PY_LIST_H
-#include <string>
-#include <unordered_map>
+#include <vector>
 
-#include "pyruntime/runtime_objects.h"
+#include "py_object.h"
 
-struct PyList {
-    static const std::unordered_map<std::string, PyBoundMethod::SelfFunction> attrs;
+struct PyList : PyObj {
+    PyNone* append(PyObj** args, int64_t argc);
 
-    static PyValue* append(PyValue* self, PyValue** args, int64_t argc);
+    PyNone* extend(PyObj** args, int64_t argc);
 
-    static PyValue* extend(PyValue* self, PyValue** args, int64_t argc);
+    PyInt* len() const override;
 
-    static PyValue* getAttr(PyValue* self, const char* name);
+    std::string toString() const override;
 
-    static PyValue* len(const PyValue* self);
+    std::string typeName() const override;
 
-    static PyValue* str(const PyValue* self);
-
-    std::string toString() const;
-
-    const std::vector<PyValue*>& data() const;
-    std::vector<PyValue*>& data();
+    const std::unordered_map<std::string, PyBoundMethod> attrs() const override;
 
     bool operator==(const PyList& other) const;
 
 private:
-    std::vector<PyValue*> rawData;
+    std::vector<PyObj*> raw;
 };
 
 #endif // PYCOMPILE_PY_LIST_H

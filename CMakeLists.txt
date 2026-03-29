@@ -107,6 +107,7 @@ add_library(stdpyir STATIC
         src/pyruntime/objects/py_float.cpp
         src/pyruntime/objects/py_bool.cpp
         src/pyruntime/objects/py_object.cpp
+        src/pyruntime/objects/py_none.cpp
 )
 set_target_properties(stdpyir PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"

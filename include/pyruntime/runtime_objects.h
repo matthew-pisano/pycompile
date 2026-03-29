@@ -15,13 +15,6 @@ using PyFunction = PyValue* (*) (PyValue**, int64_t);
 using PySet = std::unordered_set<PyValue*>;
 
 
-struct PyNone {
-    bool operator==(const PyNone&) const {
-        return true; // None is always None
-    }
-};
-
-
 struct PyBoundMethod {
     using SelfFunction = PyValue* (*) (PyValue*, PyValue**, int64_t);
 

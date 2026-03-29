@@ -4,5 +4,25 @@
 
 #ifndef PYCOMPILE_PY_FLOAT_H
 #define PYCOMPILE_PY_FLOAT_H
+#include <cmath>
+
+#include "py_object.h"
+
+struct PyFloat : PyObj {
+    explicit PyFloat(const double_t decimal) : raw(decimal) {}
+
+    std::string toString() const override;
+
+    std::string typeName() const override;
+
+    const std::unordered_map<std::string, PyBoundMethod> attrs() const override { return {}; }
+
+    double_t data() const;
+
+    bool operator==(const PyFloat& other) const;
+
+private:
+    double_t raw;
+};
 
 #endif //PYCOMPILE_PY_FLOAT_H

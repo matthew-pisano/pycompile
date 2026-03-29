@@ -21,7 +21,7 @@ std::string valueToString(const PyValue* val, bool quoteStrings) {
     return std::visit(
             [quoteStrings]<typename T>(const T& x) -> std::string {
                 using ValType = std::decay_t<T>;
-                if constexpr (std::is_same_v<ValType, PyValue::NoneType>)
+                if constexpr (std::is_same_v<ValType, PyValue::None>)
                     return "None";
                 if constexpr (std::is_same_v<ValType, bool>)
                     return x ? "True" : "False";
@@ -55,7 +55,7 @@ bool valueToBool(const PyValue* val) {
     return std::visit(
             []<typename T>(const T& x) -> bool {
                 using ValType = std::decay_t<T>;
-                if constexpr (std::is_same_v<ValType, PyValue::NoneType>)
+                if constexpr (std::is_same_v<ValType, PyValue::None>)
                     return false;
                 if constexpr (std::is_same_v<ValType, bool>)
                     return x;

@@ -16,8 +16,8 @@ struct PyValue {
     using List = std::vector<PyValue*>;
     using Set = std::unordered_set<PyValue*>;
 
-    struct NoneType {
-        bool operator==(const NoneType&) const {
+    struct None {
+        bool operator==(const None&) const {
             return true; // None is always None
         }
     };
@@ -31,7 +31,7 @@ struct PyValue {
         bool operator==(const BoundMethod&) const = default;
     };
 
-    using Data = std::variant<NoneType, bool, int64_t, double, std::string, List, Set, Function, BoundMethod>;
+    using Data = std::variant<None, bool, int64_t, double, std::string, List, Set, Function, BoundMethod>;
 
     Data data;
     std::atomic<int32_t> refcount{1};
@@ -44,7 +44,7 @@ struct PyValue {
 
     PyValue& operator=(const PyValue&) = delete;
 
-    explicit PyValue(NoneType) : data(NoneType{}) {}
+    explicit PyValue(None) : data(None{}) {}
 
     explicit PyValue(bool b) : data(b) {}
 
@@ -71,7 +71,7 @@ struct PyValue {
             delete this;
     }
 
-    [[nodiscard]] bool isNone() const { return std::holds_alternative<NoneType>(data); }
+    [[nodiscard]] bool isNone() const { return std::holds_alternative<None>(data); }
     [[nodiscard]] bool isBool() const { return std::holds_alternative<bool>(data); }
     [[nodiscard]] bool isInt() const { return std::holds_alternative<int64_t>(data); }
     [[nodiscard]] bool isFloat() const { return std::holds_alternative<double>(data); }

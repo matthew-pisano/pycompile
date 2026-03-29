@@ -18,7 +18,7 @@ PyValue* pyir_builtinPrint(PyValue** args, const int64_t argc) {
         printf("%s", valueToString(args[i]).c_str());
     }
     printf("\n");
-    return new PyValue(PyValue::NoneType{});
+    return new PyValue(PyValue::None{});
 }
 
 

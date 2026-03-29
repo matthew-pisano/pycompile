@@ -67,7 +67,7 @@ PyValue* pyir_loadConstFloat(const double_t val) { return new PyValue(val); }
 PyValue* pyir_loadConstBool(const int8_t val) { return new PyValue(val == 1); }
 
 
-PyValue* pyir_loadConstNone() { return new PyValue(PyValue::NoneType{}); }
+PyValue* pyir_loadConstNone() { return new PyValue(PyValue::None{}); }
 
 
 PyValue* pyir_loadConstTuple(PyValue** items, const int64_t count) {

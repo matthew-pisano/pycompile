@@ -19,12 +19,12 @@ PyValue* PyIR_List::append(PyValue* self, PyValue** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("append() takes exactly one argument");
     pyir_listAppend(self, args[0]);
-    return new PyValue(PyValue::NoneType{});
+    return new PyValue(PyValue::None{});
 }
 
 PyValue* PyIR_List::extend(PyValue* self, PyValue** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("extend() takes exactly one argument");
     pyir_listExtend(self, args[0]);
-    return new PyValue(PyValue::NoneType{});
+    return new PyValue(PyValue::None{});
 }

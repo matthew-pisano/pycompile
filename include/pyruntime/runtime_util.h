@@ -6,6 +6,7 @@
 #define PYCOMPILE_RUNTIME_UTIL_H
 #include <cmath>
 
+#include "runtime_objects.h"
 #include "runtime_value.h"
 
 double_t valueToFloat(const PyValue* val);
@@ -14,6 +15,6 @@ std::string valueToString(const PyValue* val, bool quoteStrings = false);
 
 bool valueToBool(const PyValue* val);
 
-PyValue::List valueToList(const PyValue* val);
+PyList valueToList(const PyValue* val);
 
 #endif // PYCOMPILE_RUNTIME_UTIL_H

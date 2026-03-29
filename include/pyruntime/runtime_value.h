@@ -10,28 +10,11 @@
 #include <variant>
 #include <vector>
 
+#include "runtime_objects.h"
+
 
 struct PyValue {
-    using Function = PyValue* (*) (PyValue**, int64_t);
-    using List = std::vector<PyValue*>;
-    using Set = std::unordered_set<PyValue*>;
-
-    struct None {
-        bool operator==(const None&) const {
-            return true; // None is always None
-        }
-    };
-
-    struct BoundMethod {
-        using SelfFunction = PyValue* (*) (PyValue*, PyValue**, int64_t);
-
-        PyValue* self;
-        SelfFunction fn;
-
-        bool operator==(const BoundMethod&) const = default;
-    };
-
-    using Data = std::variant<None, bool, int64_t, double, std::string, List, Set, Function, BoundMethod>;
+    using Data = std::variant<PyNone, bool, int64_t, double, std::string, PyList, PySet, PyFunction, PyBoundMethod>;
 
     Data data;
     std::atomic<int32_t> refcount{1};
@@ -44,7 +27,7 @@ struct PyValue {
 
     PyValue& operator=(const PyValue&) = delete;
 
-    explicit PyValue(None) : data(None{}) {}
+    explicit PyValue(PyNone) : data(PyNone{}) {}
 
     explicit PyValue(bool b) : data(b) {}
 
@@ -56,13 +39,13 @@ struct PyValue {
 
     explicit PyValue(const char c) : data(std::string(1, c)) {}
 
-    explicit PyValue(List list) : data(std::move(list)) {}
+    explicit PyValue(PyList list) : data(std::move(list)) {}
 
-    explicit PyValue(Set set) : data(std::move(set)) {}
+    explicit PyValue(PySet set) : data(std::move(set)) {}
 
-    explicit PyValue(Function f) : data(f) {}
+    explicit PyValue(PyFunction f) : data(f) {}
 
-    explicit PyValue(BoundMethod bm) : data(bm) {}
+    explicit PyValue(PyBoundMethod bm) : data(bm) {}
 
     void incref() { refcount.fetch_add(1, std::memory_order_relaxed); }
 
@@ -71,15 +54,15 @@ struct PyValue {
             delete this;
     }
 
-    [[nodiscard]] bool isNone() const { return std::holds_alternative<None>(data); }
+    [[nodiscard]] bool isNone() const { return std::holds_alternative<PyNone>(data); }
     [[nodiscard]] bool isBool() const { return std::holds_alternative<bool>(data); }
     [[nodiscard]] bool isInt() const { return std::holds_alternative<int64_t>(data); }
     [[nodiscard]] bool isFloat() const { return std::holds_alternative<double>(data); }
     [[nodiscard]] bool isStr() const { return std::holds_alternative<std::string>(data); }
-    [[nodiscard]] bool isList() const { return std::holds_alternative<List>(data); }
-    [[nodiscard]] bool isSet() const { return std::holds_alternative<Set>(data); }
-    [[nodiscard]] bool isFn() const { return std::holds_alternative<Function>(data); }
-    [[nodiscard]] bool isBoundMethod() const { return std::holds_alternative<BoundMethod>(data); }
+    [[nodiscard]] bool isList() const { return std::holds_alternative<PyList>(data); }
+    [[nodiscard]] bool isSet() const { return std::holds_alternative<PySet>(data); }
+    [[nodiscard]] bool isFn() const { return std::holds_alternative<PyFunction>(data); }
+    [[nodiscard]] bool isBoundMethod() const { return std::holds_alternative<PyBoundMethod>(data); }
 };
 
 

@@ -24,9 +24,9 @@ PyValue* pyir_add(const PyValue* lhs, const PyValue* rhs) {
     if (lhs->isStr() && rhs->isStr())
         return new PyValue(std::get<std::string>(lhs->data) + std::get<std::string>(rhs->data));
     if (lhs->isList() && rhs->isList()) {
-        PyValue::List lhsVal = std::get<PyValue::List>(lhs->data);
-        PyValue::List rhsVal = std::get<PyValue::List>(rhs->data);
-        PyValue::List result;
+        PyList lhsVal = std::get<PyList>(lhs->data);
+        PyList rhsVal = std::get<PyList>(rhs->data);
+        PyList result;
         result.insert(result.end(), lhsVal.begin(), lhsVal.end());
         result.insert(result.end(), rhsVal.begin(), rhsVal.end());
         return new PyValue(result);
@@ -100,7 +100,7 @@ PyValue* pyir_idx(const PyValue* obj, const PyValue* idx) {
         return new PyValue(std::string(1, str[index]));
     }
     if (obj->isList()) {
-        const PyValue::List& list = std::get<PyValue::List>(obj->data);
+        const PyList& list = std::get<PyList>(obj->data);
         int64_t index = std::get<int64_t>(idx->data);
         if (index < 0)
             index += list.size();

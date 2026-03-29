@@ -18,7 +18,7 @@ PyValue* pyir_builtinPrint(PyValue** args, const int64_t argc) {
         printf("%s", valueToString(args[i]).c_str());
     }
     printf("\n");
-    return new PyValue(PyValue::None{});
+    return new PyValue(PyNone{});
 }
 
 
@@ -28,7 +28,7 @@ PyValue* pyir_builtinLen(PyValue** args, const int64_t argc) {
     if (args[0]->isStr())
         return new PyValue(static_cast<int64_t>(std::get<std::string>(args[0]->data).size()));
     if (args[0]->isList())
-        return new PyValue(static_cast<int64_t>(std::get<PyValue::List>(args[0]->data).size()));
+        return new PyValue(static_cast<int64_t>(std::get<PyList>(args[0]->data).size()));
     throw std::runtime_error("Object has no len()");
 }
 
@@ -91,7 +91,7 @@ PyValue* pyir_builtinList(PyValue** args, const int64_t argc) {
     if (argc > 1)
         throw std::runtime_error("Too many arguments for list()");
     if (argc == 0)
-        return new PyValue(PyValue::List{});
+        return new PyValue(PyList{});
 
     return new PyValue(valueToList(args[0]));
 }

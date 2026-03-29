@@ -67,7 +67,7 @@ PyValue* pyir_loadConstFloat(const double_t val) { return new PyValue(val); }
 PyValue* pyir_loadConstBool(const int8_t val) { return new PyValue(val == 1); }
 
 
-PyValue* pyir_loadConstNone() { return new PyValue(PyValue::None{}); }
+PyValue* pyir_loadConstNone() { return new PyValue(PyNone{}); }
 
 
 PyValue* pyir_loadConstTuple(PyValue** items, const int64_t count) {
@@ -83,7 +83,7 @@ PyValue* pyir_loadAttr(PyValue* obj, const char* name) {
         const auto it = PyIR_List::attrs.find(name);
         if (it == PyIR_List::attrs.end())
             throw std::runtime_error(std::string("list has no attribute '") + name + "'");
-        return new PyValue(PyValue::BoundMethod{obj, it->second});
+        return new PyValue(PyBoundMethod{obj, it->second});
     }
 
     throw std::runtime_error(std::format("Object has no attribute '") + name + "'");

@@ -21,7 +21,7 @@ std::string valueToString(const PyValue* val, bool quoteStrings) {
     return std::visit(
             [quoteStrings]<typename T>(const T& x) -> std::string {
                 using ValType = std::decay_t<T>;
-                if constexpr (std::is_same_v<ValType, PyValue::None>)
+                if constexpr (std::is_same_v<ValType, PyNone>)
                     return "None";
                 if constexpr (std::is_same_v<ValType, bool>)
                     return x ? "True" : "False";
@@ -31,11 +31,11 @@ std::string valueToString(const PyValue* val, bool quoteStrings) {
                     return std::format("{}", x);
                 if constexpr (std::is_same_v<ValType, std::string>)
                     return quoteStrings ? ("'" + x + "'") : x;
-                if constexpr (std::is_same_v<ValType, PyValue::Function>)
+                if constexpr (std::is_same_v<ValType, PyFunction>)
                     return "<callable>";
-                if constexpr (std::is_same_v<ValType, PyValue::BoundMethod>)
+                if constexpr (std::is_same_v<ValType, PyBoundMethod>)
                     return "<built-in method>";
-                if constexpr (std::is_same_v<ValType, PyValue::List>) {
+                if constexpr (std::is_same_v<ValType, PyList>) {
                     if (x.empty())
                         return "[]";
 
@@ -55,7 +55,7 @@ bool valueToBool(const PyValue* val) {
     return std::visit(
             []<typename T>(const T& x) -> bool {
                 using ValType = std::decay_t<T>;
-                if constexpr (std::is_same_v<ValType, PyValue::None>)
+                if constexpr (std::is_same_v<ValType, PyNone>)
                     return false;
                 if constexpr (std::is_same_v<ValType, bool>)
                     return x;
@@ -65,11 +65,11 @@ bool valueToBool(const PyValue* val) {
                     return x != 0.0;
                 if constexpr (std::is_same_v<ValType, std::string>)
                     return !x.empty();
-                if constexpr (std::is_same_v<ValType, PyValue::Function>)
+                if constexpr (std::is_same_v<ValType, PyFunction>)
                     return true;
-                if constexpr (std::is_same_v<ValType, PyValue::BoundMethod>)
+                if constexpr (std::is_same_v<ValType, PyBoundMethod>)
                     return true;
-                if constexpr (std::is_same_v<ValType, PyValue::List>)
+                if constexpr (std::is_same_v<ValType, PyList>)
                     return x.size() > 0;
                 return false;
             },
@@ -77,17 +77,17 @@ bool valueToBool(const PyValue* val) {
 }
 
 
-PyValue::List valueToList(const PyValue* val) {
+PyList valueToList(const PyValue* val) {
     return std::visit(
-            []<typename T>(const T& x) -> PyValue::List {
+            []<typename T>(const T& x) -> PyList {
                 using ValType = std::decay_t<T>;
                 if constexpr (std::is_same_v<ValType, std::string>) {
-                    PyValue::List result;
+                    PyList result;
                     for (const char c : x)
                         result.push_back(new PyValue(c));
                     return result;
                 }
-                if constexpr (std::is_same_v<ValType, PyValue::List>) {
+                if constexpr (std::is_same_v<ValType, PyList>) {
                     return x;
                 }
                 throw std::runtime_error("Unable to convert type to list");

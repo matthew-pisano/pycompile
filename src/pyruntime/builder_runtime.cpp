@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <vector>
 
+#include "pyruntime/runtime_objects.h"
+
 
 PyValue* pyir_buildString(PyValue** parts, const int64_t count) {
     std::string result;
@@ -20,7 +22,7 @@ PyValue* pyir_buildString(PyValue** parts, const int64_t count) {
 
 
 PyValue* pyir_buildList(PyValue** parts, const int64_t count) {
-    PyValue::List result;
+    PyList result;
     for (int64_t i = 0; i < count; i++) {
         parts[i]->incref();
         result.push_back(parts[i]);
@@ -33,8 +35,8 @@ void pyir_listExtend(PyValue* list, const PyValue* items) {
     if (!list->isList() || !items->isList())
         throw std::runtime_error("Can only extend list types with list types");
 
-    PyValue::List& dest = std::get<PyValue::List>(list->data);
-    const PyValue::List& src = std::get<PyValue::List>(items->data);
+    PyList& dest = std::get<PyList>(list->data);
+    const PyList& src = std::get<PyList>(items->data);
     for (PyValue* v : src) {
         v->incref();
         dest.push_back(v);
@@ -46,7 +48,7 @@ void pyir_listAppend(PyValue* list, PyValue* item) {
     if (!list->isList())
         throw std::runtime_error("Can only append to list types");
 
-    PyValue::List& dest = std::get<PyValue::List>(list->data);
+    PyList& dest = std::get<PyList>(list->data);
     item->incref();
     dest.push_back(item);
 }

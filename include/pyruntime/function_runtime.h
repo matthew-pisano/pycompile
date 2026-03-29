@@ -12,14 +12,6 @@
 
 extern "C" {
 
-struct PyIR_List {
-    static const std::unordered_map<std::string, Value::BoundMethod::SelfFunction> attrs;
-
-    static Value* append(Value* self, Value** args, int64_t argc);
-
-    static Value* extend(Value* self, Value** args, int64_t argc);
-};
-
 // scope management
 void pyir_pushScope();
 

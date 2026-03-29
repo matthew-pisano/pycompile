@@ -9,6 +9,7 @@
 #include <unordered_map>
 
 #include "pyruntime/function_runtime.h"
+#include "pyruntime/runtime_objects.h"
 #include "pyruntime/runtime_state.h"
 
 

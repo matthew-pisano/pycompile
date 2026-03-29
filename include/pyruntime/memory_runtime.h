@@ -10,29 +10,29 @@
 
 extern "C" {
 
-Value* pyir_loadFast(const char* name);
+PyValue* pyir_loadFast(const char* name);
 
-void pyir_storeFast(const char* name, Value* val);
+void pyir_storeFast(const char* name, PyValue* val);
 
 // name resolution, returns a builtin Fn or None
-Value* pyir_loadName(const char* name);
+PyValue* pyir_loadName(const char* name);
 
 // name storage in addition to builtins
-void pyir_storeName(const char* name, Value* val);
+void pyir_storeName(const char* name, PyValue* val);
 
-Value* pyir_loadConstStr(const char* str);
+PyValue* pyir_loadConstStr(const char* str);
 
-Value* pyir_loadConstInt(int64_t val);
+PyValue* pyir_loadConstInt(int64_t val);
 
-Value* pyir_loadConstFloat(double_t val);
+PyValue* pyir_loadConstFloat(double_t val);
 
-Value* pyir_loadConstBool(int8_t val);
+PyValue* pyir_loadConstBool(int8_t val);
 
-Value* pyir_loadConstNone();
+PyValue* pyir_loadConstNone();
 
-Value* pyir_loadConstTuple(Value** items, int64_t count);
+PyValue* pyir_loadConstTuple(PyValue** items, int64_t count);
 
-Value* pyir_loadAttr(Value* obj, const char* name);
+PyValue* pyir_loadAttr(PyValue* obj, const char* name);
 }
 
 #endif // PYCOMPILE_MEMORY_RUNTIME_H

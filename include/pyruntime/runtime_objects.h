@@ -9,11 +9,11 @@
 #include "runtime_value.h"
 
 struct PyIR_List {
-    static const std::unordered_map<std::string, Value::BoundMethod::SelfFunction> attrs;
+    static const std::unordered_map<std::string, PyValue::BoundMethod::SelfFunction> attrs;
 
-    static Value* append(Value* self, Value** args, int64_t argc);
+    static PyValue* append(PyValue* self, PyValue** args, int64_t argc);
 
-    static Value* extend(Value* self, Value** args, int64_t argc);
+    static PyValue* extend(PyValue* self, PyValue** args, int64_t argc);
 };
 
 #endif // PYCOMPILE_RUNTIME_OBJECTS_H

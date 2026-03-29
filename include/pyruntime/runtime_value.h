@@ -11,10 +11,10 @@
 #include <vector>
 
 
-struct Value {
-    using Function = Value* (*) (Value**, int64_t);
-    using List = std::vector<Value*>;
-    using Set = std::unordered_set<Value*>;
+struct PyValue {
+    using Function = PyValue* (*) (PyValue**, int64_t);
+    using List = std::vector<PyValue*>;
+    using Set = std::unordered_set<PyValue*>;
 
     struct NoneType {
         bool operator==(const NoneType&) const {
@@ -23,9 +23,9 @@ struct Value {
     };
 
     struct BoundMethod {
-        using SelfFunction = Value* (*) (Value*, Value**, int64_t);
+        using SelfFunction = PyValue* (*) (PyValue*, PyValue**, int64_t);
 
-        Value* self;
+        PyValue* self;
         SelfFunction fn;
 
         bool operator==(const BoundMethod&) const = default;
@@ -37,32 +37,32 @@ struct Value {
     std::atomic<int32_t> refcount{1};
 
     // Disable copy/move: Values live on the heap and are managed by refcount
-    Value(const Value&) = delete;
+    PyValue(const PyValue&) = delete;
 
     // Disable constructor from pointer
-    explicit Value(Value*) = delete;
+    explicit PyValue(PyValue*) = delete;
 
-    Value& operator=(const Value&) = delete;
+    PyValue& operator=(const PyValue&) = delete;
 
-    explicit Value(NoneType) : data(NoneType{}) {}
+    explicit PyValue(NoneType) : data(NoneType{}) {}
 
-    explicit Value(bool b) : data(b) {}
+    explicit PyValue(bool b) : data(b) {}
 
-    explicit Value(int64_t i) : data(i) {}
+    explicit PyValue(int64_t i) : data(i) {}
 
-    explicit Value(double f) : data(f) {}
+    explicit PyValue(double f) : data(f) {}
 
-    explicit Value(std::string s) : data(std::move(s)) {}
+    explicit PyValue(std::string s) : data(std::move(s)) {}
 
-    explicit Value(const char c) : data(std::string(1, c)) {}
+    explicit PyValue(const char c) : data(std::string(1, c)) {}
 
-    explicit Value(List list) : data(std::move(list)) {}
+    explicit PyValue(List list) : data(std::move(list)) {}
 
-    explicit Value(Set set) : data(std::move(set)) {}
+    explicit PyValue(Set set) : data(std::move(set)) {}
 
-    explicit Value(Function f) : data(f) {}
+    explicit PyValue(Function f) : data(f) {}
 
-    explicit Value(BoundMethod bm) : data(bm) {}
+    explicit PyValue(BoundMethod bm) : data(bm) {}
 
     void incref() { refcount.fetch_add(1, std::memory_order_relaxed); }
 
@@ -84,9 +84,9 @@ struct Value {
 
 
 struct ValueRef {
-    Value* ptr;
+    PyValue* ptr;
 
-    explicit ValueRef(Value* p) : ptr(p) {}
+    explicit ValueRef(PyValue* p) : ptr(p) {}
 
     // Takes ownership, no incref
     ~ValueRef() {
@@ -94,10 +94,10 @@ struct ValueRef {
             ptr->decref();
     }
 
-    [[nodiscard]] Value* get() const { return ptr; }
+    [[nodiscard]] PyValue* get() const { return ptr; }
 
-    Value* release() {
-        Value* p = ptr;
+    PyValue* release() {
+        PyValue* p = ptr;
         ptr = nullptr;
         return p;
     }

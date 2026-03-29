@@ -8,12 +8,12 @@
 
 #include "runtime_value.h"
 
-double_t valueToFloat(const Value* val);
+double_t valueToFloat(const PyValue* val);
 
-std::string valueToString(const Value* val, bool quoteStrings = false);
+std::string valueToString(const PyValue* val, bool quoteStrings = false);
 
-bool valueToBool(const Value* val);
+bool valueToBool(const PyValue* val);
 
-Value::List valueToList(const Value* val);
+PyValue::List valueToList(const PyValue* val);
 
 #endif // PYCOMPILE_RUNTIME_UTIL_H

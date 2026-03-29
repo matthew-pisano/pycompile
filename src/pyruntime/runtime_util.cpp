@@ -8,7 +8,7 @@
 #include <stdexcept>
 
 
-double_t valueToFloat(const Value* val) {
+double_t valueToFloat(const PyValue* val) {
     if (val->isFloat())
         return std::get<double_t>(val->data);
     if (val->isInt())
@@ -17,11 +17,11 @@ double_t valueToFloat(const Value* val) {
 }
 
 
-std::string valueToString(const Value* val, bool quoteStrings) {
+std::string valueToString(const PyValue* val, bool quoteStrings) {
     return std::visit(
             [quoteStrings]<typename T>(const T& x) -> std::string {
                 using ValType = std::decay_t<T>;
-                if constexpr (std::is_same_v<ValType, Value::NoneType>)
+                if constexpr (std::is_same_v<ValType, PyValue::NoneType>)
                     return "None";
                 if constexpr (std::is_same_v<ValType, bool>)
                     return x ? "True" : "False";
@@ -31,11 +31,11 @@ std::string valueToString(const Value* val, bool quoteStrings) {
                     return std::format("{}", x);
                 if constexpr (std::is_same_v<ValType, std::string>)
                     return quoteStrings ? ("'" + x + "'") : x;
-                if constexpr (std::is_same_v<ValType, Value::Function>)
+                if constexpr (std::is_same_v<ValType, PyValue::Function>)
                     return "<callable>";
-                if constexpr (std::is_same_v<ValType, Value::BoundMethod>)
+                if constexpr (std::is_same_v<ValType, PyValue::BoundMethod>)
                     return "<built-in method>";
-                if constexpr (std::is_same_v<ValType, Value::List>) {
+                if constexpr (std::is_same_v<ValType, PyValue::List>) {
                     if (x.empty())
                         return "[]";
 
@@ -51,11 +51,11 @@ std::string valueToString(const Value* val, bool quoteStrings) {
 }
 
 
-bool valueToBool(const Value* val) {
+bool valueToBool(const PyValue* val) {
     return std::visit(
             []<typename T>(const T& x) -> bool {
                 using ValType = std::decay_t<T>;
-                if constexpr (std::is_same_v<ValType, Value::NoneType>)
+                if constexpr (std::is_same_v<ValType, PyValue::NoneType>)
                     return false;
                 if constexpr (std::is_same_v<ValType, bool>)
                     return x;
@@ -65,11 +65,11 @@ bool valueToBool(const Value* val) {
                     return x != 0.0;
                 if constexpr (std::is_same_v<ValType, std::string>)
                     return !x.empty();
-                if constexpr (std::is_same_v<ValType, Value::Function>)
+                if constexpr (std::is_same_v<ValType, PyValue::Function>)
                     return true;
-                if constexpr (std::is_same_v<ValType, Value::BoundMethod>)
+                if constexpr (std::is_same_v<ValType, PyValue::BoundMethod>)
                     return true;
-                if constexpr (std::is_same_v<ValType, Value::List>)
+                if constexpr (std::is_same_v<ValType, PyValue::List>)
                     return x.size() > 0;
                 return false;
             },
@@ -77,17 +77,17 @@ bool valueToBool(const Value* val) {
 }
 
 
-Value::List valueToList(const Value* val) {
+PyValue::List valueToList(const PyValue* val) {
     return std::visit(
-            []<typename T>(const T& x) -> Value::List {
+            []<typename T>(const T& x) -> PyValue::List {
                 using ValType = std::decay_t<T>;
                 if constexpr (std::is_same_v<ValType, std::string>) {
-                    Value::List result;
+                    PyValue::List result;
                     for (const char c : x)
-                        result.push_back(new Value(c));
+                        result.push_back(new PyValue(c));
                     return result;
                 }
-                if constexpr (std::is_same_v<ValType, Value::List>) {
+                if constexpr (std::is_same_v<ValType, PyValue::List>) {
                     return x;
                 }
                 throw std::runtime_error("Unable to convert type to list");

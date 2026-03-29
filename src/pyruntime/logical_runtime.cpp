@@ -10,83 +10,83 @@
 #include "pyruntime/runtime_util.h"
 
 
-int8_t pyir_isTruthy(const Value* val) { return valueToBool(val) ? 1 : 0; }
+int8_t pyir_isTruthy(const PyValue* val) { return valueToBool(val) ? 1 : 0; }
 
 
-Value* pyir_add(const Value* lhs, const Value* rhs) {
+PyValue* pyir_add(const PyValue* lhs, const PyValue* rhs) {
     if (lhs->isInt() && rhs->isInt())
-        return new Value(std::get<int64_t>(lhs->data) + std::get<int64_t>(rhs->data));
+        return new PyValue(std::get<int64_t>(lhs->data) + std::get<int64_t>(rhs->data));
     if ((lhs->isFloat() || lhs->isInt()) && (rhs->isFloat() || rhs->isInt())) {
-        const ValueRef l(new Value(valueToFloat(lhs))); // Temporary promoted float
-        const ValueRef r(new Value(valueToFloat(rhs))); // If this throws, l is cleaned up
-        return new Value(std::get<double_t>(l.get()->data) + std::get<double_t>(r.get()->data));
+        const ValueRef l(new PyValue(valueToFloat(lhs))); // Temporary promoted float
+        const ValueRef r(new PyValue(valueToFloat(rhs))); // If this throws, l is cleaned up
+        return new PyValue(std::get<double_t>(l.get()->data) + std::get<double_t>(r.get()->data));
     }
     if (lhs->isStr() && rhs->isStr())
-        return new Value(std::get<std::string>(lhs->data) + std::get<std::string>(rhs->data));
+        return new PyValue(std::get<std::string>(lhs->data) + std::get<std::string>(rhs->data));
     if (lhs->isList() && rhs->isList()) {
-        Value::List lhsVal = std::get<Value::List>(lhs->data);
-        Value::List rhsVal = std::get<Value::List>(rhs->data);
-        Value::List result;
+        PyValue::List lhsVal = std::get<PyValue::List>(lhs->data);
+        PyValue::List rhsVal = std::get<PyValue::List>(rhs->data);
+        PyValue::List result;
         result.insert(result.end(), lhsVal.begin(), lhsVal.end());
         result.insert(result.end(), rhsVal.begin(), rhsVal.end());
-        return new Value(result);
+        return new PyValue(result);
     }
     throw std::runtime_error("Unsupported operand types for +");
 }
 
 
-Value* pyir_sub(const Value* lhs, const Value* rhs) {
+PyValue* pyir_sub(const PyValue* lhs, const PyValue* rhs) {
     if (lhs->isInt() && rhs->isInt())
-        return new Value(std::get<int64_t>(lhs->data) - std::get<int64_t>(rhs->data));
+        return new PyValue(std::get<int64_t>(lhs->data) - std::get<int64_t>(rhs->data));
     if ((lhs->isInt() || lhs->isFloat()) && (rhs->isInt() || rhs->isFloat()))
-        return new Value(valueToFloat(lhs) - valueToFloat(rhs));
+        return new PyValue(valueToFloat(lhs) - valueToFloat(rhs));
     throw std::runtime_error("Unsupported operand types for -");
 }
 
 
-Value* pyir_mul(const Value* lhs, const Value* rhs) {
+PyValue* pyir_mul(const PyValue* lhs, const PyValue* rhs) {
     if (lhs->isInt() && rhs->isInt())
-        return new Value(std::get<int64_t>(lhs->data) * std::get<int64_t>(rhs->data));
+        return new PyValue(std::get<int64_t>(lhs->data) * std::get<int64_t>(rhs->data));
     if ((lhs->isInt() || lhs->isFloat()) && (rhs->isInt() || rhs->isFloat()))
-        return new Value(valueToFloat(lhs) * valueToFloat(rhs));
+        return new PyValue(valueToFloat(lhs) * valueToFloat(rhs));
     throw std::runtime_error("Unsupported operand types for *");
 }
 
 
-Value* pyir_div(const Value* lhs, const Value* rhs) {
+PyValue* pyir_div(const PyValue* lhs, const PyValue* rhs) {
     // Python's / always returns float
-    return new Value(valueToFloat(lhs) / valueToFloat(rhs));
+    return new PyValue(valueToFloat(lhs) / valueToFloat(rhs));
 }
 
 
-Value* pyir_floorDiv(const Value* lhs, const Value* rhs) {
+PyValue* pyir_floorDiv(const PyValue* lhs, const PyValue* rhs) {
     if (lhs->isInt() && rhs->isInt())
-        return new Value(std::get<int64_t>(lhs->data) / std::get<int64_t>(rhs->data));
+        return new PyValue(std::get<int64_t>(lhs->data) / std::get<int64_t>(rhs->data));
     if ((lhs->isInt() || lhs->isFloat()) && (rhs->isInt() || rhs->isFloat()))
-        return new Value(std::floor(valueToFloat(lhs) / valueToFloat(rhs)));
+        return new PyValue(std::floor(valueToFloat(lhs) / valueToFloat(rhs)));
     throw std::runtime_error("Unsupported operand types for //");
 }
 
 
-Value* pyir_exp(const Value* lhs, const Value* rhs) {
+PyValue* pyir_exp(const PyValue* lhs, const PyValue* rhs) {
     if (lhs->isInt() && rhs->isInt())
-        return new Value(std::get<int64_t>(lhs->data) * std::get<int64_t>(rhs->data));
+        return new PyValue(std::get<int64_t>(lhs->data) * std::get<int64_t>(rhs->data));
     if ((lhs->isInt() || lhs->isFloat()) && (rhs->isInt() || rhs->isFloat()))
-        return new Value(valueToFloat(lhs) * valueToFloat(rhs));
+        return new PyValue(valueToFloat(lhs) * valueToFloat(rhs));
     throw std::runtime_error("Unsupported operand types for **");
 }
 
 
-Value* pyir_mod(const Value* lhs, const Value* rhs) {
+PyValue* pyir_mod(const PyValue* lhs, const PyValue* rhs) {
     if (lhs->isInt() && rhs->isInt())
-        return new Value(std::get<int64_t>(lhs->data) % std::get<int64_t>(rhs->data));
+        return new PyValue(std::get<int64_t>(lhs->data) % std::get<int64_t>(rhs->data));
     if ((lhs->isInt() || lhs->isFloat()) && (rhs->isInt() || rhs->isFloat()))
-        return new Value(fmod(valueToFloat(lhs), valueToFloat(rhs)));
+        return new PyValue(fmod(valueToFloat(lhs), valueToFloat(rhs)));
     throw std::runtime_error("Unsupported operand types for %");
 }
 
 
-Value* pyir_idx(const Value* obj, const Value* idx) {
+PyValue* pyir_idx(const PyValue* obj, const PyValue* idx) {
     if (!idx->isInt())
         throw std::runtime_error("List indices must be integers");
 
@@ -97,10 +97,10 @@ Value* pyir_idx(const Value* obj, const Value* idx) {
             index += str.size();
         if (index < 0 || static_cast<size_t>(index) >= str.size())
             throw std::runtime_error("String index out of range");
-        return new Value(std::string(1, str[index]));
+        return new PyValue(std::string(1, str[index]));
     }
     if (obj->isList()) {
-        const Value::List& list = std::get<Value::List>(obj->data);
+        const PyValue::List& list = std::get<PyValue::List>(obj->data);
         int64_t index = std::get<int64_t>(idx->data);
         if (index < 0)
             index += list.size();
@@ -114,77 +114,77 @@ Value* pyir_idx(const Value* obj, const Value* idx) {
 }
 
 
-Value* pyir_eq(const Value* lhs, const Value* rhs) {
+PyValue* pyir_eq(const PyValue* lhs, const PyValue* rhs) {
     return std::visit(
-            []<typename T0, typename T1>(const T0& l, const T1& r) -> Value* {
+            []<typename T0, typename T1>(const T0& l, const T1& r) -> PyValue* {
                 using L = std::decay_t<T0>;
                 using R = std::decay_t<T1>;
                 if constexpr (std::is_same_v<L, R>)
-                    return new Value(l == r);
-                return new Value(false);
+                    return new PyValue(l == r);
+                return new PyValue(false);
             },
             lhs->data, rhs->data);
 }
 
 
-Value* pyir_ne(const Value* lhs, const Value* rhs) { return new Value(!std::get<bool>(pyir_eq(lhs, rhs)->data)); }
+PyValue* pyir_ne(const PyValue* lhs, const PyValue* rhs) { return new PyValue(!std::get<bool>(pyir_eq(lhs, rhs)->data)); }
 
 
-Value* pyir_lt(const Value* lhs, const Value* rhs) {
+PyValue* pyir_lt(const PyValue* lhs, const PyValue* rhs) {
     if (lhs->isInt() && rhs->isInt())
-        return new Value(std::get<int64_t>(lhs->data) < std::get<int64_t>(rhs->data));
+        return new PyValue(std::get<int64_t>(lhs->data) < std::get<int64_t>(rhs->data));
     if ((lhs->isInt() || lhs->isFloat()) && (rhs->isInt() || rhs->isFloat()))
-        return new Value(valueToFloat(lhs) < valueToFloat(rhs));
+        return new PyValue(valueToFloat(lhs) < valueToFloat(rhs));
     throw std::runtime_error("Unsupported operand types for <");
 }
 
 
-Value* pyir_le(const Value* lhs, const Value* rhs) {
+PyValue* pyir_le(const PyValue* lhs, const PyValue* rhs) {
     if (lhs->isInt() && rhs->isInt())
-        return new Value(std::get<int64_t>(lhs->data) <= std::get<int64_t>(rhs->data));
+        return new PyValue(std::get<int64_t>(lhs->data) <= std::get<int64_t>(rhs->data));
     if ((lhs->isInt() || lhs->isFloat()) && (rhs->isInt() || rhs->isFloat()))
-        return new Value(valueToFloat(lhs) <= valueToFloat(rhs));
+        return new PyValue(valueToFloat(lhs) <= valueToFloat(rhs));
     throw std::runtime_error("Unsupported operand types for <=");
 }
 
 
-Value* pyir_gt(const Value* lhs, const Value* rhs) { return pyir_lt(rhs, lhs); }
+PyValue* pyir_gt(const PyValue* lhs, const PyValue* rhs) { return pyir_lt(rhs, lhs); }
 
 
-Value* pyir_ge(const Value* lhs, const Value* rhs) { return pyir_le(rhs, lhs); }
+PyValue* pyir_ge(const PyValue* lhs, const PyValue* rhs) { return pyir_le(rhs, lhs); }
 
 
-Value* pyir_unaryNegative(const Value* val) {
+PyValue* pyir_unaryNegative(const PyValue* val) {
     if (val->isInt())
-        return new Value(-std::get<int64_t>(val->data));
+        return new PyValue(-std::get<int64_t>(val->data));
     if (val->isFloat())
-        return new Value(-std::get<double_t>(val->data));
+        return new PyValue(-std::get<double_t>(val->data));
     throw std::runtime_error("Unsupported operand type for unary -");
 }
 
 
-Value* pyir_unaryNot(const Value* val) {
+PyValue* pyir_unaryNot(const PyValue* val) {
     if (val->isBool())
-        return new Value(!std::get<bool>(val->data));
+        return new PyValue(!std::get<bool>(val->data));
     throw std::runtime_error("Unsupported operand type for unary not");
 }
 
 
-Value* pyir_unaryInvert(const Value* val) {
+PyValue* pyir_unaryInvert(const PyValue* val) {
     if (val->isInt())
-        return new Value(~std::get<int64_t>(val->data));
+        return new PyValue(~std::get<int64_t>(val->data));
     throw std::runtime_error("Unsupported operand type for unary ~");
 }
 
 
-Value* pyir_xor(const Value* lhs, const Value* rhs) {
+PyValue* pyir_xor(const PyValue* lhs, const PyValue* rhs) {
     if (lhs->isBool() && rhs->isBool())
-        return new Value((std::get<bool>(lhs->data) ^ std::get<bool>(rhs->data)) == 1);
+        return new PyValue((std::get<bool>(lhs->data) ^ std::get<bool>(rhs->data)) == 1);
     throw std::runtime_error("Unsupported operand type for unary not");
 }
 
 
-Value* pyir_toBool(const Value* val) { return new Value(valueToBool(val)); }
+PyValue* pyir_toBool(const PyValue* val) { return new PyValue(valueToBool(val)); }
 
 
-Value* pyir_formatSimple(const Value* val) { return new Value(valueToString(val)); }
+PyValue* pyir_formatSimple(const PyValue* val) { return new PyValue(valueToString(val)); }

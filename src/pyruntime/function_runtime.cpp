@@ -18,16 +18,16 @@ void pyir_popScope() {
 }
 
 
-Value* pyir_makeFunction(void* fn_ptr) { return new Value(reinterpret_cast<Value::Function>(fn_ptr)); }
+PyValue* pyir_makeFunction(void* fn_ptr) { return new PyValue(reinterpret_cast<PyValue::Function>(fn_ptr)); }
 
 
-Value* pyir_call(const Value* callee, Value** args, const int64_t argc) {
+PyValue* pyir_call(const PyValue* callee, PyValue** args, const int64_t argc) {
     if (callee->isFn()) {
-        ValueRef result(std::get<Value::Function>(callee->data)(args, argc));
+        ValueRef result(std::get<PyValue::Function>(callee->data)(args, argc));
         return result.release();
     }
     if (callee->isBoundMethod()) {
-        const Value::BoundMethod& bm = std::get<Value::BoundMethod>(callee->data);
+        const PyValue::BoundMethod& bm = std::get<PyValue::BoundMethod>(callee->data);
         ValueRef result(bm.fn(bm.self, args, argc));
         return result.release();
     }
@@ -35,10 +35,10 @@ Value* pyir_call(const Value* callee, Value** args, const int64_t argc) {
 }
 
 
-void pyir_decref(Value* v) {
+void pyir_decref(PyValue* v) {
     if (v)
         v->decref();
 }
 
 
-Value* pyir_pushNull() { return nullptr; }
+PyValue* pyir_pushNull() { return nullptr; }

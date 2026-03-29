@@ -9,19 +9,19 @@
 
 extern "C" {
 
-Value* pyir_builtinPrint(Value** args, int64_t argc);
+PyValue* pyir_builtinPrint(PyValue** args, int64_t argc);
 
-Value* pyir_builtinLen(Value** args, int64_t argc);
+PyValue* pyir_builtinLen(PyValue** args, int64_t argc);
 
-Value* pyir_builtinInt(Value** args, int64_t argc);
+PyValue* pyir_builtinInt(PyValue** args, int64_t argc);
 
-Value* pyir_builtinFloat(Value** args, int64_t argc);
+PyValue* pyir_builtinFloat(PyValue** args, int64_t argc);
 
-Value* pyir_builtinStr(Value** args, int64_t argc);
+PyValue* pyir_builtinStr(PyValue** args, int64_t argc);
 
-Value* pyir_builtinBool(Value** args, int64_t argc);
+PyValue* pyir_builtinBool(PyValue** args, int64_t argc);
 
-Value* pyir_builtinList(Value** args, int64_t argc);
+PyValue* pyir_builtinList(PyValue** args, int64_t argc);
 }
 
 #endif // PYCOMPILE_BUILTIN_RUNTIME_H

@@ -9,13 +9,13 @@
 
 extern "C" {
 
-Value* pyir_buildString(Value** parts, int64_t count);
+PyValue* pyir_buildString(PyValue** parts, int64_t count);
 
-Value* pyir_buildList(Value** parts, int64_t count);
+PyValue* pyir_buildList(PyValue** parts, int64_t count);
 
-void pyir_listExtend(Value* list, const Value* items);
+void pyir_listExtend(PyValue* list, const PyValue* items);
 
-void pyir_listAppend(Value* list, Value* item);
+void pyir_listAppend(PyValue* list, PyValue* item);
 }
 
 #endif // PYCOMPILE_BUILDER_RUNTIME_H

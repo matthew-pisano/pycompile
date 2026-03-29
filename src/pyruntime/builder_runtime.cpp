@@ -8,45 +8,45 @@
 #include <vector>
 
 
-Value* pyir_buildString(Value** parts, const int64_t count) {
+PyValue* pyir_buildString(PyValue** parts, const int64_t count) {
     std::string result;
     for (int64_t i = 0; i < count; i++) {
         if (!parts[i]->isStr())
             throw std::runtime_error("BUILD_STRING: expected string part");
         result += std::get<std::string>(parts[i]->data);
     }
-    return new Value(result);
+    return new PyValue(result);
 }
 
 
-Value* pyir_buildList(Value** parts, const int64_t count) {
-    Value::List result;
+PyValue* pyir_buildList(PyValue** parts, const int64_t count) {
+    PyValue::List result;
     for (int64_t i = 0; i < count; i++) {
         parts[i]->incref();
         result.push_back(parts[i]);
     }
-    return new Value(result);
+    return new PyValue(result);
 }
 
 
-void pyir_listExtend(Value* list, const Value* items) {
+void pyir_listExtend(PyValue* list, const PyValue* items) {
     if (!list->isList() || !items->isList())
         throw std::runtime_error("Can only extend list types with list types");
 
-    Value::List& dest = std::get<Value::List>(list->data);
-    const Value::List& src = std::get<Value::List>(items->data);
-    for (Value* v : src) {
+    PyValue::List& dest = std::get<PyValue::List>(list->data);
+    const PyValue::List& src = std::get<PyValue::List>(items->data);
+    for (PyValue* v : src) {
         v->incref();
         dest.push_back(v);
     }
 }
 
 
-void pyir_listAppend(Value* list, Value* item) {
+void pyir_listAppend(PyValue* list, PyValue* item) {
     if (!list->isList())
         throw std::runtime_error("Can only append to list types");
 
-    Value::List& dest = std::get<Value::List>(list->data);
+    PyValue::List& dest = std::get<PyValue::List>(list->data);
     item->incref();
     dest.push_back(item);
 }

@@ -17,17 +17,17 @@ void pyir_pushScope();
 
 void pyir_popScope();
 
-Value* pyir_makeFunction(void* fn_ptr);
+PyValue* pyir_makeFunction(void* fn_ptr);
 
 
 // call dispatch
-Value* pyir_call(const Value* callee, Value** args, int64_t argc);
+PyValue* pyir_call(const PyValue* callee, PyValue** args, int64_t argc);
 
 // Stub for Python push null
-Value* pyir_pushNull();
+PyValue* pyir_pushNull();
 
 // Decrease reference counting for v
-void pyir_decref(Value* v);
+void pyir_decref(PyValue* v);
 }
 
 #endif // PYCOMPILE_FUNCTION_RUNTIME_H

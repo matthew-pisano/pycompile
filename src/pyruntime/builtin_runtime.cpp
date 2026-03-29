@@ -18,7 +18,7 @@ Value* pyir_builtinPrint(Value** args, const int64_t argc) {
         printf("%s", valueToString(args[i]).c_str());
     }
     printf("\n");
-    return new Value(NoneType{});
+    return new Value(Value::NoneType{});
 }
 
 

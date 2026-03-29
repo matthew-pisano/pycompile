@@ -21,7 +21,7 @@ std::string valueToString(const Value* val, bool quoteStrings) {
     return std::visit(
             [quoteStrings]<typename T>(const T& x) -> std::string {
                 using ValType = std::decay_t<T>;
-                if constexpr (std::is_same_v<ValType, NoneType>)
+                if constexpr (std::is_same_v<ValType, Value::NoneType>)
                     return "None";
                 if constexpr (std::is_same_v<ValType, bool>)
                     return x ? "True" : "False";
@@ -55,7 +55,7 @@ bool valueToBool(const Value* val) {
     return std::visit(
             []<typename T>(const T& x) -> bool {
                 using ValType = std::decay_t<T>;
-                if constexpr (std::is_same_v<ValType, NoneType>)
+                if constexpr (std::is_same_v<ValType, Value::NoneType>)
                     return false;
                 if constexpr (std::is_same_v<ValType, bool>)
                     return x;

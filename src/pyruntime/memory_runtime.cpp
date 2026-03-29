@@ -66,7 +66,7 @@ Value* pyir_loadConstFloat(const double_t val) { return new Value(val); }
 Value* pyir_loadConstBool(const int8_t val) { return new Value(val == 1); }
 
 
-Value* pyir_loadConstNone() { return new Value(NoneType{}); }
+Value* pyir_loadConstNone() { return new Value(Value::NoneType{}); }
 
 
 Value* pyir_loadConstTuple(Value** items, const int64_t count) {

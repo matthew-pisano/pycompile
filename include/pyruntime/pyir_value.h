@@ -6,23 +6,21 @@
 #define PYCOMPILE_PYIR_VALUE_H
 #include <atomic>
 #include <string>
+#include <unordered_set>
 #include <variant>
 #include <vector>
-
-
-struct NoneType {};
-
-
-inline bool operator==(NoneType, NoneType) {
-    // Unused args
-    return true; // None is always None
-}
 
 
 struct Value {
     using Function = Value* (*) (Value**, int64_t);
     using List = std::vector<Value*>;
+    using Set = std::unordered_set<Value*>;
 
+    struct NoneType {
+        bool operator==(const NoneType&) const {
+            return true; // None is always None
+        }
+    };
 
     struct BoundMethod {
         using SelfFunction = Value* (*) (Value*, Value**, int64_t);
@@ -33,7 +31,7 @@ struct Value {
         bool operator==(const BoundMethod&) const = default;
     };
 
-    using Data = std::variant<NoneType, bool, int64_t, double, std::string, List, Function, BoundMethod>;
+    using Data = std::variant<NoneType, bool, int64_t, double, std::string, List, Set, Function, BoundMethod>;
 
     Data data;
     std::atomic<int32_t> refcount{1};
@@ -60,6 +58,8 @@ struct Value {
 
     explicit Value(List list) : data(std::move(list)) {}
 
+    explicit Value(Set set) : data(std::move(set)) {}
+
     explicit Value(Function f) : data(f) {}
 
     explicit Value(BoundMethod bm) : data(bm) {}
@@ -77,6 +77,7 @@ struct Value {
     [[nodiscard]] bool isFloat() const { return std::holds_alternative<double>(data); }
     [[nodiscard]] bool isStr() const { return std::holds_alternative<std::string>(data); }
     [[nodiscard]] bool isList() const { return std::holds_alternative<List>(data); }
+    [[nodiscard]] bool isSet() const { return std::holds_alternative<Set>(data); }
     [[nodiscard]] bool isFn() const { return std::holds_alternative<Function>(data); }
     [[nodiscard]] bool isBoundMethod() const { return std::holds_alternative<BoundMethod>(data); }
 };

@@ -10,6 +10,8 @@ std::string PyFunction::toString() const { return std::format("<function {}>", f
 
 std::string PyFunction::typeName() const { return "function"; }
 
+bool PyFunction::isTruthy() const { return true; }
+
 const std::unordered_map<std::string, PyMethod> PyFunction::attrs() const { return {}; }
 
 PyFunctionType PyFunction::data() const { return fn; }

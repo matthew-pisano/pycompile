@@ -15,7 +15,9 @@ struct PyFloat : PyObj {
 
     std::string typeName() const override;
 
-    const std::unordered_map<std::string, PyBoundMethod> attrs() const override { return {}; }
+    bool isTruthy() const override;
+
+    const std::unordered_map<std::string, PyMethod> attrs() const override { return {}; }
 
     double_t data() const;
 
@@ -25,4 +27,4 @@ private:
     double_t raw;
 };
 
-#endif //PYCOMPILE_PY_FLOAT_H
+#endif // PYCOMPILE_PY_FLOAT_H

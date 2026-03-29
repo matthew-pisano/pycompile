@@ -40,6 +40,10 @@ std::string PyList::toString() const {
 
 std::string PyList::typeName() const { return "list"; }
 
+bool PyList::isTruthy() const { return !raw.empty(); }
+
 const std::unordered_map<std::string, PyMethod> PyList::attrs() const { return {}; }
+
+std::vector<PyObj*> PyList::data() const { return raw; }
 
 bool PyList::operator==(const PyList& other) const { return raw == other.raw; }

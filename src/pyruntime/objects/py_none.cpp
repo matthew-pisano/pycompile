@@ -7,3 +7,5 @@
 std::string PyNone::toString() const { return "None"; }
 
 std::string PyNone::typeName() const { return "NoneType"; }
+
+bool PyNone::isTruthy() const { return false; }

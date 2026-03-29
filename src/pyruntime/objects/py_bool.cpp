@@ -8,6 +8,8 @@ std::string PyBool::toString() const { return std::to_string(raw); }
 
 std::string PyBool::typeName() const { return "bool"; }
 
+bool PyBool::isTruthy() const { return raw; }
+
 bool PyBool::data() const { return raw; }
 
 bool PyBool::operator==(const PyBool& other) const {

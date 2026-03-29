@@ -15,6 +15,8 @@ struct PyMethod : PyObj {
 
     std::string typeName() const override;
 
+    bool isTruthy() const override;
+
     const std::unordered_map<std::string, PyMethod> attrs() const override;
 
     PyFunctionType data() const;

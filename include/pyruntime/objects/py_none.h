@@ -13,6 +13,8 @@ struct PyNone : PyObj {
 
     std::string typeName() const override;
 
+    bool isTruthy() const override;
+
     const std::unordered_map<std::string, PyBoundMethod> attrs() const override { return {}; }
 };
 

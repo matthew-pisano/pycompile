@@ -13,7 +13,9 @@ struct PyInt : PyObj {
 
     std::string typeName() const override;
 
-    const std::unordered_map<std::string, PyBoundMethod> attrs() const override { return {}; }
+    bool isTruthy() const override;
+
+    const std::unordered_map<std::string, PyMethod> attrs() const override { return {}; }
 
     int64_t data() const;
 

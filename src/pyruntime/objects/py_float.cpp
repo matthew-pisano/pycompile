@@ -8,6 +8,8 @@ std::string PyFloat::toString() const { return std::to_string(raw); }
 
 std::string PyFloat::typeName() const { return "float"; }
 
+bool PyFloat::isTruthy() const { return raw != 0; }
+
 double_t PyFloat::data() const { return raw; }
 
 bool PyFloat::operator==(const PyFloat& other) const {

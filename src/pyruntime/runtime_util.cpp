@@ -7,83 +7,36 @@
 #include <format>
 #include <stdexcept>
 
+#include "pyruntime/objects/py_float.h"
+#include "pyruntime/objects/py_int.h"
+#include "pyruntime/objects/py_list.h"
+#include "pyruntime/objects/py_str.h"
 
-double_t valueToFloat(const PyValue* val) {
-    if (val->isFloat())
-        return std::get<double_t>(val->data);
-    if (val->isInt())
-        return static_cast<double_t>(std::get<int64_t>(val->data));
-    throw std::runtime_error("Cannot convert to float");
+
+double_t valueToFloat(const PyObj* val) {
+    if (const PyFloat* pyFloat = dynamic_cast<const PyFloat*>(val))
+        return pyFloat->data();
+    if (const PyInt* pyInt = dynamic_cast<const PyInt*>(val))
+        return static_cast<double_t>(pyInt->data());
+    throw std::runtime_error(std::format("Cannot convert type '{}' to float", val->typeName()));
 }
 
 
-std::string valueToString(const PyValue* val, bool quoteStrings) {
-    return std::visit(
-            [quoteStrings]<typename T>(const T& x) -> std::string {
-                using ValType = std::decay_t<T>;
-                if constexpr (std::is_same_v<ValType, PyNone>)
-                    return "None";
-                if constexpr (std::is_same_v<ValType, bool>)
-                    return x ? "True" : "False";
-                if constexpr (std::is_same_v<ValType, int64_t>)
-                    return std::format("{}", x);
-                if constexpr (std::is_same_v<ValType, double_t>)
-                    return std::format("{}", x);
-                if constexpr (std::is_same_v<ValType, std::string>)
-                    return quoteStrings ? ("'" + x + "'") : x;
-                if constexpr (std::is_same_v<ValType, PyFunction>)
-                    return "<callable>";
-                if constexpr (std::is_same_v<ValType, PyBoundMethod>)
-                    return "<built-in method>";
-                if constexpr (std::is_same_v<ValType, PyList>) {
-                    return x.toString();
-                }
-                throw std::runtime_error("Unable to convert type to string");
-            },
-            val->data);
+std::string valueToString(const PyObj* val, const bool quoteStrings) {
+    if (const PyStr* pyString = dynamic_cast<const PyStr*>(val))
+        return quoteStrings ? "'" + pyString->data() + "'" : pyString->data();
+    return val->toString();
 }
 
 
-bool valueToBool(const PyValue* val) {
-    return std::visit(
-            []<typename T>(const T& x) -> bool {
-                using ValType = std::decay_t<T>;
-                if constexpr (std::is_same_v<ValType, PyNone>)
-                    return false;
-                if constexpr (std::is_same_v<ValType, bool>)
-                    return x;
-                if constexpr (std::is_same_v<ValType, int64_t>)
-                    return x != 0;
-                if constexpr (std::is_same_v<ValType, double_t>)
-                    return x != 0.0;
-                if constexpr (std::is_same_v<ValType, std::string>)
-                    return !x.empty();
-                if constexpr (std::is_same_v<ValType, PyFunction>)
-                    return true;
-                if constexpr (std::is_same_v<ValType, PyBoundMethod>)
-                    return true;
-                if constexpr (std::is_same_v<ValType, PyList>)
-                    return x.data().size() > 0;
-                return false;
-            },
-            val->data);
-}
-
-
-PyList valueToList(const PyValue* val) {
-    return std::visit(
-            []<typename T>(const T& x) -> PyList {
-                using ValType = std::decay_t<T>;
-                if constexpr (std::is_same_v<ValType, std::string>) {
-                    PyList result;
-                    for (const char c : x)
-                        result.data().push_back(new PyValue(c));
-                    return result;
-                }
-                if constexpr (std::is_same_v<ValType, PyList>) {
-                    return x;
-                }
-                throw std::runtime_error("Unable to convert type to list");
-            },
-            val->data);
+std::vector<PyObj*> valueToList(const PyObj* val) {
+    if (const PyStr* pyString = dynamic_cast<const PyStr*>(val)) {
+        std::vector<PyObj*> result;
+        for (const char c : pyString->data())
+            result.push_back(new PyStr(c));
+        return result;
+    }
+    if (const PyList* pyList = dynamic_cast<const PyList*>(val))
+        return pyList->data();
+    throw std::runtime_error(std::format("Cannot convert type '{}' to list", val->typeName()));
 }

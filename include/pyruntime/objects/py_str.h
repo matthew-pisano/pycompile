@@ -8,6 +8,7 @@
 
 struct PyStr : PyObj {
     explicit PyStr(const std::string& str) : raw(str) {}
+    explicit PyStr(const char c) : raw(1, c) {}
 
     PyInt* len() const override;
 
@@ -15,9 +16,11 @@ struct PyStr : PyObj {
 
     std::string typeName() const override;
 
+    bool isTruthy() const override;
+
     const std::unordered_map<std::string, PyMethod> attrs() const override;
 
-    std::string data();
+    std::string data() const;
 
     bool operator==(const PyStr& other) const;
 

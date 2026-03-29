@@ -12,10 +12,10 @@ std::string PyStr::toString() const { return raw; }
 
 std::string PyStr::typeName() const { return "str"; }
 
+bool PyStr::isTruthy() const { return !raw.empty(); }
+
 const std::unordered_map<std::string, PyMethod> PyStr::attrs() const { return {}; }
 
-std::string PyStr::data() { return raw; }
+std::string PyStr::data() const { return raw; }
 
-bool PyStr::operator==(const PyStr& other) const {
-    return raw == other.raw;
-}
+bool PyStr::operator==(const PyStr& other) const { return raw == other.raw; }

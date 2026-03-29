@@ -41,6 +41,8 @@ struct PyObj {
 
     virtual std::string typeName() const = 0;
 
+    virtual bool isTruthy() const = 0;
+
     virtual const std::unordered_map<std::string, PyMethod> attrs() const = 0;
 
     void incref();

@@ -6,9 +6,11 @@
 
 #include <format>
 
-std::string PyMethod::toString() const { return std::format("<method {} of {} object>", fnName, self->typeName());  }
+std::string PyMethod::toString() const { return std::format("<method {} of {} object>", fnName, self->typeName()); }
 
 std::string PyMethod::typeName() const { return "function"; }
+
+bool PyMethod::isTruthy() const { return true; }
 
 const std::unordered_map<std::string, PyMethod> PyMethod::attrs() const { return {}; }
 

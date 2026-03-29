@@ -21,7 +21,11 @@ struct PyList : PyObj {
 
     std::string typeName() const override;
 
+    bool isTruthy() const override;
+
     const std::unordered_map<std::string, PyMethod> attrs() const override;
+
+    std::vector<PyObj*> data() const;
 
     bool operator==(const PyList& other) const;
 

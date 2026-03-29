@@ -8,7 +8,7 @@
 #include "py_object.h"
 
 struct PyBool : PyObj {
-    explicit PyBool(const bool decimal) : raw(decimal) {}
+    explicit PyBool(const bool boolean) : raw(boolean) {}
 
     std::string toString() const override;
 

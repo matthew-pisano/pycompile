@@ -12,7 +12,7 @@ std::string PyStr::toString() const { return raw; }
 
 std::string PyStr::typeName() const { return "str"; }
 
-const std::unordered_map<std::string, PyBoundMethod> PyStr::attrs() const { return {}; }
+const std::unordered_map<std::string, PyMethod> PyStr::attrs() const { return {}; }
 
 std::string PyStr::data() { return raw; }
 

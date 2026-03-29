@@ -40,6 +40,6 @@ std::string PyList::toString() const {
 
 std::string PyList::typeName() const { return "list"; }
 
-const std::unordered_map<std::string, PyBoundMethod> PyList::attrs() const { return {}; }
+const std::unordered_map<std::string, PyMethod> PyList::attrs() const { return {}; }
 
 bool PyList::operator==(const PyList& other) const { return raw == other.raw; }

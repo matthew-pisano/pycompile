@@ -9,6 +9,7 @@
 #include <string>
 #include <unordered_map>
 
+struct PyMethod;
 struct PyStr;
 struct PyInt;
 struct PyNone;
@@ -28,7 +29,7 @@ struct PyObj {
 
     virtual ~PyObj() = default;
 
-    virtual PyBoundMethod* getAttr(const char* attr);
+    virtual PyMethod* getAttr(const char* attr);
 
     virtual PyStr* name() const;
 
@@ -40,7 +41,7 @@ struct PyObj {
 
     virtual std::string typeName() const = 0;
 
-    virtual const std::unordered_map<std::string, PyBoundMethod> attrs() const = 0;
+    virtual const std::unordered_map<std::string, PyMethod> attrs() const = 0;
 
     void incref();
 
@@ -48,6 +49,27 @@ struct PyObj {
 
 private:
     std::atomic<int32_t> refcount{1};
+};
+
+
+struct PyObjRef {
+    PyObj* ptr;
+
+    explicit PyObjRef(PyObj* p) : ptr(p) {}
+
+    // Takes ownership, no incref
+    ~PyObjRef() {
+        if (ptr)
+            ptr->decref();
+    }
+
+    [[nodiscard]] PyObj* get() const { return ptr; }
+
+    PyObj* release() {
+        PyObj* p = ptr;
+        ptr = nullptr;
+        return p;
+    }
 };
 
 #endif // PYCOMPILE_PY_OBJECT_H

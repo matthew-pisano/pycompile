@@ -9,6 +9,8 @@
 #include "py_object.h"
 
 struct PyList : PyObj {
+    explicit PyList(const std::vector<PyObj*>& list) : raw(list) {}
+
     PyNone* append(PyObj** args, int64_t argc);
 
     PyNone* extend(PyObj** args, int64_t argc);
@@ -19,7 +21,7 @@ struct PyList : PyObj {
 
     std::string typeName() const override;
 
-    const std::unordered_map<std::string, PyBoundMethod> attrs() const override;
+    const std::unordered_map<std::string, PyMethod> attrs() const override;
 
     bool operator==(const PyList& other) const;
 

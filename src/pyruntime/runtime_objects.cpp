@@ -7,6 +7,7 @@
 #include <stdexcept>
 
 #include "pyruntime/builder_runtime.h"
+#include "pyruntime/runtime_util.h"
 
 
 const std::unordered_map<std::string, PyBoundMethod::SelfFunction> PyList::attrs = {
@@ -16,7 +17,6 @@ const std::unordered_map<std::string, PyBoundMethod::SelfFunction> PyList::attrs
 
 
 PyValue* PyList::append(PyValue* self, PyValue** args, const int64_t argc) {
-    validateSelf(self);
     if (argc != 1)
         throw std::runtime_error("append() takes exactly one argument");
     pyir_listAppend(self, args[0]);
@@ -25,7 +25,6 @@ PyValue* PyList::append(PyValue* self, PyValue** args, const int64_t argc) {
 
 
 PyValue* PyList::extend(PyValue* self, PyValue** args, const int64_t argc) {
-    validateSelf(self);
     if (argc != 1)
         throw std::runtime_error("extend() takes exactly one argument");
     pyir_listExtend(self, args[0]);
@@ -34,11 +33,30 @@ PyValue* PyList::extend(PyValue* self, PyValue** args, const int64_t argc) {
 
 
 PyValue* PyList::getAttr(PyValue* self, const char* name) {
-    validateSelf(self);
     const auto it = attrs.find(name);
     if (it == attrs.end())
         throw std::runtime_error(std::string("list has no attribute '") + name + "'");
     return new PyValue(PyBoundMethod{self, it->second});
+}
+
+
+PyValue* PyList::len(const PyValue* self) {
+    return new PyValue(static_cast<int64_t>(std::get<PyList>(self->data).data().size()));
+}
+
+
+PyValue* PyList::str(const PyValue* self) { return new PyValue(std::get<PyList>(self->data).toString()); }
+
+
+std::string PyList::toString() const {
+    if (rawData.empty())
+        return "[]";
+
+    std::string result = "[";
+    for (size_t i = 0; i < rawData.size() - 1; i++)
+        result += valueToString(rawData[i], true) + ", ";
+    result += valueToString(rawData[rawData.size() - 1], true) + "]";
+    return result;
 }
 
 
@@ -47,9 +65,3 @@ std::vector<PyValue*>& PyList::data() { return rawData; }
 
 
 bool PyList::operator==(const PyList& other) const { return rawData == other.rawData; }
-
-
-void PyList::validateSelf(const PyValue* self) {
-    if (!self || !self->isList())
-        throw std::runtime_error("Expected a list type for self");
-}

@@ -36,14 +36,7 @@ std::string valueToString(const PyValue* val, bool quoteStrings) {
                 if constexpr (std::is_same_v<ValType, PyBoundMethod>)
                     return "<built-in method>";
                 if constexpr (std::is_same_v<ValType, PyList>) {
-                    if (x.data().empty())
-                        return "[]";
-
-                    std::string result = "[";
-                    for (size_t i = 0; i < x.data().size() - 1; i++)
-                        result += valueToString(x.data()[i], true) + ", ";
-                    result += valueToString(x.data()[x.data().size() - 1], true) + "]";
-                    return result;
+                    return x.toString();
                 }
                 throw std::runtime_error("Unable to convert type to string");
             },

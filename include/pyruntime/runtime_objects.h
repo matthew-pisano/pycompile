@@ -41,14 +41,18 @@ struct PyList {
 
     static PyValue* getAttr(PyValue* self, const char* name);
 
+    static PyValue* len(const PyValue* self);
+
+    static PyValue* str(const PyValue* self);
+
+    std::string toString() const;
+
     const std::vector<PyValue*>& data() const;
     std::vector<PyValue*>& data();
 
     bool operator==(const PyList& other) const;
 
 private:
-    static void validateSelf(const PyValue* self);
-
     std::vector<PyValue*> rawData;
 };
 

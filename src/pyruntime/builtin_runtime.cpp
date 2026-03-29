@@ -28,7 +28,7 @@ PyValue* pyir_builtinLen(PyValue** args, const int64_t argc) {
     if (args[0]->isStr())
         return new PyValue(static_cast<int64_t>(std::get<std::string>(args[0]->data).size()));
     if (args[0]->isList())
-        return new PyValue(static_cast<int64_t>(std::get<PyList>(args[0]->data).data().size()));
+        return PyList::len(args[0]);
     throw std::runtime_error("Object has no len()");
 }
 

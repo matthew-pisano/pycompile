@@ -36,13 +36,13 @@ std::string valueToString(const PyValue* val, bool quoteStrings) {
                 if constexpr (std::is_same_v<ValType, PyBoundMethod>)
                     return "<built-in method>";
                 if constexpr (std::is_same_v<ValType, PyList>) {
-                    if (x.empty())
+                    if (x.data().empty())
                         return "[]";
 
                     std::string result = "[";
-                    for (size_t i = 0; i < x.size() - 1; i++)
-                        result += valueToString(x[i], true) + ", ";
-                    result += valueToString(x[x.size() - 1], true) + "]";
+                    for (size_t i = 0; i < x.data().size() - 1; i++)
+                        result += valueToString(x.data()[i], true) + ", ";
+                    result += valueToString(x.data()[x.data().size() - 1], true) + "]";
                     return result;
                 }
                 throw std::runtime_error("Unable to convert type to string");
@@ -70,7 +70,7 @@ bool valueToBool(const PyValue* val) {
                 if constexpr (std::is_same_v<ValType, PyBoundMethod>)
                     return true;
                 if constexpr (std::is_same_v<ValType, PyList>)
-                    return x.size() > 0;
+                    return x.data().size() > 0;
                 return false;
             },
             val->data);
@@ -84,7 +84,7 @@ PyList valueToList(const PyValue* val) {
                 if constexpr (std::is_same_v<ValType, std::string>) {
                     PyList result;
                     for (const char c : x)
-                        result.push_back(new PyValue(c));
+                        result.data().push_back(new PyValue(c));
                     return result;
                 }
                 if constexpr (std::is_same_v<ValType, PyList>) {

@@ -5,7 +5,6 @@
 #include "pyruntime/builder_runtime.h"
 
 #include <stdexcept>
-#include <vector>
 
 #include "pyruntime/runtime_objects.h"
 
@@ -25,7 +24,7 @@ PyValue* pyir_buildList(PyValue** parts, const int64_t count) {
     PyList result;
     for (int64_t i = 0; i < count; i++) {
         parts[i]->incref();
-        result.push_back(parts[i]);
+        result.data().push_back(parts[i]);
     }
     return new PyValue(result);
 }
@@ -37,9 +36,9 @@ void pyir_listExtend(PyValue* list, const PyValue* items) {
 
     PyList& dest = std::get<PyList>(list->data);
     const PyList& src = std::get<PyList>(items->data);
-    for (PyValue* v : src) {
+    for (PyValue* v : src.data()) {
         v->incref();
-        dest.push_back(v);
+        dest.data().push_back(v);
     }
 }
 
@@ -50,5 +49,5 @@ void pyir_listAppend(PyValue* list, PyValue* item) {
 
     PyList& dest = std::get<PyList>(list->data);
     item->incref();
-    dest.push_back(item);
+    dest.data().push_back(item);
 }

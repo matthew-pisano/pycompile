@@ -71,20 +71,16 @@ PyValue* pyir_loadConstNone() { return new PyValue(PyNone{}); }
 
 
 PyValue* pyir_loadConstTuple(PyValue** items, const int64_t count) {
-    std::vector<PyValue*> result;
-    result.reserve(count);
+    PyList result;
+    result.data().reserve(count);
     for (int64_t i = 0; i < count; i++)
-        result.push_back(items[i]);
+        result.data().push_back(items[i]);
     return new PyValue(result);
 }
 
 PyValue* pyir_loadAttr(PyValue* obj, const char* name) {
-    if (obj->isList()) {
-        const auto it = PyIR_List::attrs.find(name);
-        if (it == PyIR_List::attrs.end())
-            throw std::runtime_error(std::string("list has no attribute '") + name + "'");
-        return new PyValue(PyBoundMethod{obj, it->second});
-    }
+    if (obj->isList())
+        return PyList::getAttr(obj, name);
 
     throw std::runtime_error(std::format("Object has no attribute '") + name + "'");
 }

@@ -27,8 +27,8 @@ PyValue* pyir_add(const PyValue* lhs, const PyValue* rhs) {
         PyList lhsVal = std::get<PyList>(lhs->data);
         PyList rhsVal = std::get<PyList>(rhs->data);
         PyList result;
-        result.insert(result.end(), lhsVal.begin(), lhsVal.end());
-        result.insert(result.end(), rhsVal.begin(), rhsVal.end());
+        result.data().insert(result.data().end(), lhsVal.data().begin(), lhsVal.data().end());
+        result.data().insert(result.data().end(), rhsVal.data().begin(), rhsVal.data().end());
         return new PyValue(result);
     }
     throw std::runtime_error("Unsupported operand types for +");
@@ -86,7 +86,7 @@ PyValue* pyir_mod(const PyValue* lhs, const PyValue* rhs) {
 }
 
 
-PyValue* pyir_idx(const PyValue* obj, const PyValue* idx) {
+PyValue* pyir_idx(PyValue* obj, const PyValue* idx) {
     if (!idx->isInt())
         throw std::runtime_error("List indices must be integers");
 
@@ -100,14 +100,14 @@ PyValue* pyir_idx(const PyValue* obj, const PyValue* idx) {
         return new PyValue(std::string(1, str[index]));
     }
     if (obj->isList()) {
-        const PyList& list = std::get<PyList>(obj->data);
+        PyList& list = std::get<PyList>(obj->data);
         int64_t index = std::get<int64_t>(idx->data);
         if (index < 0)
-            index += list.size();
-        if (index < 0 || static_cast<size_t>(index) >= list.size())
+            index += list.data().size();
+        if (index < 0 || static_cast<size_t>(index) >= list.data().size())
             throw std::runtime_error("List index out of range");
-        list[index]->incref(); // Return a new reference to the indexed value
-        return list[index];
+        list.data()[index]->incref(); // Return a new reference to the indexed value
+        return list.data()[index];
     }
 
     throw std::runtime_error("Unsupported operand type for indexing");
@@ -127,7 +127,9 @@ PyValue* pyir_eq(const PyValue* lhs, const PyValue* rhs) {
 }
 
 
-PyValue* pyir_ne(const PyValue* lhs, const PyValue* rhs) { return new PyValue(!std::get<bool>(pyir_eq(lhs, rhs)->data)); }
+PyValue* pyir_ne(const PyValue* lhs, const PyValue* rhs) {
+    return new PyValue(!std::get<bool>(pyir_eq(lhs, rhs)->data));
+}
 
 
 PyValue* pyir_lt(const PyValue* lhs, const PyValue* rhs) {

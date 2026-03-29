@@ -26,7 +26,7 @@ PyValue* pyir_exp(const PyValue* lhs, const PyValue* rhs);
 PyValue* pyir_mod(const PyValue* lhs, const PyValue* rhs);
 
 // index
-PyValue* pyir_idx(const PyValue* obj, const PyValue* idx);
+PyValue* pyir_idx(PyValue* obj, const PyValue* idx);
 
 // comparison
 PyValue* pyir_eq(const PyValue* lhs, const PyValue* rhs);

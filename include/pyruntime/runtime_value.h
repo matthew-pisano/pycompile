@@ -10,6 +10,7 @@
 #include <variant>
 #include <vector>
 
+#include "objects/py_list.h"
 #include "runtime_objects.h"
 
 

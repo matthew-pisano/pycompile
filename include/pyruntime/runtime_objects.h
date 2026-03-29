@@ -32,28 +32,4 @@ struct PyBoundMethod {
 };
 
 
-struct PyList {
-    static const std::unordered_map<std::string, PyBoundMethod::SelfFunction> attrs;
-
-    static PyValue* append(PyValue* self, PyValue** args, int64_t argc);
-
-    static PyValue* extend(PyValue* self, PyValue** args, int64_t argc);
-
-    static PyValue* getAttr(PyValue* self, const char* name);
-
-    static PyValue* len(const PyValue* self);
-
-    static PyValue* str(const PyValue* self);
-
-    std::string toString() const;
-
-    const std::vector<PyValue*>& data() const;
-    std::vector<PyValue*>& data();
-
-    bool operator==(const PyList& other) const;
-
-private:
-    std::vector<PyValue*> rawData;
-};
-
 #endif // PYCOMPILE_RUNTIME_OBJECTS_H

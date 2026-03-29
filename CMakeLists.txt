@@ -101,7 +101,6 @@ add_library(stdpyir STATIC
         src/pyruntime/builtin_runtime.cpp
         src/pyruntime/runtime_util.cpp
         src/pyruntime/function_runtime.cpp
-        src/pyruntime/runtime_objects.cpp
         src/pyruntime/objects/py_list.cpp
         src/pyruntime/objects/py_str.cpp
         src/pyruntime/objects/py_int.cpp

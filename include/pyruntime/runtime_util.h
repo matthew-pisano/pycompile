@@ -6,7 +6,7 @@
 #define PYCOMPILE_RUNTIME_UTIL_H
 #include <cmath>
 
-#include "pyir_value.h"
+#include "runtime_value.h"
 
 double_t valueToFloat(const Value* val);
 

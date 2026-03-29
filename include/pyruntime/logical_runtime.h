@@ -4,7 +4,7 @@
 
 #ifndef PYCOMPILE_LOGICAL_RUNTIME_H
 #define PYCOMPILE_LOGICAL_RUNTIME_H
-#include "pyir_value.h"
+#include "runtime_value.h"
 
 extern "C" {
 

@@ -2,8 +2,8 @@
 // Created by matthew on 3/8/26.
 //
 
-#ifndef PYCOMPILE_PYIR_VALUE_H
-#define PYCOMPILE_PYIR_VALUE_H
+#ifndef PYCOMPILE_RUNTIME_VALUE_H
+#define PYCOMPILE_RUNTIME_VALUE_H
 #include <atomic>
 #include <string>
 #include <unordered_set>
@@ -88,7 +88,7 @@ struct ValueRef {
 
     explicit ValueRef(Value* p) : ptr(p) {}
 
-    // takes ownership, no incref
+    // Takes ownership, no incref
     ~ValueRef() {
         if (ptr)
             ptr->decref();
@@ -104,4 +104,4 @@ struct ValueRef {
 };
 
 
-#endif // PYCOMPILE_PYIR_VALUE_H
+#endif // PYCOMPILE_RUNTIME_VALUE_H

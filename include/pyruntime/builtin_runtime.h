@@ -4,10 +4,10 @@
 
 #ifndef PYCOMPILE_BUILTIN_RUNTIME_H
 #define PYCOMPILE_BUILTIN_RUNTIME_H
-#include "pyir_value.h"
+
+#include "runtime_value.h"
 
 extern "C" {
-
 
 Value* pyir_builtinPrint(Value** args, int64_t argc);
 

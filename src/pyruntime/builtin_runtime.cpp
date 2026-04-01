@@ -17,7 +17,7 @@
 #include "pyruntime/runtime_util.h"
 
 
-PyNone* pyir_builtinPrint(PyObj** args, const int64_t argc) {
+PyObj* pyir_builtinPrint(PyObj** args, const int64_t argc) {
     for (int64_t i = 0; i < argc; i++) {
         if (i > 0)
             printf(" ");
@@ -28,7 +28,7 @@ PyNone* pyir_builtinPrint(PyObj** args, const int64_t argc) {
 }
 
 
-PyInt* pyir_builtinLen(PyObj** args, const int64_t argc) {
+PyObj* pyir_builtinLen(PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("Too many arguments for len()");
     if (const PyStr* str = dynamic_cast<PyStr*>(args[0]))
@@ -39,7 +39,7 @@ PyInt* pyir_builtinLen(PyObj** args, const int64_t argc) {
 }
 
 
-PyInt* pyir_builtinInt(PyObj** args, const int64_t argc) {
+PyObj* pyir_builtinInt(PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("Too many arguments for int()");
 
@@ -55,7 +55,7 @@ PyInt* pyir_builtinInt(PyObj** args, const int64_t argc) {
 }
 
 
-PyFloat* pyir_builtinFloat(PyObj** args, const int64_t argc) {
+PyObj* pyir_builtinFloat(PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("Too many arguments for float()");
 
@@ -71,21 +71,21 @@ PyFloat* pyir_builtinFloat(PyObj** args, const int64_t argc) {
 }
 
 
-PyStr* pyir_builtinStr(PyObj** args, const int64_t argc) {
+PyObj* pyir_builtinStr(PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("Too many arguments for str()");
     return new PyStr(valueToString(args[0]));
 }
 
 
-PyBool* pyir_builtinBool(PyObj** args, const int64_t argc) {
+PyObj* pyir_builtinBool(PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("Too many arguments for bool()");
     return new PyBool(args[0]->isTruthy());
 }
 
 
-PyList* pyir_builtinList(PyObj** args, const int64_t argc) {
+PyObj* pyir_builtinList(PyObj** args, const int64_t argc) {
     if (argc > 1)
         throw std::runtime_error("Too many arguments for list()");
     if (argc == 0)

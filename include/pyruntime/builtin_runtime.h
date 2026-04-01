@@ -16,19 +16,19 @@ struct PyStr;
 struct PyFloat;
 struct PyList;
 
-PyNone* pyir_builtinPrint(PyObj** args, int64_t argc);
+PyObj* pyir_builtinPrint(PyObj** args, int64_t argc);
 
-PyInt* pyir_builtinLen(PyObj** args, int64_t argc);
+PyObj* pyir_builtinLen(PyObj** args, int64_t argc);
 
-PyInt* pyir_builtinInt(PyObj** args, int64_t argc);
+PyObj* pyir_builtinInt(PyObj** args, int64_t argc);
 
-PyFloat* pyir_builtinFloat(PyObj** args, int64_t argc);
+PyObj* pyir_builtinFloat(PyObj** args, int64_t argc);
 
-PyStr* pyir_builtinStr(PyObj** args, int64_t argc);
+PyObj* pyir_builtinStr(PyObj** args, int64_t argc);
 
-PyBool* pyir_builtinBool(PyObj** args, int64_t argc);
+PyObj* pyir_builtinBool(PyObj** args, int64_t argc);
 
-PyList* pyir_builtinList(PyObj** args, int64_t argc);
+PyObj* pyir_builtinList(PyObj** args, int64_t argc);
 }
 
 #endif // PYCOMPILE_BUILTIN_RUNTIME_H

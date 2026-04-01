@@ -33,7 +33,7 @@ struct PyList : PyObj {
 
     std::vector<PyObj*>& data();
 
-    bool operator==(const PyList& other) const;
+    bool operator==(const PyObj& other) const override;
 
 private:
     std::vector<PyObj*> raw;

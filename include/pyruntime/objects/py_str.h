@@ -23,7 +23,7 @@ struct PyStr : PyObj {
 
     std::string data() const;
 
-    bool operator==(const PyStr& other) const;
+    bool operator==(const PyObj& other) const override;
 
 private:
     std::string raw;

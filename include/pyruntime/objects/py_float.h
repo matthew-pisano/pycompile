@@ -22,7 +22,7 @@ struct PyFloat : PyObj {
 
     double_t data() const;
 
-    bool operator==(const PyFloat& other) const;
+    bool operator==(const PyObj& other) const override;
 
 private:
     double_t raw;

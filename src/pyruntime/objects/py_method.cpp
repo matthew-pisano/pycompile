@@ -19,3 +19,5 @@ PyObj* PyMethod::selfObj() const { return self; }
 std::string PyMethod::funcName() const { return fnName; }
 
 PyMethodType PyMethod::data() const { return fn; }
+
+bool PyMethod::operator==(const PyObj&) const { return false; }

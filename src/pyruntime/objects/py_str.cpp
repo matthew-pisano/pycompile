@@ -18,4 +18,8 @@ const std::unordered_map<std::string, PyMethod> PyStr::attrs() const { return {}
 
 std::string PyStr::data() const { return raw; }
 
-bool PyStr::operator==(const PyStr& other) const { return raw == other.raw; }
+bool PyStr::operator==(const PyObj& other) const {
+    if (const PyStr* s = dynamic_cast<const PyStr*>(&other))
+        return raw == s->data();
+    return false;
+}

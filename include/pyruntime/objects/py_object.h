@@ -47,6 +47,8 @@ struct PyObj {
 
     void decref();
 
+    virtual bool operator==(const PyObj& other) const = 0;
+
 private:
     std::atomic<int32_t> refcount{1};
 };

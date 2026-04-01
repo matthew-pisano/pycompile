@@ -5,6 +5,7 @@
 #include "pyruntime/logical_runtime.h"
 
 #include <cmath>
+#include <iostream>
 #include <stdexcept>
 
 #include "pyruntime/objects/py_bool.h"
@@ -124,7 +125,9 @@ PyObj* pyir_idx(const PyObj* obj, const PyObj* idx) {
 }
 
 
-PyBool* pyir_eq(const PyObj* lhs, const PyObj* rhs) { return new PyBool(lhs == rhs); }
+PyBool* pyir_eq(const PyObj* lhs, const PyObj* rhs) {
+    return new PyBool(*lhs == *rhs);
+}
 
 
 PyBool* pyir_ne(const PyObj* lhs, const PyObj* rhs) { return new PyBool(!pyir_eq(lhs, rhs)->data()); }

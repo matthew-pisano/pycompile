@@ -26,6 +26,8 @@ struct PyFunction : PyObj {
 
     [[nodiscard]] PyFunctionType data() const;
 
+    bool operator==(const PyObj& other) const override;
+
 private:
     std::string fnName;
     PyFunctionType fn;

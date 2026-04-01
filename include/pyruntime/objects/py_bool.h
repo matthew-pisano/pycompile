@@ -21,7 +21,7 @@ struct PyBool : PyObj {
 
     bool data() const;
 
-    bool operator==(const PyBool& other) const;
+    bool operator==(const PyObj& other) const override;
 
 private:
     bool raw;

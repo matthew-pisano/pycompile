@@ -29,6 +29,8 @@ struct PyMethod : PyObj {
 
     [[nodiscard]] PyMethodType data() const;
 
+    bool operator==(const PyObj& other) const override;
+
 private:
     std::string fnName;
     PyObj* self;

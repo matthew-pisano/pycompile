@@ -20,7 +20,7 @@ struct PyInt : PyObj {
 
     int64_t data() const;
 
-    bool operator==(const PyInt& other) const;
+    bool operator==(const PyObj& other) const override;
 
 private:
     int64_t raw;

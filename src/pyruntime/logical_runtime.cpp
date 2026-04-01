@@ -132,7 +132,7 @@ PyBool* pyir_ne(const PyObj* lhs, const PyObj* rhs) { return new PyBool(!pyir_eq
 
 PyBool* pyir_lt(const PyObj* lhs, const PyObj* rhs) {
     if (pyir_isInt(lhs) && pyir_isInt(rhs))
-        return new PyBool(dynamic_cast<const PyInt*>(lhs)->data() / dynamic_cast<const PyInt*>(rhs)->data());
+        return new PyBool(dynamic_cast<const PyInt*>(lhs)->data() < dynamic_cast<const PyInt*>(rhs)->data());
     if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
         return new PyBool(valueToFloat(lhs) < valueToFloat(rhs));
     throw std::runtime_error("Unsupported operand types for <");
@@ -141,7 +141,7 @@ PyBool* pyir_lt(const PyObj* lhs, const PyObj* rhs) {
 
 PyBool* pyir_le(const PyObj* lhs, const PyObj* rhs) {
     if (pyir_isInt(lhs) && pyir_isInt(rhs))
-        return new PyBool(dynamic_cast<const PyInt*>(lhs)->data() / dynamic_cast<const PyInt*>(rhs)->data());
+        return new PyBool(dynamic_cast<const PyInt*>(lhs)->data() <= dynamic_cast<const PyInt*>(rhs)->data());
     if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
         return new PyBool(valueToFloat(lhs) <= valueToFloat(rhs));
     throw std::runtime_error("Unsupported operand types for <=");

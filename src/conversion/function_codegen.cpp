@@ -13,7 +13,7 @@
 
 
 void makeFunctionCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
-                         const std::string& displayName, ConversionMeta& meta) {
+                         ConversionMeta& meta) {
     pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const mlir::Value sentinel = meta.stack.back();
     meta.stack.pop_back();
@@ -23,7 +23,7 @@ void makeFunctionCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const
     // Erase the sentinel PushNull op since it was just a placeholder
     sentinel.getDefiningOp()->erase();
 
-    meta.stack.push_back(builder.create<pyir::MakeFunction>(loc, pyType, displayName, fnName).getResult());
+    meta.stack.push_back(builder.create<pyir::MakeFunction>(loc, pyType, fnName).getResult());
 }
 
 

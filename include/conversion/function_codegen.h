@@ -11,7 +11,7 @@
 
 
 void makeFunctionCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
-                         const std::string& displayName, ConversionMeta& meta);
+                         ConversionMeta& meta);
 
 
 void callFuncCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,

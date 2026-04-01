@@ -4,6 +4,7 @@
 
 #ifndef PYCOMPILE_PY_NONE_H
 #define PYCOMPILE_PY_NONE_H
+#include "py_method.h"
 #include "py_object.h"
 
 struct PyNone : PyObj {

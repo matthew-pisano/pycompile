@@ -4,8 +4,6 @@
 
 #include "pyruntime/objects/py_none.h"
 
-#include "pyruntime/objects/py_method.h"
-
 std::string PyNone::toString() const { return "None"; }
 
 std::string PyNone::typeName() const { return "NoneType"; }

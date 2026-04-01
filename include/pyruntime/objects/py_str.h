@@ -4,6 +4,7 @@
 
 #ifndef PYCOMPILE_PY_STR_H
 #define PYCOMPILE_PY_STR_H
+#include "py_method.h"
 #include "py_object.h"
 
 struct PyStr : PyObj {

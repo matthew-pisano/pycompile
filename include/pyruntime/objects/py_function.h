@@ -4,6 +4,7 @@
 
 #ifndef PYCOMPILE_PY_FUNCTION_H
 #define PYCOMPILE_PY_FUNCTION_H
+#include "py_method.h"
 #include "py_object.h"
 
 using PyFunctionType = PyObj* (*) (PyObj**, int64_t);

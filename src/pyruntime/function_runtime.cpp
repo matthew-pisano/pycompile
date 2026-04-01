@@ -6,7 +6,6 @@
 
 #include <stdexcept>
 
-#include "pyruntime/objects/py_method.h"
 #include "pyruntime/runtime_state.h"
 
 void pyir_pushScope() { scopeStack.emplace_back(); }

@@ -4,8 +4,6 @@
 
 #include "pyruntime/objects/py_int.h"
 
-#include "pyruntime/objects/py_method.h"
-
 std::string PyInt::toString() const { return std::to_string(raw); }
 
 std::string PyInt::typeName() const { return "int"; }

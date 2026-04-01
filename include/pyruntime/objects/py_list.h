@@ -6,6 +6,7 @@
 #define PYCOMPILE_PY_LIST_H
 #include <vector>
 
+#include "py_method.h"
 #include "py_object.h"
 
 

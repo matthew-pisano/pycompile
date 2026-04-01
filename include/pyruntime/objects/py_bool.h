@@ -5,6 +5,7 @@
 #ifndef PYCOMPILE_PY_BOOL_H
 #define PYCOMPILE_PY_BOOL_H
 
+#include "py_method.h"
 #include "py_object.h"
 
 struct PyBool : PyObj {

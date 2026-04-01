@@ -6,6 +6,7 @@
 #define PYCOMPILE_PY_FLOAT_H
 #include <cmath>
 
+#include "py_method.h"
 #include "py_object.h"
 
 struct PyFloat : PyObj {

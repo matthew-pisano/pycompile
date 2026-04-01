@@ -7,7 +7,6 @@
 #include <format>
 #include <stdexcept>
 
-#include "pyruntime/objects/py_method.h"
 #include "pyruntime/objects/py_str.h"
 
 void PyObj::incref() { refcount.fetch_add(1, std::memory_order_relaxed); }

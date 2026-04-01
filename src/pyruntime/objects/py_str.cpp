@@ -5,7 +5,6 @@
 #include "pyruntime/objects/py_str.h"
 
 #include "pyruntime/objects/py_int.h"
-#include "pyruntime/objects/py_method.h"
 
 PyInt* PyStr::len() const { return new PyInt(raw.size()); }
 

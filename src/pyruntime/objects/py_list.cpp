@@ -8,7 +8,6 @@
 
 #include "pyruntime/builder_runtime.h"
 #include "pyruntime/objects/py_int.h"
-#include "pyruntime/objects/py_method.h"
 #include "pyruntime/objects/py_none.h"
 #include "pyruntime/runtime_util.h"
 

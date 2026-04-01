@@ -4,7 +4,7 @@
 
 #ifndef PYCOMPILE_PY_METHOD_H
 #define PYCOMPILE_PY_METHOD_H
-#include "py_function.h"
+
 #include "py_object.h"
 
 using PyMethodType = PyObj* (*) (PyObj*, PyObj**, int64_t);

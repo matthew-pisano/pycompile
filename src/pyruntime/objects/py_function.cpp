@@ -6,6 +6,8 @@
 
 #include <format>
 
+#include "pyruntime/objects/py_method.h"
+
 std::string PyFunction::toString() const { return std::format("<function {}>", fnName); }
 
 std::string PyFunction::typeName() const { return "function"; }

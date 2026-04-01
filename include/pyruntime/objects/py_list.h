@@ -8,6 +8,9 @@
 
 #include "py_object.h"
 
+
+struct PyNone;
+
 struct PyList : PyObj {
     explicit PyList(const std::vector<PyObj*>& list) : raw(list) {}
 

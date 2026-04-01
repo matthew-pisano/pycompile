@@ -12,8 +12,6 @@
 struct PyMethod;
 struct PyStr;
 struct PyInt;
-struct PyNone;
-struct PyBoundMethod;
 
 struct PyObj {
     PyObj() = default;

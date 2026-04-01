@@ -15,7 +15,7 @@ struct PyNone : PyObj {
 
     bool isTruthy() const override;
 
-    const std::unordered_map<std::string, PyBoundMethod> attrs() const override { return {}; }
+    const std::unordered_map<std::string, PyMethod> attrs() const override { return {}; }
 };
 
 #endif // PYCOMPILE_PY_NONE_H

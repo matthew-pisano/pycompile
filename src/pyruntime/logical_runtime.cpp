@@ -81,16 +81,16 @@ PyObj* pyir_floorDiv(const PyObj* lhs, const PyObj* rhs) {
 
 PyObj* pyir_exp(const PyObj* lhs, const PyObj* rhs) {
     if (pyir_isInt(lhs) && pyir_isInt(rhs))
-        return new PyInt(dynamic_cast<const PyInt*>(lhs)->data() / dynamic_cast<const PyInt*>(rhs)->data());
+        return new PyInt(pow(dynamic_cast<const PyInt*>(lhs)->data(), dynamic_cast<const PyInt*>(rhs)->data()));
     if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
-        return new PyFloat(valueToFloat(lhs) * valueToFloat(rhs));
+        return new PyFloat(pow(valueToFloat(lhs), valueToFloat(rhs)));
     throw std::runtime_error("Unsupported operand types for **");
 }
 
 
 PyObj* pyir_mod(const PyObj* lhs, const PyObj* rhs) {
     if (pyir_isInt(lhs) && pyir_isInt(rhs))
-        return new PyInt(dynamic_cast<const PyInt*>(lhs)->data() / dynamic_cast<const PyInt*>(rhs)->data());
+        return new PyInt(dynamic_cast<const PyInt*>(lhs)->data() % dynamic_cast<const PyInt*>(rhs)->data());
     if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
         return new PyFloat(fmod(valueToFloat(lhs), valueToFloat(rhs)));
     throw std::runtime_error("Unsupported operand types for %");

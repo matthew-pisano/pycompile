@@ -4,7 +4,9 @@
 
 #include "pyruntime/objects/py_float.h"
 
-std::string PyFloat::toString() const { return std::to_string(raw); }
+#include <format>
+
+std::string PyFloat::toString() const { return std::format("{}", raw); }
 
 std::string PyFloat::typeName() const { return "float"; }
 

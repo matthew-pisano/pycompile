@@ -102,8 +102,8 @@ mlir::LogicalResult MakeFunctionLowering::matchAndRewrite(mlir::Operation* op, m
 
     // Get function pointer from symbol table
     const mlir::Value fnPtr = rewriter.create<mlir::LLVM::AddressOfOp>(loc, ptrType(ctx), fnName);
-    const mlir::Value namePtr =
-            getOrInsertStringConstant(rewriter, module, loc, makeFunc.getFnName().str(), makeFunc.getFnName());
+    const std::string globalName = "__pyir_str_fn_" + makeFunc.getFnName().str();
+    const mlir::Value namePtr = getOrInsertStringConstant(rewriter, module, loc, globalName, makeFunc.getFnName());
 
     mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, runtimeFn, mlir::ValueRange{namePtr, fnPtr});
 

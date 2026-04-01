@@ -95,14 +95,17 @@ mlir::LogicalResult MakeFunctionLowering::matchAndRewrite(mlir::Operation* op, m
     pyir::MakeFunction makeFunc = mlir::cast<pyir::MakeFunction>(op);
     const std::string fnName = makeFunc.getFnName().str();
 
-    // declare: extern Value* pyir_makeFunction(void* fn_ptr)
-    const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
+    // declare: extern Value* pyir_makeFunction(char* display_name, void* fn_ptr)
+    const mlir::LLVM::LLVMFunctionType fnType =
+            mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), ptrType(ctx)});
     mlir::LLVM::LLVMFuncOp runtimeFn = getOrInsertRuntimeFn(rewriter, module, "pyir_makeFunction", fnType);
 
     // Get function pointer from symbol table
     const mlir::Value fnPtr = rewriter.create<mlir::LLVM::AddressOfOp>(loc, ptrType(ctx), fnName);
+    const std::string globalName = "__pyir_str_fn_" + makeFunc.getDisplayName().str();
+    const mlir::Value namePtr = getOrInsertStringConstant(rewriter, module, loc, globalName, makeFunc.getDisplayName());
 
-    mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, runtimeFn, mlir::ValueRange{fnPtr});
+    mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, runtimeFn, mlir::ValueRange{namePtr, fnPtr});
 
     rewriter.replaceOp(op, call.getResult());
     return mlir::success();

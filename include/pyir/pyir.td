@@ -156,9 +156,9 @@ def PyIR_LoadConst : PyIR_Op<"load_const", [Pure]> {
 
 def PyIR_MakeFunction : PyIR_Op<"make_function", [Pure]> {
     let summary = "Wrap a function pointer into a callable Python object";
-    let arguments = (ins StrAttr:$fn_name);
+    let arguments = (ins StrAttr:$display_name, StrAttr:$fn_name);
     let results   = (outs ByteCodeObject_Type:$result);
-    let assemblyFormat = "$fn_name attr-dict";
+    let assemblyFormat = "$display_name `,` $fn_name attr-dict";
 }
 
 

@@ -77,7 +77,7 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             return meta.stack.push_back(meta.stack.at(meta.stack.size() - *copyIdx));
         }
         case PythonOpcode::MAKE_FUNCTION:
-            return makeFunctionCodegen(builder, ctx, loc, meta);
+            return makeFunctionCodegen(builder, ctx, loc, module.info.codeName, meta);
         case PythonOpcode::LOAD_GLOBAL:
             return loadGlobalCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::LOAD_FAST_BORROW:

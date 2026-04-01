@@ -18,7 +18,7 @@ void pyir_pushScope();
 
 void pyir_popScope();
 
-PyFunction* pyir_makeFunction(const std::string& fnName, void* fn_ptr);
+PyFunction* pyir_makeFunction(const char* fnName, void* fn_ptr);
 
 
 // call dispatch

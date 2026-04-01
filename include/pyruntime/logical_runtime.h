@@ -4,56 +4,58 @@
 
 #ifndef PYCOMPILE_LOGICAL_RUNTIME_H
 #define PYCOMPILE_LOGICAL_RUNTIME_H
-#include "runtime_value.h"
+#include <cstdint>
 
 extern "C" {
 
-int8_t pyir_isTruthy(const PyValue* val);
+struct PyObj;
+
+int8_t pyir_isTruthy(const PyObj* val);
 
 // arithmetic
-PyValue* pyir_add(const PyValue* lhs, const PyValue* rhs);
+PyObj* pyir_add(const PyObj* lhs, const PyObj* rhs);
 
-PyValue* pyir_sub(const PyValue* lhs, const PyValue* rhs);
+PyObj* pyir_sub(const PyObj* lhs, const PyObj* rhs);
 
-PyValue* pyir_mul(const PyValue* lhs, const PyValue* rhs);
+PyObj* pyir_mul(const PyObj* lhs, const PyObj* rhs);
 
-PyValue* pyir_div(const PyValue* lhs, const PyValue* rhs);
+PyObj* pyir_div(const PyObj* lhs, const PyObj* rhs);
 
-PyValue* pyir_floorDiv(const PyValue* lhs, const PyValue* rhs);
+PyObj* pyir_floorDiv(const PyObj* lhs, const PyObj* rhs);
 
-PyValue* pyir_exp(const PyValue* lhs, const PyValue* rhs);
+PyObj* pyir_exp(const PyObj* lhs, const PyObj* rhs);
 
-PyValue* pyir_mod(const PyValue* lhs, const PyValue* rhs);
+PyObj* pyir_mod(const PyObj* lhs, const PyObj* rhs);
 
 // index
-PyValue* pyir_idx(PyValue* obj, const PyValue* idx);
+PyObj* pyir_idx(PyObj* obj, const PyObj* idx);
 
 // comparison
-PyValue* pyir_eq(const PyValue* lhs, const PyValue* rhs);
+PyObj* pyir_eq(const PyObj* lhs, const PyObj* rhs);
 
-PyValue* pyir_ne(const PyValue* lhs, const PyValue* rhs);
+PyObj* pyir_ne(const PyObj* lhs, const PyObj* rhs);
 
-PyValue* pyir_lt(const PyValue* lhs, const PyValue* rhs);
+PyObj* pyir_lt(const PyObj* lhs, const PyObj* rhs);
 
-PyValue* pyir_le(const PyValue* lhs, const PyValue* rhs);
+PyObj* pyir_le(const PyObj* lhs, const PyObj* rhs);
 
-PyValue* pyir_gt(const PyValue* lhs, const PyValue* rhs);
+PyObj* pyir_gt(const PyObj* lhs, const PyObj* rhs);
 
-PyValue* pyir_ge(const PyValue* lhs, const PyValue* rhs);
+PyObj* pyir_ge(const PyObj* lhs, const PyObj* rhs);
 
 // unary operations
-PyValue* pyir_unaryNegative(const PyValue* val);
+PyObj* pyir_unaryNegative(const PyObj* val);
 
-PyValue* pyir_unaryNot(const PyValue* val);
+PyObj* pyir_unaryNot(const PyObj* val);
 
-PyValue* pyir_unaryInvert(const PyValue* val);
+PyObj* pyir_unaryInvert(const PyObj* val);
 
-PyValue* pyir_xor(const PyValue* lhs, const PyValue* rhs);
+PyObj* pyir_xor(const PyObj* lhs, const PyObj* rhs);
 
 // truthiness, used by conditional jumps
-PyValue* pyir_toBool(const PyValue* val);
+PyObj* pyir_toBool(const PyObj* val);
 
-PyValue* pyir_formatSimple(const PyValue* val);
+PyObj* pyir_formatSimple(const PyObj* val);
 }
 
 #endif // PYCOMPILE_LOGICAL_RUNTIME_H

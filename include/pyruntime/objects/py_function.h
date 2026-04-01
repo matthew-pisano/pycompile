@@ -19,6 +19,8 @@ struct PyFunction : PyObj {
 
     const std::unordered_map<std::string, PyMethod> attrs() const override;
 
+    std::string funcName() const;
+
     PyFunctionType data() const;
 
 private:

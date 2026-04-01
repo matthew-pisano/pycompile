@@ -14,4 +14,8 @@ bool PyMethod::isTruthy() const { return true; }
 
 const std::unordered_map<std::string, PyMethod> PyMethod::attrs() const { return {}; }
 
-PyFunctionType PyMethod::data() const { return fn; }
+PyObj* PyMethod::selfObj() const { return self; }
+
+std::string PyMethod::funcName() const { return fnName; }
+
+PyMethodType PyMethod::data() const { return fn; }

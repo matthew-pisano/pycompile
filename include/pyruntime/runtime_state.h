@@ -8,16 +8,16 @@
 #include <vector>
 
 #include "builtin_runtime.h"
-#include "runtime_value.h"
+#include "objects/py_function.h"
 
-const std::unordered_map<std::string, PyFunction> builtins = {
+const std::unordered_map<std::string, PyFunctionType> builtins = {
         {"print", pyir_builtinPrint}, {"len", pyir_builtinLen}, {"int", pyir_builtinInt},
         {"float", pyir_builtinFloat}, {"str", pyir_builtinStr}, {"bool", pyir_builtinBool},
         {"list", pyir_builtinList},
 };
 
-inline std::unordered_map<std::string, PyValue*> moduleScope;
-inline std::vector<std::unordered_map<std::string, PyValue*>> scopeStack;
+inline std::unordered_map<std::string, PyObj*> moduleScope;
+inline std::vector<std::unordered_map<std::string, PyObj*>> scopeStack;
 
 
 #endif // PYCOMPILE_RUNTIME_STATE_H

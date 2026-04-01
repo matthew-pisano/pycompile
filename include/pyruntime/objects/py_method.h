@@ -7,8 +7,10 @@
 #include "py_function.h"
 #include "py_object.h"
 
+using PyMethodType = PyObj* (*) (PyObj*, PyObj**, int64_t);
+
 struct PyMethod : PyObj {
-    explicit PyMethod(const std::string& fnName, PyObj* self, const PyFunctionType& func) :
+    explicit PyMethod(const std::string& fnName, PyObj* self, const PyMethodType& func) :
         fnName(fnName), self(self), fn(func) {}
 
     std::string toString() const override;
@@ -19,12 +21,16 @@ struct PyMethod : PyObj {
 
     const std::unordered_map<std::string, PyMethod> attrs() const override;
 
-    PyFunctionType data() const;
+    std::string funcName() const;
+
+    PyObj* selfObj() const;
+
+    PyMethodType data() const;
 
 private:
     std::string fnName;
     PyObj* self;
-    PyFunctionType fn;
+    PyMethodType fn;
 };
 
 #endif // PYCOMPILE_PY_METHOD_H

@@ -6,33 +6,33 @@
 #define PYCOMPILE_MEMORY_RUNTIME_H
 #include <cmath>
 
-#include "runtime_value.h"
-
 extern "C" {
 
-PyValue* pyir_loadFast(const char* name);
+struct PyObj;
 
-void pyir_storeFast(const char* name, PyValue* val);
+PyObj* pyir_loadFast(const char* name);
+
+void pyir_storeFast(const char* name, PyObj* val);
 
 // name resolution, returns a builtin Fn or None
-PyValue* pyir_loadName(const char* name);
+PyObj* pyir_loadName(const char* name);
 
 // name storage in addition to builtins
-void pyir_storeName(const char* name, PyValue* val);
+void pyir_storeName(const char* name, PyObj* val);
 
-PyValue* pyir_loadConstStr(const char* str);
+PyObj* pyir_loadConstStr(const char* str);
 
-PyValue* pyir_loadConstInt(int64_t val);
+PyObj* pyir_loadConstInt(int64_t val);
 
-PyValue* pyir_loadConstFloat(double_t val);
+PyObj* pyir_loadConstFloat(double_t val);
 
-PyValue* pyir_loadConstBool(int8_t val);
+PyObj* pyir_loadConstBool(int8_t val);
 
-PyValue* pyir_loadConstNone();
+PyObj* pyir_loadConstNone();
 
-PyValue* pyir_loadConstTuple(PyValue** items, int64_t count);
+PyObj* pyir_loadConstTuple(PyObj** items, int64_t count);
 
-PyValue* pyir_loadAttr(PyValue* obj, const char* name);
+PyObj* pyir_loadAttr(PyObj* obj, const char* name);
 }
 
 #endif // PYCOMPILE_MEMORY_RUNTIME_H

@@ -5,29 +5,30 @@
 #ifndef PYCOMPILE_FUNCTION_RUNTIME_H
 #define PYCOMPILE_FUNCTION_RUNTIME_H
 
-#include <unordered_map>
-
-
-#include "runtime_value.h"
+#include <cstdint>
+#include <string>
 
 extern "C" {
+
+struct PyObj;
+struct PyFunction;
 
 // scope management
 void pyir_pushScope();
 
 void pyir_popScope();
 
-PyValue* pyir_makeFunction(void* fn_ptr);
+PyFunction* pyir_makeFunction(const std::string& fnName, void* fn_ptr);
 
 
 // call dispatch
-PyValue* pyir_call(const PyValue* callee, PyValue** args, int64_t argc);
+PyObj* pyir_call(const PyObj* callee, PyObj** args, int64_t argc);
 
 // Stub for Python push null
-PyValue* pyir_pushNull();
+PyObj* pyir_pushNull();
 
 // Decrease reference counting for v
-void pyir_decref(PyValue* v);
+void pyir_decref(PyObj* v);
 }
 
 #endif // PYCOMPILE_FUNCTION_RUNTIME_H

@@ -27,6 +27,8 @@ struct PyList : PyObj {
 
     std::vector<PyObj*> data() const;
 
+    std::vector<PyObj*>& data();
+
     bool operator==(const PyList& other) const;
 
 private:

@@ -19,17 +19,17 @@ struct PyList : PyObj {
 
     PyNone* extend(PyObj** args, int64_t argc);
 
-    PyInt* len() const override;
+    [[nodiscard]] PyInt* len() const override;
 
-    std::string toString() const override;
+    [[nodiscard]] std::string toString() const override;
 
-    std::string typeName() const override;
+    [[nodiscard]] std::string typeName() const override;
 
-    bool isTruthy() const override;
+    [[nodiscard]] bool isTruthy() const override;
 
-    const std::unordered_map<std::string, PyMethod> attrs() const override;
+    [[nodiscard]] const std::unordered_map<std::string, PyMethod> attrs() const override;
 
-    std::vector<PyObj*> data() const;
+    [[nodiscard]] std::vector<PyObj*> data() const;
 
     std::vector<PyObj*>& data();
 

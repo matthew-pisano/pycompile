@@ -5,7 +5,6 @@
 #ifndef PYCOMPILE_FUNCTION_RUNTIME_H
 #define PYCOMPILE_FUNCTION_RUNTIME_H
 
-#include <cstdint>
 #include <string>
 
 extern "C" {

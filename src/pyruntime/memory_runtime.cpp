@@ -8,7 +8,6 @@
 #include <stdexcept>
 #include <unordered_map>
 
-#include "pyruntime/function_runtime.h"
 #include "pyruntime/objects/py_bool.h"
 #include "pyruntime/objects/py_float.h"
 #include "pyruntime/objects/py_int.h"

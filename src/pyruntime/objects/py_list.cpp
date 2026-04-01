@@ -25,7 +25,7 @@ PyNone* PyList::extend(PyObj** args, const int64_t argc) {
     return new PyNone();
 }
 
-PyInt* PyList::len() const { return new PyInt(raw.size()); }
+PyInt* PyList::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
 
 std::string PyList::toString() const {
     if (raw.empty())

@@ -4,28 +4,30 @@
 
 #ifndef PYCOMPILE_PY_METHOD_H
 #define PYCOMPILE_PY_METHOD_H
+#include <utility>
+
 
 #include "py_object.h"
 
 using PyMethodType = PyObj* (*) (PyObj*, PyObj**, int64_t);
 
 struct PyMethod : PyObj {
-    explicit PyMethod(const std::string& fnName, PyObj* self, const PyMethodType& func) :
-        fnName(fnName), self(self), fn(func) {}
+    explicit PyMethod(std::string fnName, PyObj* self, const PyMethodType& func) :
+        fnName(std::move(fnName)), self(self), fn(func) {}
 
-    std::string toString() const override;
+    [[nodiscard]] std::string toString() const override;
 
-    std::string typeName() const override;
+    [[nodiscard]] std::string typeName() const override;
 
-    bool isTruthy() const override;
+    [[nodiscard]] bool isTruthy() const override;
 
-    const std::unordered_map<std::string, PyMethod> attrs() const override;
+    [[nodiscard]] const std::unordered_map<std::string, PyMethod> attrs() const override;
 
-    std::string funcName() const;
+    [[nodiscard]] std::string funcName() const;
 
-    PyObj* selfObj() const;
+    [[nodiscard]] PyObj* selfObj() const;
 
-    PyMethodType data() const;
+    [[nodiscard]] PyMethodType data() const;
 
 private:
     std::string fnName;

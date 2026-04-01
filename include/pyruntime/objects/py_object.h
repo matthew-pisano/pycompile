@@ -29,17 +29,17 @@ struct PyObj {
 
     virtual PyMethod* getAttr(const char* attr);
 
-    virtual PyStr* name() const;
+    [[nodiscard]] virtual PyStr* name() const;
 
-    virtual PyInt* len() const;
+    [[nodiscard]] virtual PyInt* len() const;
 
-    virtual PyStr* str() const;
+    [[nodiscard]] virtual PyStr* str() const;
 
-    virtual std::string toString() const = 0;
+    [[nodiscard]] virtual std::string toString() const = 0;
 
-    virtual std::string typeName() const = 0;
+    [[nodiscard]] virtual std::string typeName() const = 0;
 
-    virtual bool isTruthy() const = 0;
+    [[nodiscard]] virtual bool isTruthy() const = 0;
 
     virtual const std::unordered_map<std::string, PyMethod> attrs() const = 0;
 

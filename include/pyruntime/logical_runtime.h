@@ -4,56 +4,62 @@
 
 #ifndef PYCOMPILE_LOGICAL_RUNTIME_H
 #define PYCOMPILE_LOGICAL_RUNTIME_H
-#include "pyir_value.h"
+#include <cstdint>
 
 extern "C" {
 
-int8_t pyir_isTruthy(const Value* val);
+struct PyBool;
+struct PyStr;
+struct PyFloat;
+struct PyObj;
+struct PyInt;
+
+int8_t pyir_isTruthy(const PyObj* val);
 
 // arithmetic
-Value* pyir_add(const Value* lhs, const Value* rhs);
+PyObj* pyir_add(const PyObj* lhs, const PyObj* rhs);
 
-Value* pyir_sub(const Value* lhs, const Value* rhs);
+PyObj* pyir_sub(const PyObj* lhs, const PyObj* rhs);
 
-Value* pyir_mul(const Value* lhs, const Value* rhs);
+PyObj* pyir_mul(const PyObj* lhs, const PyObj* rhs);
 
-Value* pyir_div(const Value* lhs, const Value* rhs);
+PyFloat* pyir_div(const PyObj* lhs, const PyObj* rhs);
 
-Value* pyir_floorDiv(const Value* lhs, const Value* rhs);
+PyObj* pyir_floorDiv(const PyObj* lhs, const PyObj* rhs);
 
-Value* pyir_exp(const Value* lhs, const Value* rhs);
+PyObj* pyir_exp(const PyObj* lhs, const PyObj* rhs);
 
-Value* pyir_mod(const Value* lhs, const Value* rhs);
+PyObj* pyir_mod(const PyObj* lhs, const PyObj* rhs);
+
+PyBool* pyir_xor(const PyObj* lhs, const PyObj* rhs);
 
 // index
-Value* pyir_idx(const Value* obj, const Value* idx);
+PyObj* pyir_idx(const PyObj* obj, const PyObj* idx);
 
 // comparison
-Value* pyir_eq(const Value* lhs, const Value* rhs);
+PyBool* pyir_eq(const PyObj* lhs, const PyObj* rhs);
 
-Value* pyir_ne(const Value* lhs, const Value* rhs);
+PyBool* pyir_ne(const PyObj* lhs, const PyObj* rhs);
 
-Value* pyir_lt(const Value* lhs, const Value* rhs);
+PyBool* pyir_lt(const PyObj* lhs, const PyObj* rhs);
 
-Value* pyir_le(const Value* lhs, const Value* rhs);
+PyBool* pyir_le(const PyObj* lhs, const PyObj* rhs);
 
-Value* pyir_gt(const Value* lhs, const Value* rhs);
+PyBool* pyir_gt(const PyObj* lhs, const PyObj* rhs);
 
-Value* pyir_ge(const Value* lhs, const Value* rhs);
+PyBool* pyir_ge(const PyObj* lhs, const PyObj* rhs);
 
 // unary operations
-Value* pyir_unaryNegative(const Value* val);
+PyObj* pyir_unaryNegative(const PyObj* val);
 
-Value* pyir_unaryNot(const Value* val);
+PyObj* pyir_unaryNot(const PyObj* val);
 
-Value* pyir_unaryInvert(const Value* val);
-
-Value* pyir_xor(const Value* lhs, const Value* rhs);
+PyInt* pyir_unaryInvert(const PyObj* val);
 
 // truthiness, used by conditional jumps
-Value* pyir_toBool(const Value* val);
+PyBool* pyir_toBool(const PyObj* val);
 
-Value* pyir_formatSimple(const Value* val);
+PyStr* pyir_formatSimple(const PyObj* val);
 }
 
 #endif // PYCOMPILE_LOGICAL_RUNTIME_H

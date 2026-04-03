@@ -5,15 +5,16 @@
 #ifndef PYCOMPILE_RUNTIME_UTIL_H
 #define PYCOMPILE_RUNTIME_UTIL_H
 #include <cmath>
+#include <string>
+#include <vector>
 
-#include "pyir_value.h"
 
-double_t valueToFloat(const Value* val);
+struct PyObj;
 
-std::string valueToString(const Value* val, bool quoteStrings = false);
+double_t valueToFloat(const PyObj* val);
 
-bool valueToBool(const Value* val);
+std::string valueToString(const PyObj* val, bool quoteStrings = false);
 
-Value::List valueToList(const Value* val);
+std::vector<PyObj*> valueToList(const PyObj* val);
 
 #endif // PYCOMPILE_RUNTIME_UTIL_H

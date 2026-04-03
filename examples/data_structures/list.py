@@ -18,6 +18,8 @@ print("List Extend:", a)
 
 print("List Index:", [1, 2][0])
 
+print("List Membership:", 0 in [1, 2])
+
 print("List of Strings:", list("Hello"))
 
 print("Bool Lists:", bool([]), bool([1]))

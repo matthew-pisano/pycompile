@@ -5,37 +5,29 @@
 #ifndef PYCOMPILE_FUNCTION_RUNTIME_H
 #define PYCOMPILE_FUNCTION_RUNTIME_H
 
-#include <unordered_map>
-
-
-#include "pyir_value.h"
+#include <string>
 
 extern "C" {
 
-struct PyIR_List {
-    static const std::unordered_map<std::string, Value::BoundMethod::SelfFunction> attrs;
-
-    static Value* append(Value* self, Value** args, int64_t argc);
-
-    static Value* extend(Value* self, Value** args, int64_t argc);
-};
+struct PyObj;
+struct PyFunction;
 
 // scope management
 void pyir_pushScope();
 
 void pyir_popScope();
 
-Value* pyir_makeFunction(void* fn_ptr);
+PyFunction* pyir_makeFunction(const char* fnName, void* fn_ptr);
 
 
 // call dispatch
-Value* pyir_call(const Value* callee, Value** args, int64_t argc);
+PyObj* pyir_call(const PyObj* callee, PyObj** args, int64_t argc);
 
 // Stub for Python push null
-Value* pyir_pushNull();
+PyObj* pyir_pushNull();
 
 // Decrease reference counting for v
-void pyir_decref(Value* v);
+void pyir_decref(PyObj* v);
 }
 
 #endif // PYCOMPILE_FUNCTION_RUNTIME_H

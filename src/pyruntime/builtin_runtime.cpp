@@ -7,91 +7,88 @@
 #include <cmath>
 #include <stdexcept>
 
-#include "pyruntime/pyir_value.h"
+#include "pyruntime/objects/py_bool.h"
+#include "pyruntime/objects/py_float.h"
+#include "pyruntime/objects/py_int.h"
+#include "pyruntime/objects/py_list.h"
+#include "pyruntime/objects/py_none.h"
+#include "pyruntime/objects/py_str.h"
 #include "pyruntime/runtime_util.h"
 
 
-Value* pyir_builtinPrint(Value** args, const int64_t argc) {
+PyObj* pyir_builtinPrint(PyObj** args, const int64_t argc) {
     for (int64_t i = 0; i < argc; i++) {
         if (i > 0)
             printf(" ");
         printf("%s", valueToString(args[i]).c_str());
     }
     printf("\n");
-    return new Value(NoneType{});
+    return new PyNone();
 }
 
 
-Value* pyir_builtinLen(Value** args, const int64_t argc) {
+PyObj* pyir_builtinLen(PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("Too many arguments for len()");
-    if (args[0]->isStr())
-        return new Value(static_cast<int64_t>(std::get<std::string>(args[0]->data).size()));
-    if (args[0]->isList())
-        return new Value(static_cast<int64_t>(std::get<Value::List>(args[0]->data).size()));
+    if (const PyStr* str = dynamic_cast<PyStr*>(args[0]))
+        return str->len();
+    if (const PyStr* list = dynamic_cast<PyStr*>(args[0]))
+        return list->len();
     throw std::runtime_error("Object has no len()");
 }
 
 
-Value* pyir_builtinInt(Value** args, const int64_t argc) {
+PyObj* pyir_builtinInt(PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("Too many arguments for int()");
-    return std::visit(
-            []<typename T>(const T& x) -> Value* {
-                using ValType = std::decay_t<T>;
-                if constexpr (std::is_same_v<ValType, int64_t>)
-                    return new Value(x);
-                if constexpr (std::is_same_v<ValType, double_t>)
-                    return new Value(static_cast<int64_t>(x));
-                if constexpr (std::is_same_v<ValType, bool>)
-                    return new Value(static_cast<int64_t>(x));
-                if constexpr (std::is_same_v<ValType, std::string>)
-                    return new Value(static_cast<int64_t>(std::stoll(x)));
-                throw std::runtime_error("Cannot convert to int()");
-            },
-            args[0]->data);
+
+    if (PyInt* i = dynamic_cast<PyInt*>(args[0]))
+        return i;
+    if (const PyFloat* f = dynamic_cast<PyFloat*>(args[0]))
+        return new PyInt(static_cast<int64_t>(f->data()));
+    if (const PyBool* b = dynamic_cast<PyBool*>(args[0]))
+        return new PyInt(b->data());
+    if (const PyStr* s = dynamic_cast<PyStr*>(args[0]))
+        return new PyInt(std::stoll(s->data()));
+    throw std::runtime_error("Cannot convert to int()");
 }
 
 
-Value* pyir_builtinFloat(Value** args, const int64_t argc) {
+PyObj* pyir_builtinFloat(PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("Too many arguments for float()");
-    return std::visit(
-            []<typename T>(const T& x) -> Value* {
-                using ValType = std::decay_t<T>;
-                if constexpr (std::is_same_v<ValType, double_t>)
-                    return new Value(x);
-                if constexpr (std::is_same_v<ValType, int64_t>)
-                    return new Value(static_cast<double_t>(x));
-                if constexpr (std::is_same_v<ValType, bool>)
-                    return new Value(static_cast<double_t>(x));
-                if constexpr (std::is_same_v<ValType, std::string>)
-                    return new Value(std::stod(x));
-                throw std::runtime_error("cannot convert to float()");
-            },
-            args[0]->data);
+
+    if (const PyInt* i = dynamic_cast<PyInt*>(args[0]))
+        return new PyFloat(static_cast<double_t>(i->data()));
+    if (PyFloat* f = dynamic_cast<PyFloat*>(args[0]))
+        return f;
+    if (const PyBool* b = dynamic_cast<PyBool*>(args[0]))
+        return new PyFloat(b->data());
+    if (const PyStr* s = dynamic_cast<PyStr*>(args[0]))
+        return new PyFloat(std::stod(s->data()));
+    throw std::runtime_error("cannot convert to float()");
 }
 
 
-Value* pyir_builtinStr(Value** args, const int64_t argc) {
+PyObj* pyir_builtinStr(PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("Too many arguments for str()");
-    return new Value(valueToString(args[0]));
+    return new PyStr(valueToString(args[0]));
 }
 
 
-Value* pyir_builtinBool(Value** args, const int64_t argc) {
+PyObj* pyir_builtinBool(PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("Too many arguments for bool()");
-    return new Value(valueToBool(args[0]));
+    return new PyBool(args[0]->isTruthy());
 }
 
 
-Value* pyir_builtinList(Value** args, const int64_t argc) {
+PyObj* pyir_builtinList(PyObj** args, const int64_t argc) {
     if (argc > 1)
         throw std::runtime_error("Too many arguments for list()");
     if (argc == 0)
-        return new Value(Value::List{});
+        return new PyList({});
 
-    return new Value(valueToList(args[0]));
+    return new PyList(valueToList(args[0]));
 }

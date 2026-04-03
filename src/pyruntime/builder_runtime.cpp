@@ -5,48 +5,51 @@
 #include "pyruntime/builder_runtime.h"
 
 #include <stdexcept>
-#include <vector>
+
+#include "pyruntime/objects/py_list.h"
+#include "pyruntime/objects/py_str.h"
 
 
-Value* pyir_buildString(Value** parts, const int64_t count) {
+PyObj* pyir_buildString(PyObj** parts, const int64_t count) {
     std::string result;
     for (int64_t i = 0; i < count; i++) {
-        if (!parts[i]->isStr())
+        const PyStr* pyStr = dynamic_cast<PyStr*>(parts[i]);
+        if (!pyStr)
             throw std::runtime_error("BUILD_STRING: expected string part");
-        result += std::get<std::string>(parts[i]->data);
+        result += pyStr->data();
     }
-    return new Value(result);
+    return new PyStr(result);
 }
 
 
-Value* pyir_buildList(Value** parts, const int64_t count) {
-    Value::List result;
+PyObj* pyir_buildList(PyObj** parts, const int64_t count) {
+    std::vector<PyObj*> result;
     for (int64_t i = 0; i < count; i++) {
         parts[i]->incref();
         result.push_back(parts[i]);
     }
-    return new Value(result);
+    return new PyList(result);
 }
 
 
-void pyir_listExtend(Value* list, const Value* items) {
-    if (!list->isList() || !items->isList())
+void pyir_listExtend(PyObj* list, const PyObj* items) {
+    PyList* dest = dynamic_cast<PyList*>(list);
+    const PyList* src = dynamic_cast<const PyList*>(items);
+    if (!dest || !src)
         throw std::runtime_error("Can only extend list types with list types");
 
-    Value::List& dest = std::get<Value::List>(list->data);
-    const Value::List& src = std::get<Value::List>(items->data);
-    for (Value* v : src) {
+    for (PyObj* v : src->data()) {
         v->incref();
-        dest.push_back(v);
+        dest->data().push_back(v);
     }
 }
 
 
-void pyir_listAppend(Value* list, Value* item) {
-    if (!list->isList())
+void pyir_listAppend(PyObj* list, PyObj* item) {
+    PyList* dest = dynamic_cast<PyList*>(list);
+    if (!dest)
         throw std::runtime_error("Can only append to list types");
 
-    Value::List& dest = std::get<Value::List>(list->data);
     item->incref();
-    dest.push_back(item);
+    dest->data().push_back(item);
 }

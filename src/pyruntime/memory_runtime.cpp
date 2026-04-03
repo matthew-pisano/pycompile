@@ -8,15 +8,20 @@
 #include <stdexcept>
 #include <unordered_map>
 
-#include "pyruntime/function_runtime.h"
+#include "pyruntime/objects/py_bool.h"
+#include "pyruntime/objects/py_float.h"
+#include "pyruntime/objects/py_int.h"
+#include "pyruntime/objects/py_list.h"
+#include "pyruntime/objects/py_none.h"
+#include "pyruntime/objects/py_str.h"
 #include "pyruntime/runtime_state.h"
 
 
-Value* pyir_loadFast(const char* name) {
+PyObj* pyir_loadFast(const char* name) {
     if (scopeStack.empty())
         throw std::runtime_error(std::string("No active scope to load '") + name + "'");
 
-    const std::unordered_map<std::string, Value*>& locals = scopeStack.back();
+    const std::unordered_map<std::string, PyObj*>& locals = scopeStack.back();
 
     const auto it = locals.find(name);
     if (it == locals.end())
@@ -26,17 +31,17 @@ Value* pyir_loadFast(const char* name) {
 }
 
 
-void pyir_storeFast(const char* name, Value* val) {
+void pyir_storeFast(const char* name, PyObj* val) {
     if (scopeStack.empty())
         throw std::runtime_error(std::string("No active scope to store '") + name + "'");
     scopeStack.back()[name] = val;
 }
 
 
-Value* pyir_loadName(const char* name) {
+PyObj* pyir_loadName(const char* name) {
     // Check for builtins
     if (const auto it = builtins.find(name); it != builtins.end())
-        return new Value(it->second);
+        return new PyFunction(it->first, it->second);
     // Check for names in module scope
     if (const auto it = moduleScope.find(name); it != moduleScope.end()) {
         it->second->incref();
@@ -46,7 +51,7 @@ Value* pyir_loadName(const char* name) {
 }
 
 
-void pyir_storeName(const char* name, Value* val) {
+void pyir_storeName(const char* name, PyObj* val) {
     if (const auto it = moduleScope.find(name); it != moduleScope.end())
         it->second->decref(); // Release old value
     val->incref();
@@ -54,36 +59,27 @@ void pyir_storeName(const char* name, Value* val) {
 }
 
 
-Value* pyir_loadConstStr(const char* str) { return new Value(std::string(str)); }
+PyObj* pyir_loadConstStr(const char* str) { return new PyStr(std::string(str)); }
 
 
-Value* pyir_loadConstInt(const int64_t val) { return new Value(val); }
+PyObj* pyir_loadConstInt(const int64_t val) { return new PyInt(val); }
 
 
-Value* pyir_loadConstFloat(const double_t val) { return new Value(val); }
+PyObj* pyir_loadConstFloat(const double_t val) { return new PyFloat(val); }
 
 
-Value* pyir_loadConstBool(const int8_t val) { return new Value(val == 1); }
+PyObj* pyir_loadConstBool(const int8_t val) { return new PyBool(val == 1); }
 
 
-Value* pyir_loadConstNone() { return new Value(NoneType{}); }
+PyObj* pyir_loadConstNone() { return new PyNone(); }
 
 
-Value* pyir_loadConstTuple(Value** items, const int64_t count) {
-    std::vector<Value*> result;
+PyObj* pyir_loadConstTuple(PyObj** items, const int64_t count) {
+    std::vector<PyObj*> result;
     result.reserve(count);
     for (int64_t i = 0; i < count; i++)
         result.push_back(items[i]);
-    return new Value(result);
+    return new PyList(result);
 }
 
-Value* pyir_loadAttr(Value* obj, const char* name) {
-    if (obj->isList()) {
-        const auto it = PyIR_List::attrs.find(name);
-        if (it == PyIR_List::attrs.end())
-            throw std::runtime_error(std::string("list has no attribute '") + name + "'");
-        return new Value(Value::BoundMethod{obj, it->second});
-    }
-
-    throw std::runtime_error(std::format("Object has no attribute '") + name + "'");
-}
+PyObj* pyir_loadAttr(PyObj* obj, const char* name) { return obj->getAttr(name); }

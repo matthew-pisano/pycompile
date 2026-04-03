@@ -101,6 +101,15 @@ add_library(stdpyir STATIC
         src/pyruntime/builtin_runtime.cpp
         src/pyruntime/runtime_util.cpp
         src/pyruntime/function_runtime.cpp
+        src/pyruntime/objects/py_list.cpp
+        src/pyruntime/objects/py_str.cpp
+        src/pyruntime/objects/py_int.cpp
+        src/pyruntime/objects/py_float.cpp
+        src/pyruntime/objects/py_bool.cpp
+        src/pyruntime/objects/py_object.cpp
+        src/pyruntime/objects/py_none.cpp
+        src/pyruntime/objects/py_function.cpp
+        src/pyruntime/objects/py_method.cpp
 )
 set_target_properties(stdpyir PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"

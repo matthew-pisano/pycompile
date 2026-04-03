@@ -4,18 +4,20 @@
 
 #ifndef PYCOMPILE_BUILDER_RUNTIME_H
 #define PYCOMPILE_BUILDER_RUNTIME_H
+#include <cstdint>
 
-#include "pyir_value.h"
 
 extern "C" {
 
-Value* pyir_buildString(Value** parts, int64_t count);
+struct PyObj;
 
-Value* pyir_buildList(Value** parts, int64_t count);
+PyObj* pyir_buildString(PyObj** parts, int64_t count);
 
-void pyir_listExtend(Value* list, const Value* items);
+PyObj* pyir_buildList(PyObj** parts, int64_t count);
 
-void pyir_listAppend(Value* list, Value* item);
+void pyir_listExtend(PyObj* list, const PyObj* items);
+
+void pyir_listAppend(PyObj* list, PyObj* item);
 }
 
 #endif // PYCOMPILE_BUILDER_RUNTIME_H

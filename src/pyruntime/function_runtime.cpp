@@ -6,30 +6,7 @@
 
 #include <stdexcept>
 
-#include "pyruntime/builder_runtime.h"
 #include "pyruntime/runtime_state.h"
-
-
-const std::unordered_map<std::string, Value::BoundMethod::SelfFunction> PyIR_List::attrs = {
-        {"append", append},
-        {"extend", extend},
-};
-
-
-Value* PyIR_List::append(Value* self, Value** args, const int64_t argc) {
-    if (argc != 1)
-        throw std::runtime_error("append() takes exactly one argument");
-    pyir_listAppend(self, args[0]);
-    return new Value(NoneType{});
-}
-
-Value* PyIR_List::extend(Value* self, Value** args, const int64_t argc) {
-    if (argc != 1)
-        throw std::runtime_error("extend() takes exactly one argument");
-    pyir_listExtend(self, args[0]);
-    return new Value(NoneType{});
-}
-
 
 void pyir_pushScope() { scopeStack.emplace_back(); }
 
@@ -40,27 +17,28 @@ void pyir_popScope() {
 }
 
 
-Value* pyir_makeFunction(void* fn_ptr) { return new Value(reinterpret_cast<Value::Function>(fn_ptr)); }
+PyFunction* pyir_makeFunction(const char* fnName, void* fn_ptr) {
+    return new PyFunction(fnName, reinterpret_cast<PyFunctionType>(fn_ptr));
+}
 
 
-Value* pyir_call(const Value* callee, Value** args, const int64_t argc) {
-    if (callee->isFn()) {
-        ValueRef result(std::get<Value::Function>(callee->data)(args, argc));
+PyObj* pyir_call(const PyObj* callee, PyObj** args, const int64_t argc) {
+    if (const PyFunction* func = dynamic_cast<const PyFunction*>(callee)) {
+        PyObjRef result(func->data()(args, argc));
         return result.release();
     }
-    if (callee->isBoundMethod()) {
-        const Value::BoundMethod& bm = std::get<Value::BoundMethod>(callee->data);
-        ValueRef result(bm.fn(bm.self, args, argc));
+    if (const PyMethod* method = dynamic_cast<const PyMethod*>(callee)) {
+        PyObjRef result(method->data()(method->selfObj(), args, argc));
         return result.release();
     }
     throw std::runtime_error("Object is not callable");
 }
 
 
-void pyir_decref(Value* v) {
+void pyir_decref(PyObj* v) {
     if (v)
         v->decref();
 }
 
 
-Value* pyir_pushNull() { return nullptr; }
+PyObj* pyir_pushNull() { return nullptr; }

@@ -42,6 +42,8 @@ std::string PySet::toString() const {
     std::string result = "{";
     for (const PyObj* obj : raw)
         result += valueToString(obj, true) + ", ";
+    // Remove ', ' from end
+    result.pop_back();
     result.pop_back();
     result += "}";
     return result;

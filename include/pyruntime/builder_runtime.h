@@ -21,9 +21,9 @@ void pyir_listAppend(PyObj* list, PyObj* item);
 
 PyObj* pyir_buildSet(PyObj** parts, int64_t count);
 
-void pyir_setUpdate(PyObj* list, const PyObj* items);
+void pyir_setUpdate(PyObj* set, const PyObj* items);
 
-void pyir_setAdd(PyObj* list, PyObj* item);
+void pyir_setAdd(PyObj* set, PyObj* item);
 }
 
 #endif // PYCOMPILE_BUILDER_RUNTIME_H

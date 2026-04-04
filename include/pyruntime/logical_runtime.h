@@ -31,7 +31,7 @@ PyObj* pyir_exp(const PyObj* lhs, const PyObj* rhs);
 
 PyObj* pyir_mod(const PyObj* lhs, const PyObj* rhs);
 
-PyBool* pyir_xor(const PyObj* lhs, const PyObj* rhs);
+PyObj* pyir_xor(const PyObj* lhs, const PyObj* rhs);
 
 PyObj* pyir_pipe(const PyObj* lhs, const PyObj* rhs);
 

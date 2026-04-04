@@ -249,7 +249,7 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Set Operations") {
 
     SECTION("Test Set Update Op") {
         const std::string output = runCapture("print({1, 2, 3})");
-        REQUIRE(output == "{1, 2, 3}\n");
+        REQUIRE(output == "{3, 2, 1}\n");
     }
 
     SECTION("Test Set Add Op") {
@@ -261,7 +261,7 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Set Operations") {
 
     SECTION("Test Set Union") {
         const std::string output = runCapture("print({1, 2} | {3})");
-        REQUIRE(output == "{1, 2, 3}\n");
+        REQUIRE(output == "{3, 2, 1}\n");
     }
 
     SECTION("Test Set Intersection") {

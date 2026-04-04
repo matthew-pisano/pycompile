@@ -289,12 +289,12 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Set Operations") {
     }
 
     SECTION("Test Set Add") {
-        const std::string output = runCapture("{1, 2}.add(3)");
+        const std::string output = runCapture("a = {1, 2}\na.add(3)\nprint(a)");
         REQUIRE(output == "{1, 2, 3}\n");
     }
 
     SECTION("Test Set Update") {
-        const std::string output = runCapture("{1, 2}.update({3})");
+        const std::string output = runCapture("a = {1, 2}\na.update({3})\nprint(a)");
         REQUIRE(output == "{1, 2, 3}\n");
     }
 }

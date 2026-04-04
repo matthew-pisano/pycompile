@@ -14,14 +14,14 @@
 PyObj* PySet::add(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("add() takes exactly one argument");
-    pyir_listAppend(self, args[0]);
+    pyir_setAdd(self, args[0]);
     return new PyNone();
 }
 
 PyObj* PySet::update(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("update() takes exactly one argument");
-    pyir_listExtend(self, args[0]);
+    pyir_setUpdate(self, args[0]);
     return new PyNone();
 }
 

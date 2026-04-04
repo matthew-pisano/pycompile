@@ -36,7 +36,36 @@ std::vector<PyObj*> valueToList(const PyObj* val) {
             result.push_back(new PyStr(c));
         return result;
     }
+    if (const PySet* pySet = dynamic_cast<const PySet*>(val)) {
+        std::vector<PyObj*> result;
+        for (PyObj* obj : pySet->data()) {
+            obj->incref();
+            result.push_back(obj);
+        }
+        return result;
+    }
     if (const PyList* pyList = dynamic_cast<const PyList*>(val))
         return pyList->data();
     throw std::runtime_error(std::format("Cannot convert type '{}' to list", val->typeName()));
+}
+
+
+std::unordered_set<PyObj*> valueToSet(const PyObj* val) {
+    if (const PyStr* pyString = dynamic_cast<const PyStr*>(val)) {
+        std::unordered_set<PyObj*> result;
+        for (const char c : pyString->data())
+            result.insert(new PyStr(c));
+        return result;
+    }
+    if (const PyList* pyList = dynamic_cast<const PyList*>(val)) {
+        std::unordered_set<PyObj*> result;
+        for (PyObj* obj : pyList->data()) {
+            obj->incref();
+            result.insert(obj);
+        }
+        return result;
+    }
+    if (const PySet* pySet = dynamic_cast<const PySet*>(val))
+        return pySet->data();
+    throw std::runtime_error(std::format("Cannot convert type '{}' to set", val->typeName()));
 }

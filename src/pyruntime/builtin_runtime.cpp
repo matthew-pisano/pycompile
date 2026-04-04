@@ -92,3 +92,13 @@ PyObj* pyir_builtinList(PyObj** args, const int64_t argc) {
 
     return new PyList(valueToList(args[0]));
 }
+
+
+PyObj* pyir_builtinSet(PyObj** args, const int64_t argc) {
+    if (argc > 1)
+        throw std::runtime_error("Too many arguments for set()");
+    if (argc == 0)
+        return new PySet({});
+
+    return new PySet(valueToSet(args[0]));
+}

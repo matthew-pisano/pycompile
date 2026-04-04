@@ -13,7 +13,7 @@
 const std::unordered_map<std::string, PyFunctionType> builtins = {
         {"print", pyir_builtinPrint}, {"len", pyir_builtinLen}, {"int", pyir_builtinInt},
         {"float", pyir_builtinFloat}, {"str", pyir_builtinStr}, {"bool", pyir_builtinBool},
-        {"list", pyir_builtinList},
+        {"list", pyir_builtinList},   {"set", pyir_builtinSet},
 };
 
 inline std::unordered_map<std::string, PyObj*> moduleScope;

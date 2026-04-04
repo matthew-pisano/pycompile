@@ -239,7 +239,7 @@ TEST_CASE_METHOD(JITFixture, "Test JIT List Operations") {
 TEST_CASE_METHOD(JITFixture, "Test JIT Set Operations") {
     SECTION("Test Build Set") {
         const std::string output = runCapture("print(set())");
-        REQUIRE(output == "[]\n");
+        REQUIRE(output == "{}\n");
     }
 
     SECTION("Test Set Extend Op") {

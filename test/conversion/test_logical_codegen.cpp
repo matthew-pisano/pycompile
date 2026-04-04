@@ -278,16 +278,8 @@ TEST_CASE_METHOD(MLIRFixture, "Test Comparators MLIR") {
 }
 
 
-TEST_CASE_METHOD(MLIRFixture, "Test List Operators MLIR") {
-    SECTION("Test List Addition") {
-        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = [1, 2]\nb = [3]\nc = a + b");
-        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 9));
-        REQUIRE(binaryOp);
-        REQUIRE(binaryOp.getOp() == "+");
-    }
-
-    SECTION("Test List Index") {
+TEST_CASE_METHOD(MLIRFixture, "Test Container Operators MLIR") {
+    SECTION("Test Index") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = [1, 2]\nb = a[0]");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
         pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
@@ -295,8 +287,24 @@ TEST_CASE_METHOD(MLIRFixture, "Test List Operators MLIR") {
         REQUIRE(binaryOp.getOp() == "[]");
     }
 
-    SECTION("Test List Membership") {
+    SECTION("Test Membership") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("1 in [1, 2]");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+        pyir::ContainsOp containsOp = mlir::dyn_cast<pyir::ContainsOp>(getOp(fn, 2));
+        REQUIRE(containsOp);
+        REQUIRE(containsOp.getOp() == "in");
+    }
+
+    SECTION("Test Union") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("{1} | {2}");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+        pyir::ContainsOp containsOp = mlir::dyn_cast<pyir::ContainsOp>(getOp(fn, 2));
+        REQUIRE(containsOp);
+        REQUIRE(containsOp.getOp() == "in");
+    }
+
+    SECTION("Test Intersection") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("{1} & {2}");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
         pyir::ContainsOp containsOp = mlir::dyn_cast<pyir::ContainsOp>(getOp(fn, 2));
         REQUIRE(containsOp);

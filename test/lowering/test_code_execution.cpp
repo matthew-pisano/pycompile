@@ -110,6 +110,7 @@ struct JITFixture {
         addSymbol("pyir_loadConstBool", reinterpret_cast<void*>(pyir_loadConstBool));
         addSymbol("pyir_loadConstNone", reinterpret_cast<void*>(pyir_loadConstNone));
         addSymbol("pyir_loadConstTuple", reinterpret_cast<void*>(pyir_loadConstTuple));
+        addSymbol("pyir_loadAttr", reinterpret_cast<void*>(pyir_loadAttr));
         addSymbol("pyir_add", reinterpret_cast<void*>(pyir_add));
         addSymbol("pyir_sub", reinterpret_cast<void*>(pyir_sub));
         addSymbol("pyir_mul", reinterpret_cast<void*>(pyir_mul));

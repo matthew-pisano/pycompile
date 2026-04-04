@@ -32,7 +32,7 @@ PyObj* pyir_builtinLen(PyObj** args, const int64_t argc) {
         throw std::runtime_error("Too many arguments for len()");
     if (const PyStr* str = dynamic_cast<PyStr*>(args[0]))
         return str->len();
-    if (const PyStr* list = dynamic_cast<PyStr*>(args[0]))
+    if (const PyList* list = dynamic_cast<PyList*>(args[0]))
         return list->len();
     throw std::runtime_error("Object has no len()");
 }

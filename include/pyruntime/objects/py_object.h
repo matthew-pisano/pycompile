@@ -41,7 +41,7 @@ struct PyObj {
 
     [[nodiscard]] virtual bool isTruthy() const = 0;
 
-    virtual const std::unordered_map<std::string, PyMethod> attrs() const = 0;
+    virtual const std::unordered_map<std::string, PyMethod> attrs() = 0;
 
     void incref();
 

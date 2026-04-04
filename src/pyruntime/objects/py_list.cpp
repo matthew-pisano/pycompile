@@ -42,7 +42,7 @@ std::string PyList::typeName() const { return "list"; }
 
 bool PyList::isTruthy() const { return !raw.empty(); }
 
-const std::unordered_map<std::string, PyMethod> PyList::attrs() const { return {}; }
+const std::unordered_map<std::string, PyMethod> PyList::attrs() { return {}; }
 
 std::vector<PyObj*> PyList::data() const { return raw; }
 

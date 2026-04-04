@@ -27,7 +27,7 @@ struct PyList : PyObj {
 
     [[nodiscard]] bool isTruthy() const override;
 
-    [[nodiscard]] const std::unordered_map<std::string, PyMethod> attrs() const override;
+    [[nodiscard]] const std::unordered_map<std::string, PyMethod> attrs() override;
 
     [[nodiscard]] std::vector<PyObj*> data() const;
 

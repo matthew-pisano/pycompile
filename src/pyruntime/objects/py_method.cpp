@@ -12,8 +12,6 @@ std::string PyMethod::typeName() const { return "function"; }
 
 bool PyMethod::isTruthy() const { return true; }
 
-const std::unordered_map<std::string, PyMethod> PyMethod::attrs() const { return {}; }
-
 PyObj* PyMethod::selfObj() const { return self; }
 
 std::string PyMethod::funcName() const { return fnName; }

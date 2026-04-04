@@ -21,7 +21,7 @@ struct PyMethod : PyObj {
 
     [[nodiscard]] bool isTruthy() const override;
 
-    [[nodiscard]] const std::unordered_map<std::string, PyMethod> attrs() const override;
+    [[nodiscard]] const std::unordered_map<std::string, PyMethod> attrs() override { return {}; }
 
     [[nodiscard]] std::string funcName() const;
 

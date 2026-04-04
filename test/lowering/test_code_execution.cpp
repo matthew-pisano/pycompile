@@ -114,6 +114,8 @@ struct JITFixture {
         addSymbol("pyir_add", reinterpret_cast<void*>(pyir_add));
         addSymbol("pyir_sub", reinterpret_cast<void*>(pyir_sub));
         addSymbol("pyir_mul", reinterpret_cast<void*>(pyir_mul));
+        addSymbol("pyir_pipe", reinterpret_cast<void*>(pyir_pipe));
+        addSymbol("pyir_ampersand", reinterpret_cast<void*>(pyir_ampersand));
         addSymbol("pyir_idx", reinterpret_cast<void*>(pyir_idx));
         addSymbol("pyir_in", reinterpret_cast<void*>(pyir_in));
         addSymbol("pyir_div", reinterpret_cast<void*>(pyir_div));

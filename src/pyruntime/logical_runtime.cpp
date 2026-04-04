@@ -13,6 +13,7 @@
 #include "pyruntime/objects/py_int.h"
 #include "pyruntime/objects/py_list.h"
 #include "pyruntime/objects/py_object.h"
+#include "pyruntime/objects/py_set.h"
 #include "pyruntime/objects/py_str.h"
 #include "pyruntime/runtime_util.h"
 
@@ -22,6 +23,7 @@ bool pyir_isInt(const PyObj* val) { return dynamic_cast<const PyInt*>(val); }
 bool pyir_isFloat(const PyObj* val) { return dynamic_cast<const PyFloat*>(val); }
 bool pyir_isStr(const PyObj* val) { return dynamic_cast<const PyStr*>(val); }
 bool pyir_isList(const PyObj* val) { return dynamic_cast<const PyList*>(val); }
+bool pyir_isSet(const PyObj* val) { return dynamic_cast<const PySet*>(val); }
 
 
 int8_t pyir_isTruthy(const PyObj* val) { return val->isTruthy(); }
@@ -98,6 +100,31 @@ PyObj* pyir_mod(const PyObj* lhs, const PyObj* rhs) {
 }
 
 
+PyObj* pyir_pipe(const PyObj* lhs, const PyObj* rhs) {
+    if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
+        std::unordered_set<PyObj*> result = dynamic_cast<const PySet*>(lhs)->data();
+        const std::unordered_set<PyObj*> rhsSet = dynamic_cast<const PySet*>(rhs)->data();
+        result.insert(rhsSet.begin(), rhsSet.end());
+        return new PySet(result);
+    }
+    throw std::runtime_error("Unsupported operand types for |");
+}
+
+
+PyObj* pyir_ampersand(const PyObj* lhs, const PyObj* rhs) {
+    if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
+        const std::unordered_set<PyObj*> lhsSet = dynamic_cast<const PySet*>(lhs)->data();
+        const std::unordered_set<PyObj*> rhsSet = dynamic_cast<const PySet*>(rhs)->data();
+        std::unordered_set<PyObj*> result;
+        for (const auto& item : lhsSet)
+            if (rhsSet.contains(item))
+                result.insert(item);
+        return new PySet(result);
+    }
+    throw std::runtime_error("Unsupported operand types for &");
+}
+
+
 PyObj* pyir_idx(const PyObj* obj, const PyObj* idx) {
     if (!pyir_isInt(idx))
         throw std::runtime_error("List indices must be integers");
@@ -132,7 +159,7 @@ PyBool* pyir_in(const PyObj* container, const PyObj* element) {
                 return new PyBool(true);
     } else
         throw std::runtime_error("Unsupported operand types for in");
-    
+
     // Operation valid, but element not found for any path
     return new PyBool(false);
 }

@@ -33,6 +33,10 @@ PyObj* pyir_mod(const PyObj* lhs, const PyObj* rhs);
 
 PyBool* pyir_xor(const PyObj* lhs, const PyObj* rhs);
 
+PyObj* pyir_pipe(const PyObj* lhs, const PyObj* rhs);
+
+PyObj* pyir_ampersand(const PyObj* lhs, const PyObj* rhs);
+
 // index
 PyObj* pyir_idx(const PyObj* obj, const PyObj* idx);
 

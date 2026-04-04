@@ -64,3 +64,19 @@ void listAppendCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, cons
     mlir::Value list = meta.stack.at(meta.stack.size() - *idx);
     builder.create<pyir::ListAppend>(loc, list, item);
 }
+
+
+void buildSetCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
+                     const ByteCodeInstruction& instr, ConversionMeta& meta) {
+    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const int64_t* count = std::get_if<int64_t>(&instr.argval);
+    if (!count)
+        throw std::runtime_error("BUILD_SET must have an int argval");
+
+    std::vector<mlir::Value> parts(*count);
+    for (int64_t i = *count - 1; i >= 0; i--) {
+        parts[i] = meta.stack.back();
+        meta.stack.pop_back();
+    }
+    meta.stack.push_back(builder.create<pyir::BuildSet>(loc, pyType, parts).getResult());
+}

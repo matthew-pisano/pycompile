@@ -154,7 +154,6 @@ def PyIR_ContainsOp : PyIR_Op<"contains_op"> {
 }
 
 
-
 def PyIR_LoadConst : PyIR_Op<"load_const", [Pure]> {
     let summary = "Load a constant value";
     let arguments = (ins AnyAttr:$value);
@@ -188,6 +187,14 @@ def PyIR_LoadArg : PyIR_Op<"load_arg", [Pure]> {
     let arguments = (ins ByteCodeObject_Type:$args_ptr, I64Attr:$index);
     let results   = (outs ByteCodeObject_Type:$result);
     let assemblyFormat = "$args_ptr `[` $index `]` attr-dict";
+}
+
+
+def PyIR_LoadAttr : PyIR_Op<"load_attr"> {
+    let summary = "Load an attribute from a Python object";
+    let arguments = (ins ByteCodeObject_Type:$object, StrAttr:$attr_name);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$object `,` $attr_name attr-dict `:` type($object)";
 }
 
 
@@ -251,9 +258,9 @@ def PyIR_ListAppend : PyIR_Op<"list_append"> {
 }
 
 
-def PyIR_LoadAttr : PyIR_Op<"load_attr"> {
-    let summary = "Load an attribute from a Python object";
-    let arguments = (ins ByteCodeObject_Type:$object, StrAttr:$attr_name);
+def PyIR_BuildSet : PyIR_Op<"build_set"> {
+    let summary = "Constructs a set using the last N items on the stack";
+    let arguments = (ins Variadic<ByteCodeObject_Type>:$parts);
     let results   = (outs ByteCodeObject_Type:$result);
-    let assemblyFormat = "$object `,` $attr_name attr-dict `:` type($object)";
+    let assemblyFormat = "$parts attr-dict `:` functional-type($parts, $result)";
 }

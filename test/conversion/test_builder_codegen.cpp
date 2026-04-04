@@ -121,10 +121,10 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build Set MLIR") {
         REQUIRE(arrayAttr);
         REQUIRE(arrayAttr.getValue().size() == 3);
 
-        pyir::ListExtend listExtendOp = mlir::dyn_cast<pyir::ListExtend>(getOp(fn, 2));
-        REQUIRE(listExtendOp);
-        REQUIRE(mlir::isa<pyir::BuildList>(listExtendOp.getList().getDefiningOp()));
-        REQUIRE(mlir::isa<pyir::LoadConst>(listExtendOp.getItems().getDefiningOp()));
+        pyir::SetUpdate setUpdateOp = mlir::dyn_cast<pyir::SetUpdate>(getOp(fn, 2));
+        REQUIRE(setUpdateOp);
+        REQUIRE(mlir::isa<pyir::BuildSet>(setUpdateOp.getSet().getDefiningOp()));
+        REQUIRE(mlir::isa<pyir::LoadConst>(setUpdateOp.getItems().getDefiningOp()));
     }
 
     SECTION("Test Large Set") {

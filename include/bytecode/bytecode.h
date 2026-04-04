@@ -75,7 +75,7 @@ struct CodeInfo {
 /**
  * The type of the instruction argument, which can be one of several types depending on the opcode.
  */
-enum class ArgvalType { None, Bool, Int, Float, Str, TupleStr, Code };
+enum class ArgvalType { None, Bool, Int, Float, Str, TupleStr, FrozenSet, Code };
 
 
 /**

@@ -124,25 +124,64 @@ ByteCodeModule generatePythonByteCode(PyObject* code, const std::string& filenam
 /**
  * Translates a Python tuple object into a variant of C++ representations of Python primitives
  */
-std::vector<PrimitiveArgvals> decodeTupleStr(PyObject* argval) {
+std::vector<PrimitiveArgvals> decodeTupleStr(PyObject* argval, const std::string& filename,
+                                             const ByteCodeInstruction& instr) {
     std::vector<PrimitiveArgvals> tupleStrs;
     const Py_ssize_t n = PyTuple_Size(argval);
     for (Py_ssize_t i = 0; i < n; i++) {
         PyObject* s = PyTuple_GetItem(argval, i); // Borrowed, no need to decref
         if (PyBool_Check(s))
-            tupleStrs.emplace_back(argval == Py_True);
+            tupleStrs.emplace_back(s == Py_True);
         else if (PyLong_Check(s))
             tupleStrs.emplace_back(PyLong_AsLong(s));
         else if (PyFloat_Check(s))
             tupleStrs.emplace_back(PyFloat_AsDouble(s));
         else if (PyUnicode_Check(s))
             tupleStrs.emplace_back(PyUnicode_AsUTF8(s));
-        else
+        else if (Py_IsNone(s))
             tupleStrs.emplace_back(ArgvalNone{});
+        else
+            throw PyCompileError("Unknown tuple str argval type " + instr.argrepr, filename, instr.lineno);
     }
 
     return tupleStrs;
 }
+
+
+/**
+ * Translates a Python frozen set object into a variant of C++ representations of Python primitives
+ */
+std::vector<PrimitiveArgvals> decodeFrozenSet(PyObject* argval, const std::string& filename,
+                                              const ByteCodeInstruction& instr) {
+    std::vector<PrimitiveArgvals> frozenSet;
+    PyObject* iter = PyObject_GetIter(argval);
+    if (!iter)
+        throw PyCompileError("Failed to iterate frozen set " + instr.argrepr, filename, instr.lineno);
+
+    PyObject* s;
+    while ((s = PyIter_Next(iter))) {
+        if (PyBool_Check(s))
+            frozenSet.emplace_back(s == Py_True);
+        else if (PyLong_Check(s))
+            frozenSet.emplace_back(PyLong_AsLong(s));
+        else if (PyFloat_Check(s))
+            frozenSet.emplace_back(PyFloat_AsDouble(s));
+        else if (PyUnicode_Check(s))
+            frozenSet.emplace_back(PyUnicode_AsUTF8(s));
+        else if (Py_IsNone(s))
+            frozenSet.emplace_back(ArgvalNone{});
+        else {
+            Py_DECREF(s);
+            Py_DECREF(iter);
+            throw PyCompileError("Unknown frozen set argval type " + instr.argrepr, filename, instr.lineno);
+        }
+        Py_DECREF(s); // PyIter_Next returns a new reference
+    }
+
+    Py_DECREF(iter);
+    return frozenSet;
+}
+
 
 /**
  * Decodes a Python object into a bytecode instruction.
@@ -209,7 +248,10 @@ ByteCodeInstruction decodeByteCodeInstruction(PyObject* pyobject, const std::str
         instr.argval = PyUnicode_AsUTF8(argval);
     } else if (PyTuple_Check(argval)) {
         instr.argvalType = ArgvalType::TupleStr;
-        instr.argval = decodeTupleStr(argval);
+        instr.argval = decodeTupleStr(argval, filename, instr);
+    } else if (PyFrozenSet_Check(argval)) {
+        instr.argvalType = ArgvalType::FrozenSet;
+        instr.argval = decodeFrozenSet(argval, filename, instr);
     } else if (PyCode_Check(argval)) {
         instr.argvalType = ArgvalType::Code;
         instr.argval = std::make_shared<ByteCodeModule>(generatePythonByteCode(argval, filename, depth + 1));

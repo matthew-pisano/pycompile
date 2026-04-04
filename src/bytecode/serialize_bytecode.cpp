@@ -47,9 +47,9 @@ void serializeInstruction(const ByteCodeInstruction& instr, std::ostream& os, co
         instRepr = std::to_string(std::get<double_t>(instr.argval));
     else if (instr.argvalType == ArgvalType::Str)
         instRepr = std::get<std::string>(instr.argval);
-    else if (instr.argvalType == ArgvalType::TupleStr) {
-        instRepr = "[tuple]";
-    } else if (instr.argvalType == ArgvalType::Code)
+    else if (instr.argvalType == ArgvalType::TupleStr || instr.argvalType == ArgvalType::FrozenSet)
+        instRepr = instr.argrepr;
+    else if (instr.argvalType == ArgvalType::Code)
         instRepr = "[code object]";
     else
         instRepr = "";

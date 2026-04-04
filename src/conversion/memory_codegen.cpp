@@ -137,9 +137,9 @@ void storeDerefCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, cons
 /**
  * Translates a vector of Python primitives into an MLIR ArrayAttr object
  */
-mlir::ArrayAttr getTupleStrAttr(mlir::OpBuilder& builder, const std::vector<PrimitiveArgvals>* tuple) {
+mlir::ArrayAttr getArrayAttr(mlir::OpBuilder& builder, const std::vector<PrimitiveArgvals>& tuple) {
     llvm::SmallVector<mlir::Attribute> attrs;
-    for (const PrimitiveArgvals& val : *tuple) {
+    for (const PrimitiveArgvals& val : tuple) {
         if (std::holds_alternative<ArgvalNone>(val))
             attrs.push_back(pyir::NoneAttr{});
         else if (std::holds_alternative<std::string>(val))
@@ -187,18 +187,18 @@ void loadConstCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ml
     }
 
     mlir::Attribute attr;
-    if (const std::string* s = std::get_if<std::string>(&instr.argval))
-        attr = builder.getStringAttr(*s);
-    else if (const int64_t* i = std::get_if<int64_t>(&instr.argval))
-        attr = builder.getI64IntegerAttr(*i);
-    else if (const double_t* f = std::get_if<double_t>(&instr.argval))
-        attr = builder.getF64FloatAttr(*f);
-    else if (const bool* b = std::get_if<bool>(&instr.argval))
-        attr = builder.getBoolAttr(*b);
-    else if (const std::vector<PrimitiveArgvals>* tuple = std::get_if<std::vector<PrimitiveArgvals>>(&instr.argval))
-        attr = getTupleStrAttr(builder, tuple);
+    if (instr.argvalType == ArgvalType::Str)
+        attr = builder.getStringAttr(std::get<std::string>(instr.argval));
+    else if (instr.argvalType == ArgvalType::Int)
+        attr = builder.getI64IntegerAttr(std::get<int64_t>(instr.argval));
+    else if (instr.argvalType == ArgvalType::Float)
+        attr = builder.getF64FloatAttr(std::get<double_t>(instr.argval));
+    else if (instr.argvalType == ArgvalType::Bool)
+        attr = builder.getBoolAttr(std::get<bool>(instr.argval));
+    else if (instr.argvalType == ArgvalType::TupleStr || instr.argvalType == ArgvalType::FrozenSet)
+        attr = getArrayAttr(builder, std::get<std::vector<PrimitiveArgvals>>(instr.argval));
     else
-        throw PyCompileError("LOAD_CONST unknown argval type", loc);
+        throw PyCompileError("LOAD_CONST unknown argval type " + instr.argrepr, loc);
 
     meta.stack.push_back(builder.create<pyir::LoadConst>(loc, pyType, attr).getResult());
 }

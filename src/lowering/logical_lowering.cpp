@@ -94,6 +94,22 @@ mlir::LogicalResult CompareOpLowering::matchAndRewrite(mlir::Operation* op, cons
 }
 
 
+mlir::LogicalResult ContainsOpLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
+                                                        mlir::ConversionPatternRewriter& rewriter) const {
+    pyir::ContainsOp containsOp = mlir::cast<pyir::ContainsOp>(op);
+
+    // Map operator string to runtime function name
+    static const std::unordered_map<std::string, std::string> opToFn = {{"in", "pyir_in"}};
+
+    const std::string opStr = containsOp.getOp().str();
+    const auto it = opToFn.find(opStr);
+    if (it == opToFn.end())
+        return mlir::failure();
+
+    return linkOpToRuntimeFunc(it->second, op, operands, rewriter, 2);
+}
+
+
 mlir::LogicalResult FormatSimpleLowering::matchAndRewrite(mlir::Operation* op,
                                                           const mlir::ArrayRef<mlir::Value> operands,
                                                           mlir::ConversionPatternRewriter& rewriter) const {

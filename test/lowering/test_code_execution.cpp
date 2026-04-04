@@ -135,6 +135,9 @@ struct JITFixture {
         addSymbol("pyir_buildList", reinterpret_cast<void*>(pyir_buildList));
         addSymbol("pyir_listExtend", reinterpret_cast<void*>(pyir_listExtend));
         addSymbol("pyir_listAppend", reinterpret_cast<void*>(pyir_listAppend));
+        addSymbol("pyir_buildSet", reinterpret_cast<void*>(pyir_buildSet));
+        addSymbol("pyir_setUpdate", reinterpret_cast<void*>(pyir_setUpdate));
+        addSymbol("pyir_setAdd", reinterpret_cast<void*>(pyir_setAdd));
 
         llvm::Error defineErr = dylib.define(llvm::orc::absoluteSymbols(symbols));
         REQUIRE(!defineErr);

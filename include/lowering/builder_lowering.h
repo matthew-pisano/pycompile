@@ -35,8 +35,7 @@ struct BuildStringLowering : PyIROpConversion {
 
 
 /**
- * Lowers pyir.pyir_buildList to allocate memory and construct a new list using the runtime function
- * pyir_buildList
+ * Lowers pyir.pyir_buildList to allocate memory and construct a new list using the runtime function pyir_buildList
  *
  * Parts are stack-allocated as a Value*[] array and passed by pointer along with the part count.
  * The runtime appends all parts into a single string Value*.
@@ -87,6 +86,63 @@ struct ListExtendLowering : PyIROpConversion {
 struct ListAppendLowering : PyIROpConversion {
     ListAppendLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
         PyIROpConversion(pyir::ListAppend::getOperationName(), tc, ctx) {}
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override;
+};
+
+/**
+ * Lowers pyir.pyir_buildSet to allocate memory and construct a new set using the runtime function pyir_buildSet
+ *
+ * Parts are stack-allocated as a Value*[] array and passed by pointer along with the part count.
+ * The runtime appends all parts into a single string Value*.
+ *
+ * pyir.build_set %part0, %part1, ... : (!pyir.object, !pyir.object, ...) -> !pyir.object
+ *     %arr   = llvm.alloca [n x !llvm.ptr]
+ *     %gep0  = llvm.gep %arr[0]
+ *              llvm.store %part0, %gep0
+ *     %gep1  = llvm.gep %arr[1]
+ *              llvm.store %part1, %gep1
+ *     ...
+ *     %result = llvm.call @pyir_buildSet(%arr, n)
+ */
+struct BuildSetLowering : PyIROpConversion {
+    BuildSetLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::BuildSet::getOperationName(), tc, ctx) {}
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override;
+};
+
+
+/**
+ * Lowers pyir.set_update to a call to the runtime function pyir_setUpdate.
+ *
+ * Updates a heap-allocated set Value* with the contents of another Value*.
+ *
+ * pyir.set_update %list, %items : !pyir.object, !pyir.object
+ *     llvm.call @pyir_setUpdate(%list, %items)
+ */
+struct SetUpdateLowering : PyIROpConversion {
+    SetUpdateLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::SetUpdate::getOperationName(), tc, ctx) {}
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override;
+};
+
+
+/**
+ * Lowers pyir.set_add to a call to the runtime function pyir_setAdd.
+ *
+ * Adds a heap-allocated set Value* with the contents of another Value*.
+ *
+ * pyir.set_add %list, %items : !pyir.object, !pyir.object
+ *     llvm.call @pyir_setAdd(%list, %items)
+ */
+struct SetAddLowering : PyIROpConversion {
+    SetAddLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::SetAdd::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override;

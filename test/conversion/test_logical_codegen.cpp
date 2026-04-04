@@ -298,16 +298,16 @@ TEST_CASE_METHOD(MLIRFixture, "Test Container Operators MLIR") {
     SECTION("Test Union") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("{1} | {2}");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::ContainsOp containsOp = mlir::dyn_cast<pyir::ContainsOp>(getOp(fn, 2));
-        REQUIRE(containsOp);
-        REQUIRE(containsOp.getOp() == "in");
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 4));
+        REQUIRE(binaryOp);
+        REQUIRE(binaryOp.getOp() == "|");
     }
 
     SECTION("Test Intersection") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("{1} & {2}");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::ContainsOp containsOp = mlir::dyn_cast<pyir::ContainsOp>(getOp(fn, 2));
-        REQUIRE(containsOp);
-        REQUIRE(containsOp.getOp() == "in");
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 4));
+        REQUIRE(binaryOp);
+        REQUIRE(binaryOp.getOp() == "&");
     }
 }

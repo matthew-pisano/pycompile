@@ -27,7 +27,7 @@ struct PyObj {
 
     virtual ~PyObj() = default;
 
-    virtual PyMethod* getAttr(const char* attr);
+    virtual PyObj* getAttr(const std::string& name);
 
     [[nodiscard]] virtual PyStr* name() const;
 
@@ -40,8 +40,6 @@ struct PyObj {
     [[nodiscard]] virtual std::string typeName() const = 0;
 
     [[nodiscard]] virtual bool isTruthy() const = 0;
-
-    virtual const std::unordered_map<std::string, PyMethod> attrs() = 0;
 
     void incref();
 

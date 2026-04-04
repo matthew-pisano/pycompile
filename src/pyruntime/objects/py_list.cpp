@@ -11,18 +11,26 @@
 #include "pyruntime/objects/py_none.h"
 #include "pyruntime/runtime_util.h"
 
-PyNone* PyList::append(PyObj** args, const int64_t argc) {
+PyObj* PyList::append(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("append() takes exactly one argument");
-    pyir_listAppend(this, args[0]);
+    pyir_listAppend(self, args[0]);
     return new PyNone();
 }
 
-PyNone* PyList::extend(PyObj** args, const int64_t argc) {
+PyObj* PyList::extend(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("extend() takes exactly one argument");
-    pyir_listExtend(this, args[0]);
+    pyir_listExtend(self, args[0]);
     return new PyNone();
+}
+
+PyObj* PyList::getAttr(const std::string& name) {
+    if (name == "append")
+        return new PyMethod("append", this, append);
+    if (name == "extend")
+        return new PyMethod("extend", this, extend);
+    throw std::runtime_error(this->typeName() + " has no attribute '" + name + "'");
 }
 
 PyInt* PyList::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
@@ -41,8 +49,6 @@ std::string PyList::toString() const {
 std::string PyList::typeName() const { return "list"; }
 
 bool PyList::isTruthy() const { return !raw.empty(); }
-
-const std::unordered_map<std::string, PyMethod> PyList::attrs() { return {}; }
 
 std::vector<PyObj*> PyList::data() const { return raw; }
 

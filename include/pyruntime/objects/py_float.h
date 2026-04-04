@@ -18,8 +18,6 @@ struct PyFloat : PyObj {
 
     bool isTruthy() const override;
 
-    const std::unordered_map<std::string, PyMethod> attrs() override { return {}; }
-
     double_t data() const;
 
     bool operator==(const PyObj& other) const override;

@@ -19,8 +19,6 @@ struct PyStr : PyObj {
 
     bool isTruthy() const override;
 
-    const std::unordered_map<std::string, PyMethod> attrs() override;
-
     std::string data() const;
 
     bool operator==(const PyObj& other) const override;

@@ -15,9 +15,11 @@ struct PyNone;
 struct PyList : PyObj {
     explicit PyList(const std::vector<PyObj*>& list) : raw(list) {}
 
-    PyNone* append(PyObj** args, int64_t argc);
+    static PyObj* append(PyObj* self, PyObj** args, int64_t argc);
 
-    PyNone* extend(PyObj** args, int64_t argc);
+    static PyObj* extend(PyObj* self, PyObj** args, int64_t argc);
+
+    PyObj* getAttr(const std::string& name) override;
 
     [[nodiscard]] PyInt* len() const override;
 
@@ -26,8 +28,6 @@ struct PyList : PyObj {
     [[nodiscard]] std::string typeName() const override;
 
     [[nodiscard]] bool isTruthy() const override;
-
-    [[nodiscard]] const std::unordered_map<std::string, PyMethod> attrs() override;
 
     [[nodiscard]] std::vector<PyObj*> data() const;
 

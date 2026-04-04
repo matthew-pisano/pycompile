@@ -55,12 +55,11 @@ PyObj* pyir_sub(const PyObj* lhs, const PyObj* rhs) {
         return new PyFloat(valueToFloat(lhs) - valueToFloat(rhs));
     if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
         std::unordered_set<PyObj*> result = dynamic_cast<const PySet*>(lhs)->data();
+        const std::unordered_set<PyObj*> rSet = dynamic_cast<const PySet*>(rhs)->data();
         for (PyObj* lItem : dynamic_cast<const PySet*>(lhs)->data())
-            for (const PyObj* rItem : dynamic_cast<const PySet*>(rhs)->data())
-                if (*lItem == *rItem) {
-                    result.erase(lItem);
-                    break;
-                }
+            if (unorderedSetContains(rSet, lItem))
+                result.erase(lItem);
+
         return new PySet(result);
     }
     throw std::runtime_error("Unsupported operand types for -");
@@ -123,13 +122,10 @@ PyObj* pyir_pipe(const PyObj* lhs, const PyObj* rhs) {
 PyObj* pyir_ampersand(const PyObj* lhs, const PyObj* rhs) {
     if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
         std::unordered_set<PyObj*> result;
+        const std::unordered_set<PyObj*> rSet = dynamic_cast<const PySet*>(rhs)->data();
         for (PyObj* lItem : dynamic_cast<const PySet*>(lhs)->data())
-            // Cannot use contains() because of pointer comparison
-            for (const PyObj* rItem : dynamic_cast<const PySet*>(rhs)->data())
-                if (*lItem == *rItem) {
-                    result.insert(lItem);
-                    break;
-                }
+            if (unorderedSetContains(rSet, lItem))
+                result.insert(lItem);
         return new PySet(result);
     }
     throw std::runtime_error("Unsupported operand types for &");
@@ -232,17 +228,23 @@ PyInt* pyir_unaryInvert(const PyObj* val) {
 PyObj* pyir_xor(const PyObj* lhs, const PyObj* rhs) {
     if (pyir_isBool(lhs) && pyir_isBool(rhs))
         return new PyBool((dynamic_cast<const PyBool*>(lhs)->data() ^ dynamic_cast<const PyBool*>(rhs)->data()) == 1);
-    // if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
-    //     std::unordered_set<PyObj*> lSet = ;
-    //     for (PyObj* lItem : dynamic_cast<const PySet*>(lhs)->data()) {
-    //         for (const PyObj* rItem : dynamic_cast<const PySet*>(rhs)->data())
-    //             if (*lItem == *rItem) {
-    //                 result.insert(lItem);
-    //                 break;
-    //             }
-    //     }
-    //     return new PySet(result);
-    // }
+    if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
+        const std::unordered_set<PyObj*> lSet = dynamic_cast<const PySet*>(lhs)->data();
+        const std::unordered_set<PyObj*> rSet = dynamic_cast<const PySet*>(rhs)->data();
+        std::unordered_set<PyObj*> result;
+
+        // Elements in lSet not in rSet
+        for (PyObj* elem : lSet)
+            if (!unorderedSetContains(rSet, elem))
+                result.insert(elem);
+
+        // Elements in rSet not in lSet
+        for (PyObj* elem : rSet)
+            if (!unorderedSetContains(lSet, elem))
+                result.insert(elem);
+
+        return new PySet(result);
+    }
     throw std::runtime_error("Unsupported operand type for ^");
 }
 

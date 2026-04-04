@@ -4,6 +4,7 @@
 
 #include "pyruntime/runtime_util.h"
 
+#include <algorithm>
 #include <format>
 #include <stdexcept>
 
@@ -12,6 +13,16 @@
 #include "pyruntime/objects/py_list.h"
 #include "pyruntime/objects/py_set.h"
 #include "pyruntime/objects/py_str.h"
+
+
+bool vectorContains(const std::vector<PyObj*>& vec, const PyObj* item) {
+    return std::ranges::any_of(vec, [item](const PyObj* elem) { return *elem == *item; });
+}
+
+
+bool unorderedSetContains(const std::unordered_set<PyObj*>& set, const PyObj* item) {
+    return std::ranges::any_of(set, [item](const PyObj* elem) { return *elem == *item; });
+}
 
 
 double_t valueToFloat(const PyObj* val) {

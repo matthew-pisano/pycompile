@@ -12,6 +12,10 @@
 
 struct PyObj;
 
+bool vectorContains(const std::vector<PyObj*>& vec, const PyObj* item);
+
+bool unorderedSetContains(const std::unordered_set<PyObj*>& set, const PyObj* item);
+
 double_t valueToFloat(const PyObj* val);
 
 std::string valueToString(const PyObj* val, bool quoteStrings = false);

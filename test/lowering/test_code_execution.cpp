@@ -239,15 +239,15 @@ TEST_CASE_METHOD(JITFixture, "Test JIT List Operations") {
 TEST_CASE_METHOD(JITFixture, "Test JIT Set Operations") {
     SECTION("Test Build Set") {
         const std::string output = runCapture("print(set())");
-        REQUIRE(output == "{}\n");
+        REQUIRE(output == "set()\n");
     }
 
-    SECTION("Test Set Extend Op") {
+    SECTION("Test Set Update Op") {
         const std::string output = runCapture("print({1, 2, 3})");
         REQUIRE(output == "{1, 2, 3}\n");
     }
 
-    SECTION("Test Set Append Op") {
+    SECTION("Test Set Add Op") {
         std::string listStr =
                 "{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}";
         const std::string output = runCapture(std::format("print({})", listStr));

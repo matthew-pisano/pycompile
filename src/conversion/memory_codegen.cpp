@@ -197,6 +197,8 @@ void loadConstCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ml
         attr = builder.getBoolAttr(*b);
     else if (const std::vector<PrimitiveArgvals>* tuple = std::get_if<std::vector<PrimitiveArgvals>>(&instr.argval))
         attr = getTupleStrAttr(builder, tuple);
+    else
+        throw PyCompileError("LOAD_CONST unknown argval type", loc);
 
     meta.stack.push_back(builder.create<pyir::LoadConst>(loc, pyType, attr).getResult());
 }

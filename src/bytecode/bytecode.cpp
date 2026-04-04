@@ -12,6 +12,7 @@
 
 #include "bytecode/python_error.h"
 #include "bytecode/python_raii.h"
+#include "utils.h"
 
 
 /**
@@ -212,10 +213,11 @@ ByteCodeInstruction decodeByteCodeInstruction(PyObject* pyobject, const std::str
     } else if (PyCode_Check(argval)) {
         instr.argvalType = ArgvalType::Code;
         instr.argval = std::make_shared<ByteCodeModule>(generatePythonByteCode(argval, filename, depth + 1));
-    } else {
-        instr.argvalType = ArgvalType::None; // For any other types, just treat it as None
+    } else if (Py_IsNone(argval)) {
+        instr.argvalType = ArgvalType::None;
         instr.argval = ArgvalNone{};
-    }
+    } else
+        throw PyCompileError("Unknown argval type " + instr.argrepr, filename, lineno);
     Py_XDECREF(argval);
     return instr;
 }

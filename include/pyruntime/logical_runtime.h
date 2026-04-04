@@ -36,6 +36,9 @@ PyBool* pyir_xor(const PyObj* lhs, const PyObj* rhs);
 // index
 PyObj* pyir_idx(const PyObj* obj, const PyObj* idx);
 
+// membership
+PyBool* pyir_in(const PyObj* container, const PyObj* element);
+
 // comparison
 PyBool* pyir_eq(const PyObj* lhs, const PyObj* rhs);
 

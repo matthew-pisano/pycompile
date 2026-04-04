@@ -7,7 +7,7 @@
 #include "pyruntime/objects/py_float.h"
 #include "pyruntime/objects/py_int.h"
 
-std::string PyBool::toString() const { return std::to_string(raw); }
+std::string PyBool::toString() const { return raw ? "True" : "False"; }
 
 std::string PyBool::typeName() const { return "bool"; }
 

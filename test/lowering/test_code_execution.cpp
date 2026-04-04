@@ -114,6 +114,7 @@ struct JITFixture {
         addSymbol("pyir_sub", reinterpret_cast<void*>(pyir_sub));
         addSymbol("pyir_mul", reinterpret_cast<void*>(pyir_mul));
         addSymbol("pyir_idx", reinterpret_cast<void*>(pyir_idx));
+        addSymbol("pyir_in", reinterpret_cast<void*>(pyir_in));
         addSymbol("pyir_div", reinterpret_cast<void*>(pyir_div));
         addSymbol("pyir_eq", reinterpret_cast<void*>(pyir_eq));
         addSymbol("pyir_ne", reinterpret_cast<void*>(pyir_ne));
@@ -208,5 +209,9 @@ TEST_CASE_METHOD(JITFixture, "Test JIT List Operations") {
     SECTION("Test List Index") {
         const std::string output = runCapture("print([1, 2][0])");
         REQUIRE(output == "1\n");
+    }
+    SECTION("Test List Membership") {
+        const std::string output = runCapture("print(1 in [1, 2])");
+        REQUIRE(output == "True\n");
     }
 }

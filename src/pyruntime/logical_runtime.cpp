@@ -125,9 +125,19 @@ PyObj* pyir_idx(const PyObj* obj, const PyObj* idx) {
 }
 
 
-PyBool* pyir_eq(const PyObj* lhs, const PyObj* rhs) {
-    return new PyBool(*lhs == *rhs);
+PyBool* pyir_in(const PyObj* container, const PyObj* element) {
+    if (pyir_isList(container)) {
+        const PyList* list = dynamic_cast<const PyList*>(container);
+        for (const PyObj* obj : list->data())
+            if (obj == element)
+                return new PyBool(true);
+        return new PyBool(false);
+    }
+    throw std::runtime_error("Unsupported operand types for in");
 }
+
+
+PyBool* pyir_eq(const PyObj* lhs, const PyObj* rhs) { return new PyBool(*lhs == *rhs); }
 
 
 PyBool* pyir_ne(const PyObj* lhs, const PyObj* rhs) { return new PyBool(!pyir_eq(lhs, rhs)->data()); }

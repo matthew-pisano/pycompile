@@ -42,11 +42,11 @@ void containsOpCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const m
     const std::string opStr = instr.argrepr;
     if (opStr.empty())
         throw PyCompileError("CONTAINS_OP must have a string argval", loc);
-    mlir::Value rhs = meta.stack.back();
+    mlir::Value container = meta.stack.back();
     meta.stack.pop_back();
-    mlir::Value lhs = meta.stack.back();
+    mlir::Value element = meta.stack.back();
     meta.stack.pop_back();
-    meta.stack.push_back(builder.create<pyir::ContainsOp>(loc, pyType, opStr, lhs, rhs).getResult());
+    meta.stack.push_back(builder.create<pyir::ContainsOp>(loc, pyType, opStr, container, element).getResult());
 }
 
 

@@ -30,4 +30,12 @@ void listAppendCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, cons
 void buildSetCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                      const ByteCodeInstruction& instr, ConversionMeta& meta);
 
+
+void setUpdateCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const ByteCodeInstruction& instr,
+                      ConversionMeta& meta);
+
+
+void setAddCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const ByteCodeInstruction& instr,
+                   ConversionMeta& meta);
+
 #endif // PYCOMPILE_BUILDER_CODEGEN_H

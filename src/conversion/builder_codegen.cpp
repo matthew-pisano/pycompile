@@ -80,3 +80,31 @@ void buildSetCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mli
     }
     meta.stack.push_back(builder.create<pyir::BuildSet>(loc, pyType, parts).getResult());
 }
+
+
+void setUpdateCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const ByteCodeInstruction& instr,
+                      ConversionMeta& meta) {
+    const int64_t* idx = std::get_if<int64_t>(&instr.argval);
+    if (!idx)
+        throw std::runtime_error("SET_UPDATE must have an int argval");
+
+    const mlir::Value items = meta.stack.back();
+    meta.stack.pop_back();
+
+    mlir::Value list = meta.stack.at(meta.stack.size() - *idx);
+    builder.create<pyir::SetUpdate>(loc, list, items);
+}
+
+
+void setAddCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const ByteCodeInstruction& instr,
+                   ConversionMeta& meta) {
+    const int64_t* idx = std::get_if<int64_t>(&instr.argval);
+    if (!idx)
+        throw std::runtime_error("SET_ADD must have an int argval");
+
+    const mlir::Value item = meta.stack.back();
+    meta.stack.pop_back();
+
+    mlir::Value list = meta.stack.at(meta.stack.size() - *idx);
+    builder.create<pyir::SetAdd>(loc, list, item);
+}

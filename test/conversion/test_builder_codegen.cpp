@@ -111,7 +111,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build Set MLIR") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = {1, 2, 3}");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
 
-        pyir::BuildList buildSetOp = mlir::dyn_cast<pyir::BuildList>(getOp(fn, 0));
+        pyir::BuildSet buildSetOp = mlir::dyn_cast<pyir::BuildSet>(getOp(fn, 0));
         REQUIRE(buildSetOp);
         REQUIRE(buildSetOp.getParts().empty());
 
@@ -132,7 +132,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build Set MLIR") {
                 "a = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
 
-        pyir::BuildList buildSetOp = mlir::dyn_cast<pyir::BuildList>(getOp(fn, 0));
+        pyir::BuildSet buildSetOp = mlir::dyn_cast<pyir::BuildSet>(getOp(fn, 0));
         REQUIRE(buildSetOp);
         REQUIRE(buildSetOp.getParts().empty());
 
@@ -142,9 +142,9 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build Set MLIR") {
         REQUIRE(intAttr);
         REQUIRE(intAttr.getInt() == 1);
 
-        pyir::ListAppend listAppendOp = mlir::dyn_cast<pyir::ListAppend>(getOp(fn, 2));
-        REQUIRE(listAppendOp);
-        REQUIRE(mlir::isa<pyir::BuildList>(listAppendOp.getList().getDefiningOp()));
-        REQUIRE(mlir::isa<pyir::LoadConst>(listAppendOp.getItem().getDefiningOp()));
+        pyir::SetAdd setAddOp = mlir::dyn_cast<pyir::SetAdd>(getOp(fn, 2));
+        REQUIRE(setAddOp);
+        REQUIRE(mlir::isa<pyir::BuildSet>(setAddOp.getSet().getDefiningOp()));
+        REQUIRE(mlir::isa<pyir::LoadConst>(setAddOp.getItem().getDefiningOp()));
     }
 }

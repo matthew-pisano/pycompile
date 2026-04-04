@@ -264,3 +264,17 @@ def PyIR_BuildSet : PyIR_Op<"build_set"> {
     let results   = (outs ByteCodeObject_Type:$result);
     let assemblyFormat = "$parts attr-dict `:` functional-type($parts, $result)";
 }
+
+
+def PyIR_SetUpdate : PyIR_Op<"set_update"> {
+    let summary = "Updates a set (at the given index) with the iterable at the top of the stack";
+    let arguments = (ins ByteCodeObject_Type:$set, ByteCodeObject_Type:$items);
+    let assemblyFormat = "$set `,` $items attr-dict `:` type($set) `,` type($items)";
+}
+
+
+def PyIR_SetAdd : PyIR_Op<"set_add"> {
+    let summary = "Adds to a set (at the given index) with the item at the top of the stack";
+    let arguments = (ins ByteCodeObject_Type:$set, ByteCodeObject_Type:$item);
+    let assemblyFormat = "$set `,` $item attr-dict `:` type($set) `,` type($item)";
+}

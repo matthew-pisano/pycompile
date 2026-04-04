@@ -25,6 +25,20 @@ bool unorderedSetContains(const std::unordered_set<PyObj*>& set, const PyObj* it
 }
 
 
+bool vectorEquality(const std::vector<PyObj*>& vec1, const std::vector<PyObj*>& vec2) {
+    if (vec1.size() != vec2.size())
+        return false;
+    return std::ranges::all_of(vec1, [vec2](const PyObj* elem) { return vectorContains(vec2, elem); });
+}
+
+
+bool unorderedSetEquality(const std::unordered_set<PyObj*>& set1, const std::unordered_set<PyObj*>& set2) {
+    if (set1.size() != set2.size())
+        return false;
+    return std::ranges::all_of(set1, [set2](const PyObj* elem) { return unorderedSetContains(set2, elem); });
+}
+
+
 double_t valueToFloat(const PyObj* val) {
     if (const PyFloat* pyFloat = dynamic_cast<const PyFloat*>(val))
         return pyFloat->data();

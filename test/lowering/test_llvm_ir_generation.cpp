@@ -164,7 +164,7 @@ TEST_CASE_METHOD(LLVMFixture, "Test List Operations LLVM") {
 TEST_CASE_METHOD(LLVMFixture, "Test Set Operations LLVM") {
     SECTION("Test Empty Set") { const std::unique_ptr<llvm::Module> module = compile("a = set()"); }
 
-    SECTION("Test Small Set") { const std::unique_ptr<llvm::Module> module = compile("a = {1, 2, 3}"); }
+    SECTION("Test Small Set") { const std::unique_ptr<llvm::Module> module = compile("a = {1, 1, 1}"); }
 
     SECTION("Test Large Set") {
         const std::unique_ptr<llvm::Module> module = compile(

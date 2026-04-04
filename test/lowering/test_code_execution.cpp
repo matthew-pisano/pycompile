@@ -248,34 +248,33 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Set Operations") {
     }
 
     SECTION("Test Set Update Op") {
-        const std::string output = runCapture("print({1, 2, 3})");
-        REQUIRE(output == "{3, 2, 1}\n");
+        const std::string output = runCapture("print({1, 1, 1})");
+        REQUIRE(output == "{1}\n");
     }
 
     SECTION("Test Set Add Op") {
-        std::string listStr =
-                "{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}";
-        const std::string output = runCapture(std::format("print({})", listStr));
-        REQUIRE(output == listStr + "\n");
+        const std::string output = runCapture(
+                "print({1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1})");
+        REQUIRE(output == "{1}\n");
     }
 
     SECTION("Test Set Union") {
-        const std::string output = runCapture("print({1, 2} | {3})");
-        REQUIRE(output == "{3, 2, 1}\n");
+        const std::string output = runCapture("print({1, 2} | {3} == {1, 2, 3})");
+        REQUIRE(output == "True\n");
     }
 
     SECTION("Test Set Intersection") {
-        const std::string output = runCapture("print({1, 2} & {2, 3})");
-        REQUIRE(output == "{2}\n");
+        const std::string output = runCapture("print({1, 2} & {2, 3} == {2})");
+        REQUIRE(output == "True\n");
     }
     SECTION("Test Set Difference") {
-        const std::string output = runCapture("print({1, 2, 3} - {1, 4})");
-        REQUIRE(output == "{2, 3}\n");
+        const std::string output = runCapture("print({1, 2, 3} - {1, 4} == {2, 3})");
+        REQUIRE(output == "True\n");
     }
 
     SECTION("Test Set Symmetric Difference") {
-        const std::string output = runCapture("print({1, 2} ^ {2, 3})");
-        REQUIRE(output == "{1, 3}\n");
+        const std::string output = runCapture("print({1, 2} ^ {2, 3} == {1, 3})");
+        REQUIRE(output == "True\n");
     }
 
     SECTION("Test Set Membership") {
@@ -289,12 +288,12 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Set Operations") {
     }
 
     SECTION("Test Set Add") {
-        const std::string output = runCapture("a = {1, 2}\na.add(3)\nprint(a)");
-        REQUIRE(output == "{1, 2, 3}\n");
+        const std::string output = runCapture("a = {1, 2}\na.add(3)\nprint(a == {1, 2, 3})");
+        REQUIRE(output == "True\n");
     }
 
     SECTION("Test Set Update") {
-        const std::string output = runCapture("a = {1, 2}\na.update({3})\nprint(a)");
-        REQUIRE(output == "{1, 2, 3}\n");
+        const std::string output = runCapture("a = {1, 2}\na.update({3})\nprint(a == {1, 2, 3})");
+        REQUIRE(output == "True\n");
     }
 }

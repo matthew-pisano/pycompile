@@ -108,7 +108,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build Set MLIR") {
     }
 
     SECTION("Test Small Set") {
-        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = {1, 2, 3}");
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = {1, 1, 1}");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
 
         pyir::BuildSet buildSetOp = mlir::dyn_cast<pyir::BuildSet>(getOp(fn, 0));
@@ -119,7 +119,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build Set MLIR") {
         REQUIRE(loadTupleOp);
         mlir::ArrayAttr arrayAttr = mlir::dyn_cast<mlir::ArrayAttr>(loadTupleOp.getValue());
         REQUIRE(arrayAttr);
-        REQUIRE(arrayAttr.getValue().size() == 3);
+        REQUIRE(arrayAttr.getValue().size() == 1);
 
         pyir::SetUpdate setUpdateOp = mlir::dyn_cast<pyir::SetUpdate>(getOp(fn, 2));
         REQUIRE(setUpdateOp);

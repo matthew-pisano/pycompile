@@ -16,6 +16,10 @@ bool vectorContains(const std::vector<PyObj*>& vec, const PyObj* item);
 
 bool unorderedSetContains(const std::unordered_set<PyObj*>& set, const PyObj* item);
 
+bool vectorEquality(const std::vector<PyObj*>& vec1, const std::vector<PyObj*>& vec2);
+
+bool unorderedSetEquality(const std::unordered_set<PyObj*>& set1, const std::unordered_set<PyObj*>& set2);
+
 double_t valueToFloat(const PyObj* val);
 
 std::string valueToString(const PyObj* val, bool quoteStrings = false);

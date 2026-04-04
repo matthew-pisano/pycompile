@@ -56,6 +56,6 @@ std::vector<PyObj*>& PyList::data() { return raw; }
 
 bool PyList::operator==(const PyObj& other) const {
     if (const PyList* l = dynamic_cast<const PyList*>(&other))
-        return raw == l->data();
+        return vectorEquality(raw, l->data());
     return false;
 }

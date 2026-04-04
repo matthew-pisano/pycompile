@@ -59,6 +59,6 @@ std::unordered_set<PyObj*>& PySet::data() { return raw; }
 
 bool PySet::operator==(const PyObj& other) const {
     if (const PySet* s = dynamic_cast<const PySet*>(&other))
-        return raw == s->data();
+        return unorderedSetEquality(raw, s->data());
     return false;
 }

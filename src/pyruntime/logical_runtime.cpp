@@ -126,14 +126,15 @@ PyObj* pyir_idx(const PyObj* obj, const PyObj* idx) {
 
 
 PyBool* pyir_in(const PyObj* container, const PyObj* element) {
-    if (pyir_isList(container)) {
-        const PyList* list = dynamic_cast<const PyList*>(container);
+    if (const PyList* list = dynamic_cast<const PyList*>(container)) {
         for (const PyObj* obj : list->data())
-            if (obj == element)
+            if (*obj == *element)
                 return new PyBool(true);
-        return new PyBool(false);
-    }
-    throw std::runtime_error("Unsupported operand types for in");
+    } else
+        throw std::runtime_error("Unsupported operand types for in");
+    
+    // Operation valid, but element not found for any path
+    return new PyBool(false);
 }
 
 

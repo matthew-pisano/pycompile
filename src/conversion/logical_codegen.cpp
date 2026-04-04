@@ -36,6 +36,20 @@ void compareOpCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ml
 }
 
 
+void containsOpCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
+                       const ByteCodeInstruction& instr, ConversionMeta& meta) {
+    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const std::string opStr = instr.argrepr;
+    if (opStr.empty())
+        throw PyCompileError("CONTAINS_OP must have a string argval", loc);
+    mlir::Value rhs = meta.stack.back();
+    meta.stack.pop_back();
+    mlir::Value lhs = meta.stack.back();
+    meta.stack.pop_back();
+    meta.stack.push_back(builder.create<pyir::ContainsOp>(loc, pyType, opStr, lhs, rhs).getResult());
+}
+
+
 void toBoolCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc, ConversionMeta& meta) {
     pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     mlir::Value toConvert = meta.stack.back();

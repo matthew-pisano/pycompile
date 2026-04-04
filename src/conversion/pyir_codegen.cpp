@@ -102,6 +102,8 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             return binaryOpCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::COMPARE_OP:
             return compareOpCodegen(builder, ctx, loc, instr, meta);
+        case PythonOpcode::CONTAINS_OP:
+            return containsOpCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::CALL:
             return callFuncCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::RETURN_VALUE:

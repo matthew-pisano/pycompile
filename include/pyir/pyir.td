@@ -146,6 +146,15 @@ def PyIR_CompareOp : PyIR_Op<"compare_op"> {
 }
 
 
+def PyIR_ContainsOp : PyIR_Op<"contains_op"> {
+    let summary = "Checks whether a container has an element";
+    let arguments = (ins StrAttr:$op, ByteCodeObject_Type:$container, ByteCodeObject_Type:$element);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$op `,` $container `,` $element attr-dict `:` type($container) `->` type($result)";
+}
+
+
+
 def PyIR_LoadConst : PyIR_Op<"load_const", [Pure]> {
     let summary = "Load a constant value";
     let arguments = (ins AnyAttr:$value);

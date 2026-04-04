@@ -294,4 +294,12 @@ TEST_CASE_METHOD(MLIRFixture, "Test List Operators MLIR") {
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "[]");
     }
+
+    SECTION("Test List Membership") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("1 in [1, 2]");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+        pyir::ContainsOp containsOp = mlir::dyn_cast<pyir::ContainsOp>(getOp(fn, 2));
+        REQUIRE(containsOp);
+        REQUIRE(containsOp.getOp() == "in");
+    }
 }

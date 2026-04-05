@@ -188,8 +188,8 @@ TEST_CASE_METHOD(JITFixture, "Test JIT String Operations") {
     }
 
     SECTION("Test Set as String") {
-        const std::string output = runCapture(
-                "a = str({1, 2, 3})\nprint(len(a) == 9 and (\"'1'\" in a) and (\"'2'\" in a) and (\"'3'\" in a))");
+        const std::string output =
+                runCapture("a = str({1, 2, 3})\nprint(len(a) == 9 and ('1' in a) and ('2' in a) and ('3' in a))");
         REQUIRE(output == "True\n");
     }
 

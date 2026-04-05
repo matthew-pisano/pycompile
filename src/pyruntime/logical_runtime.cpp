@@ -164,6 +164,17 @@ PyBool* pyir_in(const PyObj* container, const PyObj* element) {
         for (const PyObj* obj : list->data())
             if (*obj == *element)
                 return new PyBool(true);
+    } else if (const PySet* set = dynamic_cast<const PySet*>(container)) {
+        for (const PyObj* obj : set->data())
+            if (*obj == *element)
+                return new PyBool(true);
+    } else if (const PyStr* str = dynamic_cast<const PyStr*>(container)) {
+        if (const PyStr* character = dynamic_cast<const PyStr*>(element)) {
+            for (const char c : str->data())
+                if (character->data() == std::string(1, c))
+                    return new PyBool(true);
+        } else
+            throw std::runtime_error("Unsupported operand types for in");
     } else
         throw std::runtime_error("Unsupported operand types for in");
 

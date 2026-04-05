@@ -13,6 +13,7 @@ using PyFunctionData = PyObj* (*) (PyObj**, int64_t);
 
 struct PyFunction : PyObj {
     explicit PyFunction(std::string fnName, const PyFunctionData& func) : fnName(std::move(fnName)), fn(func) {}
+ size_t hash() const override;
 
     [[nodiscard]] std::string toString() const override;
 

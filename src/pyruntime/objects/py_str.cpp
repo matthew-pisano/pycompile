@@ -6,6 +6,11 @@
 
 #include "pyruntime/objects/py_int.h"
 
+size_t PyStr::hash() const {
+    constexpr std::hash<std::string> hasher;
+    return hasher(raw);
+}
+
 PyInt* PyStr::len() const { return new PyInt(raw.size()); }
 
 std::string PyStr::toString() const { return raw; }

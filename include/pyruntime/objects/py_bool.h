@@ -11,6 +11,8 @@
 struct PyBool : PyObj {
     explicit PyBool(const bool boolean) : raw(boolean) {}
 
+    size_t hash() const override;
+
     std::string toString() const override;
 
     std::string typeName() const override;

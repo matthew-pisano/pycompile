@@ -26,6 +26,8 @@ struct PySet : PyObj {
 
     [[nodiscard]] PyInt* len() const override;
 
+    size_t hash() const override;
+
     [[nodiscard]] std::string toString() const override;
 
     [[nodiscard]] std::string typeName() const override;

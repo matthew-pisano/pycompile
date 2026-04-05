@@ -12,6 +12,8 @@
 struct PyFloat : PyObj {
     explicit PyFloat(const double_t decimal) : raw(decimal) {}
 
+    size_t hash() const override;
+
     std::string toString() const override;
 
     std::string typeName() const override;

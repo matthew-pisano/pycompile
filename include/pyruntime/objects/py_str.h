@@ -4,14 +4,18 @@
 
 #ifndef PYCOMPILE_PY_STR_H
 #define PYCOMPILE_PY_STR_H
+#include <utility>
+
 #include "py_method.h"
 #include "py_object.h"
 
 struct PyStr : PyObj {
-    explicit PyStr(const std::string& str) : raw(str) {}
+    explicit PyStr(std::string str) : raw(std::move(str)) {}
     explicit PyStr(const char c) : raw(1, c) {}
 
     PyInt* len() const override;
+
+    size_t hash() const override;
 
     std::string toString() const override;
 

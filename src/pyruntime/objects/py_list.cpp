@@ -57,6 +57,8 @@ PyObj* PyList::getAttr(const std::string& name) {
 
 PyInt* PyList::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
 
+size_t PyList::hash() const { throw std::runtime_error("Unhashable type " + typeName()); }
+
 std::string PyList::toString() const {
     if (raw.empty())
         return "[]";

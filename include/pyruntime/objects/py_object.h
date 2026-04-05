@@ -35,6 +35,8 @@ struct PyObj {
 
     [[nodiscard]] virtual PyStr* str() const;
 
+    [[nodiscard]] virtual size_t hash() const = 0;
+
     [[nodiscard]] virtual std::string toString() const = 0;
 
     [[nodiscard]] virtual std::string typeName() const = 0;

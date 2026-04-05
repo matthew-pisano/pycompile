@@ -10,6 +10,8 @@
 struct PyNone : PyObj {
     explicit PyNone() {}
 
+    size_t hash() const override;
+
     std::string toString() const override;
 
     std::string typeName() const override;

@@ -7,6 +7,8 @@
 #include "pyruntime/objects/py_bool.h"
 #include "pyruntime/objects/py_float.h"
 
+size_t PyInt::hash() const { return static_cast<size_t>(raw); }
+
 std::string PyInt::toString() const { return std::to_string(raw); }
 
 std::string PyInt::typeName() const { return "int"; }

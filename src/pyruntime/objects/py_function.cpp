@@ -6,6 +6,8 @@
 
 #include <format>
 
+size_t PyFunction::hash() const { throw std::runtime_error("Unhashable type " + typeName()); }
+
 std::string PyFunction::toString() const { return std::format("<function {}>", fnName); }
 
 std::string PyFunction::typeName() const { return "function"; }

@@ -9,6 +9,8 @@
 #include "pyruntime/objects/py_bool.h"
 #include "pyruntime/objects/py_int.h"
 
+size_t PyFloat::hash() const { return std::bit_cast<size_t>(raw); }
+
 std::string PyFloat::toString() const { return std::format("{}", raw); }
 
 std::string PyFloat::typeName() const { return "float"; }

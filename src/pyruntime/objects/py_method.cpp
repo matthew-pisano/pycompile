@@ -6,6 +6,8 @@
 
 #include <format>
 
+size_t PyMethod::hash() const { throw std::runtime_error("Unhashable type " + typeName()); }
+
 std::string PyMethod::toString() const { return std::format("<method {} of {} object>", fnName, self->typeName()); }
 
 std::string PyMethod::typeName() const { return "function"; }

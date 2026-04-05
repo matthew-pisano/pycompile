@@ -54,6 +54,8 @@ PyObj* PySet::getAttr(const std::string& name) {
 
 PyInt* PySet::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
 
+size_t PySet::hash() const { throw std::runtime_error("Unhashable type " + typeName()); }
+
 std::string PySet::toString() const {
     if (raw.empty())
         return "set()";

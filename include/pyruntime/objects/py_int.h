@@ -10,6 +10,8 @@
 struct PyInt : PyObj {
     explicit PyInt(const int64_t integer) : raw(integer) {}
 
+    size_t hash() const override;
+
     std::string toString() const override;
 
     std::string typeName() const override;

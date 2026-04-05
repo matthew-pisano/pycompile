@@ -15,30 +15,6 @@
 #include "pyruntime/objects/py_str.h"
 
 
-bool vectorContains(const PyListData& vec, const PyObj* item) {
-    return std::ranges::any_of(vec, [item](const PyObj* elem) { return *elem == *item; });
-}
-
-
-bool unorderedSetContains(const PySetData& set, const PyObj* item) {
-    return std::ranges::any_of(set, [item](const PyObj* elem) { return *elem == *item; });
-}
-
-
-bool vectorEquality(const PyListData& vec1, const PyListData& vec2) {
-    if (vec1.size() != vec2.size())
-        return false;
-    return std::ranges::all_of(vec1, [vec2](const PyObj* elem) { return vectorContains(vec2, elem); });
-}
-
-
-bool unorderedSetEquality(const PySetData& set1, const PySetData& set2) {
-    if (set1.size() != set2.size())
-        return false;
-    return std::ranges::all_of(set1, [set2](const PyObj* elem) { return unorderedSetContains(set2, elem); });
-}
-
-
 double_t valueToFloat(const PyObj* val) {
     if (const PyFloat* pyFloat = dynamic_cast<const PyFloat*>(val))
         return pyFloat->data();

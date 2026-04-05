@@ -13,14 +13,6 @@
 #include "objects/py_object.h"
 #include "objects/py_set.h"
 
-bool vectorContains(const PyListData& vec, const PyObj* item);
-
-bool unorderedSetContains(const PySetData& set, const PyObj* item);
-
-bool vectorEquality(const PyListData& vec1, const PyListData& vec2);
-
-bool unorderedSetEquality(const PySetData& set1, const PySetData& set2);
-
 double_t valueToFloat(const PyObj* val);
 
 std::string valueToString(const PyObj* val, bool quoteStrings = false);

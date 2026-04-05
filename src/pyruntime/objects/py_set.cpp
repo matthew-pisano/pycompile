@@ -4,6 +4,7 @@
 
 #include "pyruntime/objects/py_set.h"
 
+#include <algorithm>
 #include <stdexcept>
 
 #include "pyruntime/builder_runtime.h"
@@ -79,7 +80,10 @@ PySetData PySet::data() const { return raw; }
 PySetData& PySet::data() { return raw; }
 
 bool PySet::operator==(const PyObj& other) const {
-    if (const PySet* s = dynamic_cast<const PySet*>(&other))
-        return unorderedSetEquality(raw, s->data());
+    if (const PySet* s = dynamic_cast<const PySet*>(&other)) {
+        if (raw.size() != s->raw.size())
+            return false;
+        return std::ranges::all_of(raw, [s](PyObj* elem) { return s->raw.contains(elem); });
+    }
     return false;
 }

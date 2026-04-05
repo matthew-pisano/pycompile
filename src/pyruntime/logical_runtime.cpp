@@ -57,7 +57,7 @@ PyObj* pyir_sub(const PyObj* lhs, const PyObj* rhs) {
         PySetData result = dynamic_cast<const PySet*>(lhs)->data();
         const PySetData rSet = dynamic_cast<const PySet*>(rhs)->data();
         for (PyObj* lItem : dynamic_cast<const PySet*>(lhs)->data())
-            if (unorderedSetContains(rSet, lItem))
+            if (rSet.contains(lItem))
                 result.erase(lItem);
 
         return new PySet(result);
@@ -124,7 +124,7 @@ PyObj* pyir_ampersand(const PyObj* lhs, const PyObj* rhs) {
         PySetData result;
         const PySetData rSet = dynamic_cast<const PySet*>(rhs)->data();
         for (PyObj* lItem : dynamic_cast<const PySet*>(lhs)->data())
-            if (unorderedSetContains(rSet, lItem))
+            if (rSet.contains(lItem))
                 result.insert(lItem);
         return new PySet(result);
     }
@@ -235,12 +235,12 @@ PyObj* pyir_xor(const PyObj* lhs, const PyObj* rhs) {
 
         // Elements in lSet not in rSet
         for (PyObj* elem : lSet)
-            if (!unorderedSetContains(rSet, elem))
+            if (!rSet.contains(elem))
                 result.insert(elem);
 
         // Elements in rSet not in lSet
         for (PyObj* elem : rSet)
-            if (!unorderedSetContains(lSet, elem))
+            if (!lSet.contains(elem))
                 result.insert(elem);
 
         return new PySet(result);

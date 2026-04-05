@@ -4,6 +4,7 @@
 
 #include "pyruntime/objects/py_list.h"
 
+#include <algorithm>
 #include <stdexcept>
 
 #include "pyruntime/builder_runtime.h"
@@ -79,7 +80,14 @@ PyListData PyList::data() const { return raw; }
 PyListData& PyList::data() { return raw; }
 
 bool PyList::operator==(const PyObj& other) const {
-    if (const PyList* l = dynamic_cast<const PyList*>(&other))
-        return vectorEquality(raw, l->data());
+    if (const PyList* l = dynamic_cast<const PyList*>(&other)) {
+        if (raw.size() != l->raw.size())
+            return false;
+
+        for (size_t i = 0; i < raw.size(); i++)
+            if (*raw[i] != *l->raw[i])
+                return false;
+        return true;
+    }
     return false;
 }

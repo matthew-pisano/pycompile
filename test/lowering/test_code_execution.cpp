@@ -209,6 +209,17 @@ TEST_CASE_METHOD(JITFixture, "Test JIT List Operations") {
         REQUIRE(output == listStr + "\n");
     }
 
+    SECTION("Test List Equality") {
+        std::string output = runCapture("print([1, 2, 3] == [1, 2, 3])");
+        REQUIRE(output == "True\n");
+
+        output = runCapture("print([1, 3, 2] == [1, 2, 3])");
+        REQUIRE(output == "False\n");
+
+        output = runCapture("print([1, 2, 3] == [3])");
+        REQUIRE(output == "False\n");
+    }
+
     SECTION("Test List Addition") {
         const std::string output = runCapture("print([1, 2] + [3])");
         REQUIRE(output == "[1, 2, 3]\n");
@@ -256,6 +267,17 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Set Operations") {
         const std::string output = runCapture(
                 "print({1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1})");
         REQUIRE(output == "{1}\n");
+    }
+
+    SECTION("Test Set Equality") {
+        std::string output = runCapture("print({1, 2, 3} == {1, 2, 3})");
+        REQUIRE(output == "True\n");
+
+        output = runCapture("print({1, 3, 2} == {1, 2, 3})");
+        REQUIRE(output == "True\n");
+
+        output = runCapture("print({1, 2, 3} == {3})");
+        REQUIRE(output == "False\n");
     }
 
     SECTION("Test Set Union") {

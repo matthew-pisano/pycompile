@@ -34,27 +34,10 @@ PyObj* pyir_buildList(PyObj** parts, const int64_t count) {
 }
 
 
-void pyir_listExtend(PyObj* list, const PyObj* items) {
-    PyList* dest = dynamic_cast<PyList*>(list);
-    const PyList* src = dynamic_cast<const PyList*>(items);
-    if (!dest || !src)
-        throw std::runtime_error("Can only extend list types with list types");
-
-    for (PyObj* v : src->data()) {
-        v->incref();
-        dest->data().push_back(v);
-    }
-}
+void pyir_listExtend(PyObj* list, PyObj* items) { PyList::extend(list, &items, 1); }
 
 
-void pyir_listAppend(PyObj* list, PyObj* item) {
-    PyList* dest = dynamic_cast<PyList*>(list);
-    if (!dest)
-        throw std::runtime_error("Can only append to list types");
-
-    item->incref();
-    dest->data().push_back(item);
-}
+void pyir_listAppend(PyObj* list, PyObj* item) { PyList::append(list, &item, 1); }
 
 
 PyObj* pyir_buildSet(PyObj** parts, const int64_t count) {
@@ -67,29 +50,7 @@ PyObj* pyir_buildSet(PyObj** parts, const int64_t count) {
 }
 
 
-void pyir_setUpdate(PyObj* set, const PyObj* items) {
-    PySet* dest = dynamic_cast<PySet*>(set);
-    if (!dest)
-        throw std::runtime_error("Can only update set types");
-
-    if (const PySet* srcSet = dynamic_cast<const PySet*>(items))
-        for (PyObj* v : srcSet->data()) {
-            v->incref();
-            dest->data().insert(v);
-        }
-    else if (const PyList* srcList = dynamic_cast<const PyList*>(items))
-        for (PyObj* v : srcList->data()) {
-            v->incref();
-            dest->data().insert(v);
-        }
-}
+void pyir_setUpdate(PyObj* set, PyObj* items) { PySet::update(set, &items, 1); }
 
 
-void pyir_setAdd(PyObj* set, PyObj* item) {
-    PySet* dest = dynamic_cast<PySet*>(set);
-    if (!dest)
-        throw std::runtime_error("Can only add to set types");
-
-    item->incref();
-    dest->data().insert(item);
-}
+void pyir_setAdd(PyObj* set, PyObj* item) { PySet::add(set, &item, 1); }

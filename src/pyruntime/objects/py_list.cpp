@@ -9,19 +9,41 @@
 #include "pyruntime/builder_runtime.h"
 #include "pyruntime/objects/py_int.h"
 #include "pyruntime/objects/py_none.h"
+#include "pyruntime/objects/py_set.h"
 #include "pyruntime/runtime_util.h"
 
 PyObj* PyList::append(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("append() takes exactly one argument");
-    pyir_listAppend(self, args[0]);
+    PyList* selfList = dynamic_cast<PyList*>(self);
+    if (!selfList)
+        throw std::runtime_error("Can only append to list types");
+
+    args[0]->incref();
+    selfList->raw.push_back(args[0]);
     return new PyNone();
 }
 
 PyObj* PyList::extend(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("extend() takes exactly one argument");
-    pyir_listExtend(self, args[0]);
+    PyList* selfList = dynamic_cast<PyList*>(self);
+    if (!selfList)
+        throw std::runtime_error("Can only extend list types");
+
+    if (const PyList* srcList = dynamic_cast<const PyList*>(args[0]))
+        for (PyObj* v : srcList->raw) {
+            v->incref();
+            selfList->raw.push_back(v);
+        }
+    else if (const PySet* srcSet = dynamic_cast<const PySet*>(args[0]))
+        for (PyObj* v : srcSet->data()) {
+            v->incref();
+            selfList->raw.push_back(v);
+        }
+    else
+        throw std::runtime_error("Can only extend with iterable types");
+
     return new PyNone();
 }
 

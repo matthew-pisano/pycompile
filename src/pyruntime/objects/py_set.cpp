@@ -8,20 +8,39 @@
 
 #include "pyruntime/builder_runtime.h"
 #include "pyruntime/objects/py_int.h"
+#include "pyruntime/objects/py_list.h"
 #include "pyruntime/objects/py_none.h"
 #include "pyruntime/runtime_util.h"
 
 PyObj* PySet::add(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("add() takes exactly one argument");
-    pyir_setAdd(self, args[0]);
+    PySet* selfSet = dynamic_cast<PySet*>(self);
+    if (!selfSet)
+        throw std::runtime_error("Can only add to set types");
+
+    args[0]->incref();
+    selfSet->raw.insert(args[0]);
     return new PyNone();
 }
 
 PyObj* PySet::update(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw std::runtime_error("update() takes exactly one argument");
-    pyir_setUpdate(self, args[0]);
+    PySet* selfSet = dynamic_cast<PySet*>(self);
+    if (!selfSet)
+        throw std::runtime_error("Can only update set types");
+
+    if (const PySet* srcSet = dynamic_cast<const PySet*>(args[0]))
+        for (PyObj* v : srcSet->raw) {
+            v->incref();
+            selfSet->raw.insert(v);
+        }
+    else if (const PyList* srcList = dynamic_cast<const PyList*>(args[0]))
+        for (PyObj* v : srcList->data()) {
+            v->incref();
+            selfSet->raw.insert(v);
+        }
     return new PyNone();
 }
 

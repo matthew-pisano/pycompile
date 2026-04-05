@@ -146,6 +146,14 @@ def PyIR_CompareOp : PyIR_Op<"compare_op"> {
 }
 
 
+def PyIR_ContainsOp : PyIR_Op<"contains_op"> {
+    let summary = "Checks whether a container has an element";
+    let arguments = (ins StrAttr:$op, ByteCodeObject_Type:$container, ByteCodeObject_Type:$element);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$op `,` $container `,` $element attr-dict `:` type($container) `->` type($result)";
+}
+
+
 def PyIR_LoadConst : PyIR_Op<"load_const", [Pure]> {
     let summary = "Load a constant value";
     let arguments = (ins AnyAttr:$value);
@@ -179,6 +187,14 @@ def PyIR_LoadArg : PyIR_Op<"load_arg", [Pure]> {
     let arguments = (ins ByteCodeObject_Type:$args_ptr, I64Attr:$index);
     let results   = (outs ByteCodeObject_Type:$result);
     let assemblyFormat = "$args_ptr `[` $index `]` attr-dict";
+}
+
+
+def PyIR_LoadAttr : PyIR_Op<"load_attr"> {
+    let summary = "Load an attribute from a Python object";
+    let arguments = (ins ByteCodeObject_Type:$object, StrAttr:$attr_name);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$object `,` $attr_name attr-dict `:` type($object)";
 }
 
 
@@ -242,9 +258,23 @@ def PyIR_ListAppend : PyIR_Op<"list_append"> {
 }
 
 
-def PyIR_LoadAttr : PyIR_Op<"load_attr"> {
-    let summary = "Load an attribute from a Python object";
-    let arguments = (ins ByteCodeObject_Type:$object, StrAttr:$attr_name);
+def PyIR_BuildSet : PyIR_Op<"build_set"> {
+    let summary = "Constructs a set using the last N items on the stack";
+    let arguments = (ins Variadic<ByteCodeObject_Type>:$parts);
     let results   = (outs ByteCodeObject_Type:$result);
-    let assemblyFormat = "$object `,` $attr_name attr-dict `:` type($object)";
+    let assemblyFormat = "$parts attr-dict `:` functional-type($parts, $result)";
+}
+
+
+def PyIR_SetUpdate : PyIR_Op<"set_update"> {
+    let summary = "Updates a set (at the given index) with the iterable at the top of the stack";
+    let arguments = (ins ByteCodeObject_Type:$set, ByteCodeObject_Type:$items);
+    let assemblyFormat = "$set `,` $items attr-dict `:` type($set) `,` type($items)";
+}
+
+
+def PyIR_SetAdd : PyIR_Op<"set_add"> {
+    let summary = "Adds to a set (at the given index) with the item at the top of the stack";
+    let arguments = (ins ByteCodeObject_Type:$set, ByteCodeObject_Type:$item);
+    let assemblyFormat = "$set `,` $item attr-dict `:` type($set) `,` type($item)";
 }

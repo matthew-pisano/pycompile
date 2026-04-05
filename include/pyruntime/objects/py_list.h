@@ -4,6 +4,7 @@
 
 #ifndef PYCOMPILE_PY_LIST_H
 #define PYCOMPILE_PY_LIST_H
+#include <utility>
 #include <vector>
 
 #include "py_method.h"
@@ -12,14 +13,20 @@
 
 struct PyNone;
 
+using PyListData = std::vector<PyObj*>;
+
 struct PyList : PyObj {
-    explicit PyList(const std::vector<PyObj*>& list) : raw(list) {}
+    explicit PyList(PyListData list) : raw(std::move(list)) {}
 
-    PyNone* append(PyObj** args, int64_t argc);
+    static PyObj* append(PyObj* self, PyObj** args, int64_t argc);
 
-    PyNone* extend(PyObj** args, int64_t argc);
+    static PyObj* extend(PyObj* self, PyObj** args, int64_t argc);
+
+    PyObj* getAttr(const std::string& name) override;
 
     [[nodiscard]] PyInt* len() const override;
+
+    [[nodiscard]] size_t hash() const override;
 
     [[nodiscard]] std::string toString() const override;
 
@@ -27,16 +34,14 @@ struct PyList : PyObj {
 
     [[nodiscard]] bool isTruthy() const override;
 
-    [[nodiscard]] const std::unordered_map<std::string, PyMethod> attrs() const override;
+    [[nodiscard]] PyListData data() const;
 
-    [[nodiscard]] std::vector<PyObj*> data() const;
-
-    std::vector<PyObj*>& data();
+    PyListData& data();
 
     bool operator==(const PyObj& other) const override;
 
 private:
-    std::vector<PyObj*> raw;
+    PyListData raw;
 };
 
 #endif // PYCOMPILE_PY_LIST_H

@@ -50,7 +50,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build List MLIR") {
 
         pyir::BuildList buildListOp = mlir::dyn_cast<pyir::BuildList>(getOp(fn, 0));
         REQUIRE(buildListOp);
-        REQUIRE(buildListOp.getParts().size() == 0);
+        REQUIRE(buildListOp.getParts().empty());
     }
 
     SECTION("Test Small List") {
@@ -59,7 +59,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build List MLIR") {
 
         pyir::BuildList buildListOp = mlir::dyn_cast<pyir::BuildList>(getOp(fn, 0));
         REQUIRE(buildListOp);
-        REQUIRE(buildListOp.getParts().size() == 0);
+        REQUIRE(buildListOp.getParts().empty());
 
         pyir::LoadConst loadTupleOp = mlir::dyn_cast<pyir::LoadConst>(getOp(fn, 1));
         REQUIRE(loadTupleOp);
@@ -80,7 +80,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build List MLIR") {
 
         pyir::BuildList buildListOp = mlir::dyn_cast<pyir::BuildList>(getOp(fn, 0));
         REQUIRE(buildListOp);
-        REQUIRE(buildListOp.getParts().size() == 0);
+        REQUIRE(buildListOp.getParts().empty());
 
         pyir::LoadConst loadNumOp = mlir::dyn_cast<pyir::LoadConst>(getOp(fn, 1));
         REQUIRE(loadNumOp);
@@ -92,5 +92,59 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build List MLIR") {
         REQUIRE(listAppendOp);
         REQUIRE(mlir::isa<pyir::BuildList>(listAppendOp.getList().getDefiningOp()));
         REQUIRE(mlir::isa<pyir::LoadConst>(listAppendOp.getItem().getDefiningOp()));
+    }
+}
+
+
+TEST_CASE_METHOD(MLIRFixture, "Test Build Set MLIR") {
+
+    SECTION("Test Empty Set") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = set()");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+
+        pyir::LoadName loadNameOp = mlir::dyn_cast<pyir::LoadName>(getOp(fn, 0));
+        REQUIRE(loadNameOp);
+        REQUIRE(loadNameOp.getVarName() == "set");
+    }
+
+    SECTION("Test Small Set") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = {1, 1, 1}");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+
+        pyir::BuildSet buildSetOp = mlir::dyn_cast<pyir::BuildSet>(getOp(fn, 0));
+        REQUIRE(buildSetOp);
+        REQUIRE(buildSetOp.getParts().empty());
+
+        pyir::LoadConst loadTupleOp = mlir::dyn_cast<pyir::LoadConst>(getOp(fn, 1));
+        REQUIRE(loadTupleOp);
+        mlir::ArrayAttr arrayAttr = mlir::dyn_cast<mlir::ArrayAttr>(loadTupleOp.getValue());
+        REQUIRE(arrayAttr);
+        REQUIRE(arrayAttr.getValue().size() == 1);
+
+        pyir::SetUpdate setUpdateOp = mlir::dyn_cast<pyir::SetUpdate>(getOp(fn, 2));
+        REQUIRE(setUpdateOp);
+        REQUIRE(mlir::isa<pyir::BuildSet>(setUpdateOp.getSet().getDefiningOp()));
+        REQUIRE(mlir::isa<pyir::LoadConst>(setUpdateOp.getItems().getDefiningOp()));
+    }
+
+    SECTION("Test Large Set") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile(
+                "a = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+
+        pyir::BuildSet buildSetOp = mlir::dyn_cast<pyir::BuildSet>(getOp(fn, 0));
+        REQUIRE(buildSetOp);
+        REQUIRE(buildSetOp.getParts().empty());
+
+        pyir::LoadConst loadNumOp = mlir::dyn_cast<pyir::LoadConst>(getOp(fn, 1));
+        REQUIRE(loadNumOp);
+        mlir::IntegerAttr intAttr = mlir::dyn_cast<mlir::IntegerAttr>(loadNumOp.getValue());
+        REQUIRE(intAttr);
+        REQUIRE(intAttr.getInt() == 1);
+
+        pyir::SetAdd setAddOp = mlir::dyn_cast<pyir::SetAdd>(getOp(fn, 2));
+        REQUIRE(setAddOp);
+        REQUIRE(mlir::isa<pyir::BuildSet>(setAddOp.getSet().getDefiningOp()));
+        REQUIRE(mlir::isa<pyir::LoadConst>(setAddOp.getItem().getDefiningOp()));
     }
 }

@@ -5,8 +5,10 @@
 #include "pyruntime/builder_runtime.h"
 
 #include <stdexcept>
+#include <unordered_set>
 
 #include "pyruntime/objects/py_list.h"
+#include "pyruntime/objects/py_set.h"
 #include "pyruntime/objects/py_str.h"
 
 
@@ -23,7 +25,7 @@ PyObj* pyir_buildString(PyObj** parts, const int64_t count) {
 
 
 PyObj* pyir_buildList(PyObj** parts, const int64_t count) {
-    std::vector<PyObj*> result;
+    PyListData result;
     for (int64_t i = 0; i < count; i++) {
         parts[i]->incref();
         result.push_back(parts[i]);
@@ -32,24 +34,23 @@ PyObj* pyir_buildList(PyObj** parts, const int64_t count) {
 }
 
 
-void pyir_listExtend(PyObj* list, const PyObj* items) {
-    PyList* dest = dynamic_cast<PyList*>(list);
-    const PyList* src = dynamic_cast<const PyList*>(items);
-    if (!dest || !src)
-        throw std::runtime_error("Can only extend list types with list types");
+void pyir_listExtend(PyObj* list, PyObj* items) { PyList::extend(list, &items, 1); }
 
-    for (PyObj* v : src->data()) {
-        v->incref();
-        dest->data().push_back(v);
+
+void pyir_listAppend(PyObj* list, PyObj* item) { PyList::append(list, &item, 1); }
+
+
+PyObj* pyir_buildSet(PyObj** parts, const int64_t count) {
+    PySetData result;
+    for (int64_t i = 0; i < count; i++) {
+        parts[i]->incref();
+        result.insert(parts[i]);
     }
+    return new PySet(result);
 }
 
 
-void pyir_listAppend(PyObj* list, PyObj* item) {
-    PyList* dest = dynamic_cast<PyList*>(list);
-    if (!dest)
-        throw std::runtime_error("Can only append to list types");
+void pyir_setUpdate(PyObj* set, PyObj* items) { PySet::update(set, &items, 1); }
 
-    item->incref();
-    dest->data().push_back(item);
-}
+
+void pyir_setAdd(PyObj* set, PyObj* item) { PySet::add(set, &item, 1); }

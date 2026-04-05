@@ -4,12 +4,14 @@
 
 #include "pyruntime/runtime_util.h"
 
+#include <algorithm>
 #include <format>
 #include <stdexcept>
 
 #include "pyruntime/objects/py_float.h"
 #include "pyruntime/objects/py_int.h"
 #include "pyruntime/objects/py_list.h"
+#include "pyruntime/objects/py_set.h"
 #include "pyruntime/objects/py_str.h"
 
 
@@ -29,14 +31,43 @@ std::string valueToString(const PyObj* val, const bool quoteStrings) {
 }
 
 
-std::vector<PyObj*> valueToList(const PyObj* val) {
+PyListData valueToList(const PyObj* val) {
     if (const PyStr* pyString = dynamic_cast<const PyStr*>(val)) {
-        std::vector<PyObj*> result;
+        PyListData result;
         for (const char c : pyString->data())
             result.push_back(new PyStr(c));
+        return result;
+    }
+    if (const PySet* pySet = dynamic_cast<const PySet*>(val)) {
+        PyListData result;
+        for (PyObj* obj : pySet->data()) {
+            obj->incref();
+            result.push_back(obj);
+        }
         return result;
     }
     if (const PyList* pyList = dynamic_cast<const PyList*>(val))
         return pyList->data();
     throw std::runtime_error(std::format("Cannot convert type '{}' to list", val->typeName()));
+}
+
+
+PySetData valueToSet(const PyObj* val) {
+    if (const PyStr* pyString = dynamic_cast<const PyStr*>(val)) {
+        PySetData result;
+        for (const char c : pyString->data())
+            result.insert(new PyStr(c));
+        return result;
+    }
+    if (const PyList* pyList = dynamic_cast<const PyList*>(val)) {
+        PySetData result;
+        for (PyObj* obj : pyList->data()) {
+            obj->incref();
+            result.insert(obj);
+        }
+        return result;
+    }
+    if (const PySet* pySet = dynamic_cast<const PySet*>(val))
+        return pySet->data();
+    throw std::runtime_error(std::format("Cannot convert type '{}' to set", val->typeName()));
 }

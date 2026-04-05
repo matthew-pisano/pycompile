@@ -102,6 +102,8 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             return binaryOpCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::COMPARE_OP:
             return compareOpCodegen(builder, ctx, loc, instr, meta);
+        case PythonOpcode::CONTAINS_OP:
+            return containsOpCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::CALL:
             return callFuncCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::RETURN_VALUE:
@@ -132,6 +134,12 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             return listExtendCodegen(builder, loc, instr, meta);
         case PythonOpcode::LIST_APPEND:
             return listAppendCodegen(builder, loc, instr, meta);
+        case PythonOpcode::BUILD_SET:
+            return buildSetCodegen(builder, ctx, loc, instr, meta);
+        case PythonOpcode::SET_UPDATE:
+            return setUpdateCodegen(builder, loc, instr, meta);
+        case PythonOpcode::SET_ADD:
+            return setAddCodegen(builder, loc, instr, meta);
         case PythonOpcode::UNKNOWN:
         default:
             throw PyCompileError("Unsupported opcode '" + pythonOpcodeToString(instr.opcode) + "'", loc);

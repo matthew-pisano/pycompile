@@ -10,15 +10,15 @@
 struct PyInt : PyObj {
     explicit PyInt(const int64_t integer) : raw(integer) {}
 
-    std::string toString() const override;
+    [[nodiscard]] size_t hash() const override;
 
-    std::string typeName() const override;
+    [[nodiscard]] std::string toString() const override;
 
-    bool isTruthy() const override;
+    [[nodiscard]] std::string typeName() const override;
 
-    const std::unordered_map<std::string, PyMethod> attrs() const override { return {}; }
+    [[nodiscard]] bool isTruthy() const override;
 
-    int64_t data() const;
+    [[nodiscard]] int64_t data() const;
 
     bool operator==(const PyObj& other) const override;
 

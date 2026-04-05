@@ -132,6 +132,24 @@ struct CompareOpLowering : PyIROpConversion {
 
 
 /**
+ * Lowers pyir.contains_op to a call to the appropriate runtime contains operator function.
+ *
+ * The operator string is mapped to a runtime function at compile time. Both operands are heap-allocated Value*
+ * pointers. The runtime performs the operation and returns a new heap-allocated Value*.
+ *
+ * pyir.contains_op "==", %lhs, %rhs
+ *     %result = llvm.call @pyir_in(%lhs, %rhs)
+ */
+struct ContainsOpLowering : PyIROpConversion {
+    ContainsOpLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::ContainsOp::getOperationName(), tc, ctx) {}
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override;
+};
+
+
+/**
  * Lowers pyir.pyir_formatSimple to a call to the runtime function pyir_formatSimple.
  *
  * Formats a heap-allocated Value* as a string and returns a new heap-allocated Value*.

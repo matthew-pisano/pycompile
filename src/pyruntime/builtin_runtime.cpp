@@ -12,6 +12,7 @@
 #include "pyruntime/objects/py_int.h"
 #include "pyruntime/objects/py_list.h"
 #include "pyruntime/objects/py_none.h"
+#include "pyruntime/objects/py_set.h"
 #include "pyruntime/objects/py_str.h"
 #include "pyruntime/runtime_util.h"
 
@@ -32,8 +33,10 @@ PyObj* pyir_builtinLen(PyObj** args, const int64_t argc) {
         throw std::runtime_error("Too many arguments for len()");
     if (const PyStr* str = dynamic_cast<PyStr*>(args[0]))
         return str->len();
-    if (const PyStr* list = dynamic_cast<PyStr*>(args[0]))
+    if (const PyList* list = dynamic_cast<PyList*>(args[0]))
         return list->len();
+    if (const PySet* set = dynamic_cast<PySet*>(args[0]))
+        return set->len();
     throw std::runtime_error("Object has no len()");
 }
 
@@ -91,4 +94,14 @@ PyObj* pyir_builtinList(PyObj** args, const int64_t argc) {
         return new PyList({});
 
     return new PyList(valueToList(args[0]));
+}
+
+
+PyObj* pyir_builtinSet(PyObj** args, const int64_t argc) {
+    if (argc > 1)
+        throw std::runtime_error("Too many arguments for set()");
+    if (argc == 0)
+        return new PySet({});
+
+    return new PySet(valueToSet(args[0]));
 }

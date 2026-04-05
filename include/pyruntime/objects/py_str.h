@@ -4,24 +4,26 @@
 
 #ifndef PYCOMPILE_PY_STR_H
 #define PYCOMPILE_PY_STR_H
+#include <utility>
+
 #include "py_method.h"
 #include "py_object.h"
 
 struct PyStr : PyObj {
-    explicit PyStr(const std::string& str) : raw(str) {}
+    explicit PyStr(std::string str) : raw(std::move(str)) {}
     explicit PyStr(const char c) : raw(1, c) {}
 
-    PyInt* len() const override;
+    [[nodiscard]] PyInt* len() const override;
 
-    std::string toString() const override;
+    [[nodiscard]] size_t hash() const override;
 
-    std::string typeName() const override;
+    [[nodiscard]] std::string toString() const override;
 
-    bool isTruthy() const override;
+    [[nodiscard]] std::string typeName() const override;
 
-    const std::unordered_map<std::string, PyMethod> attrs() const override;
+    [[nodiscard]] bool isTruthy() const override;
 
-    std::string data() const;
+    [[nodiscard]] std::string data() const;
 
     bool operator==(const PyObj& other) const override;
 

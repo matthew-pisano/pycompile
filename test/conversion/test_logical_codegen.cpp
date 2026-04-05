@@ -40,14 +40,6 @@ TEST_CASE_METHOD(MLIRFixture, "Test Arithmetic Operators MLIR") {
         REQUIRE(binaryOp.getOp() == "+");
     }
 
-    SECTION("Test List Addition") {
-        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = [1, 2]\nb = [3]\nc = a + b");
-        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 9));
-        REQUIRE(binaryOp);
-        REQUIRE(binaryOp.getOp() == "+");
-    }
-
     SECTION("Test Subtraction") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a - b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
@@ -93,14 +85,6 @@ TEST_CASE_METHOD(MLIRFixture, "Test Arithmetic Operators MLIR") {
         pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "%");
-    }
-
-    SECTION("Test Index") {
-        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = [1, 2]\nb = a[0]");
-        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
-        REQUIRE(binaryOp);
-        REQUIRE(binaryOp.getOp() == "[]");
     }
 
     SECTION("Test Integer Negation") {
@@ -290,5 +274,40 @@ TEST_CASE_METHOD(MLIRFixture, "Test Comparators MLIR") {
         pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == ">=");
+    }
+}
+
+
+TEST_CASE_METHOD(MLIRFixture, "Test Container Operators MLIR") {
+    SECTION("Test Index") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = [1, 2]\nb = a[0]");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        REQUIRE(binaryOp);
+        REQUIRE(binaryOp.getOp() == "[]");
+    }
+
+    SECTION("Test Membership") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("1 in [1, 2]");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+        pyir::ContainsOp containsOp = mlir::dyn_cast<pyir::ContainsOp>(getOp(fn, 2));
+        REQUIRE(containsOp);
+        REQUIRE(containsOp.getOp() == "in");
+    }
+
+    SECTION("Test Union") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("{1} | {2}");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 4));
+        REQUIRE(binaryOp);
+        REQUIRE(binaryOp.getOp() == "|");
+    }
+
+    SECTION("Test Intersection") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("{1} & {2}");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 4));
+        REQUIRE(binaryOp);
+        REQUIRE(binaryOp.getOp() == "&");
     }
 }

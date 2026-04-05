@@ -6,18 +6,18 @@
 
 #include <format>
 
+size_t PyMethod::hash() const { throw std::runtime_error("Unhashable type " + typeName()); }
+
 std::string PyMethod::toString() const { return std::format("<method {} of {} object>", fnName, self->typeName()); }
 
 std::string PyMethod::typeName() const { return "function"; }
 
 bool PyMethod::isTruthy() const { return true; }
 
-const std::unordered_map<std::string, PyMethod> PyMethod::attrs() const { return {}; }
-
 PyObj* PyMethod::selfObj() const { return self; }
 
 std::string PyMethod::funcName() const { return fnName; }
 
-PyMethodType PyMethod::data() const { return fn; }
+PyMethodData PyMethod::data() const { return fn; }
 
 bool PyMethod::operator==(const PyObj&) const { return false; }

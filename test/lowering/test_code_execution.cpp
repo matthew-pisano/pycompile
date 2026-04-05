@@ -110,10 +110,14 @@ struct JITFixture {
         addSymbol("pyir_loadConstBool", reinterpret_cast<void*>(pyir_loadConstBool));
         addSymbol("pyir_loadConstNone", reinterpret_cast<void*>(pyir_loadConstNone));
         addSymbol("pyir_loadConstTuple", reinterpret_cast<void*>(pyir_loadConstTuple));
+        addSymbol("pyir_loadAttr", reinterpret_cast<void*>(pyir_loadAttr));
         addSymbol("pyir_add", reinterpret_cast<void*>(pyir_add));
         addSymbol("pyir_sub", reinterpret_cast<void*>(pyir_sub));
         addSymbol("pyir_mul", reinterpret_cast<void*>(pyir_mul));
+        addSymbol("pyir_pipe", reinterpret_cast<void*>(pyir_pipe));
+        addSymbol("pyir_ampersand", reinterpret_cast<void*>(pyir_ampersand));
         addSymbol("pyir_idx", reinterpret_cast<void*>(pyir_idx));
+        addSymbol("pyir_in", reinterpret_cast<void*>(pyir_in));
         addSymbol("pyir_div", reinterpret_cast<void*>(pyir_div));
         addSymbol("pyir_eq", reinterpret_cast<void*>(pyir_eq));
         addSymbol("pyir_ne", reinterpret_cast<void*>(pyir_ne));
@@ -133,6 +137,9 @@ struct JITFixture {
         addSymbol("pyir_buildList", reinterpret_cast<void*>(pyir_buildList));
         addSymbol("pyir_listExtend", reinterpret_cast<void*>(pyir_listExtend));
         addSymbol("pyir_listAppend", reinterpret_cast<void*>(pyir_listAppend));
+        addSymbol("pyir_buildSet", reinterpret_cast<void*>(pyir_buildSet));
+        addSymbol("pyir_setUpdate", reinterpret_cast<void*>(pyir_setUpdate));
+        addSymbol("pyir_setAdd", reinterpret_cast<void*>(pyir_setAdd));
 
         llvm::Error defineErr = dylib.define(llvm::orc::absoluteSymbols(symbols));
         REQUIRE(!defineErr);
@@ -179,25 +186,49 @@ TEST_CASE_METHOD(JITFixture, "Test JIT String Operations") {
         const std::string output = runCapture("print('Hello there'[2])");
         REQUIRE(output == "l\n");
     }
+
+    SECTION("Test Set as String") {
+        const std::string output =
+                runCapture("a = str({1, 2, 3})\nprint(len(a) == 9 and ('1' in a) and ('2' in a) and ('3' in a))");
+        REQUIRE(output == "True\n");
+    }
+
+    SECTION("Test List as String") {
+        const std::string output = runCapture("print(str([1, 2, 3]))");
+        REQUIRE(output == "[1, 2, 3]\n");
+    }
 }
 
 
 TEST_CASE_METHOD(JITFixture, "Test JIT List Operations") {
     SECTION("Test Build List") {
-        const std::string output = runCapture("print([])");
+        std::string output = runCapture("print([])");
+        REQUIRE(output == "[]\n");
+        output = runCapture("print(list())");
         REQUIRE(output == "[]\n");
     }
 
-    SECTION("Test List Extend") {
+    SECTION("Test List Extend Op") {
         const std::string output = runCapture("print([1, 2, 3])");
         REQUIRE(output == "[1, 2, 3]\n");
     }
 
-    SECTION("Test List Append") {
+    SECTION("Test List Append Op") {
         std::string listStr =
                 "[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]";
         const std::string output = runCapture(std::format("print({})", listStr));
         REQUIRE(output == listStr + "\n");
+    }
+
+    SECTION("Test List Equality") {
+        std::string output = runCapture("print([1, 2, 3] == [1, 2, 3])");
+        REQUIRE(output == "True\n");
+
+        output = runCapture("print([1, 3, 2] == [1, 2, 3])");
+        REQUIRE(output == "False\n");
+
+        output = runCapture("print([1, 2, 3] == [3])");
+        REQUIRE(output == "False\n");
     }
 
     SECTION("Test List Addition") {
@@ -208,5 +239,115 @@ TEST_CASE_METHOD(JITFixture, "Test JIT List Operations") {
     SECTION("Test List Index") {
         const std::string output = runCapture("print([1, 2][0])");
         REQUIRE(output == "1\n");
+    }
+
+    SECTION("Test List Length") {
+        const std::string output = runCapture("print(len([1, 2]))");
+        REQUIRE(output == "2\n");
+    }
+
+    SECTION("Test List Membership") {
+        const std::string output = runCapture("print(1 in [1, 2])");
+        REQUIRE(output == "True\n");
+    }
+
+    SECTION("Test List Append") {
+        const std::string output = runCapture("a = [1, 2]\na.append(3)\nprint(a)");
+        REQUIRE(output == "[1, 2, 3]\n");
+    }
+
+    SECTION("Test List Extend") {
+        const std::string output = runCapture("a = [1, 2]\na.extend([3])\nprint(a)");
+        REQUIRE(output == "[1, 2, 3]\n");
+    }
+
+    SECTION("Test String as List") {
+        const std::string output = runCapture("print(list('Hello'))");
+        REQUIRE(output == "['H', 'e', 'l', 'l', 'o']\n");
+    }
+
+    SECTION("Test Set as List") {
+        const std::string output =
+                runCapture("a = list({1, 2, 3})\nprint(len(a) == 3 and (1 in a) and (2 in a) and (3 in a))");
+        REQUIRE(output == "True\n");
+    }
+}
+
+
+TEST_CASE_METHOD(JITFixture, "Test JIT Set Operations") {
+    SECTION("Test Build Set") {
+        const std::string output = runCapture("print(set())");
+        REQUIRE(output == "set()\n");
+    }
+
+    SECTION("Test Set Update Op") {
+        const std::string output = runCapture("print({1, 1, 1})");
+        REQUIRE(output == "{1}\n");
+    }
+
+    SECTION("Test Set Add Op") {
+        const std::string output = runCapture(
+                "print({1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1})");
+        REQUIRE(output == "{1}\n");
+    }
+
+    SECTION("Test Set Equality") {
+        std::string output = runCapture("print({1, 2, 3} == {1, 2, 3})");
+        REQUIRE(output == "True\n");
+
+        output = runCapture("print({1, 3, 2} == {1, 2, 3})");
+        REQUIRE(output == "True\n");
+
+        output = runCapture("print({1, 2, 3} == {3})");
+        REQUIRE(output == "False\n");
+    }
+
+    SECTION("Test Set Union") {
+        const std::string output = runCapture("print({1, 2} | {3} == {1, 2, 3})");
+        REQUIRE(output == "True\n");
+    }
+
+    SECTION("Test Set Intersection") {
+        const std::string output = runCapture("print({1, 2} & {2, 3} == {2})");
+        REQUIRE(output == "True\n");
+    }
+    SECTION("Test Set Difference") {
+        const std::string output = runCapture("print({1, 2, 3} - {1, 4} == {2, 3})");
+        REQUIRE(output == "True\n");
+    }
+
+    SECTION("Test Set Symmetric Difference") {
+        const std::string output = runCapture("print({1, 2} ^ {2, 3} == {1, 3})");
+        REQUIRE(output == "True\n");
+    }
+
+    SECTION("Test Set Membership") {
+        const std::string output = runCapture("print(1 in {1, 2})");
+        REQUIRE(output == "True\n");
+    }
+
+    SECTION("Test set Length") {
+        const std::string output = runCapture("print(len({1, 2}))");
+        REQUIRE(output == "2\n");
+    }
+
+    SECTION("Test Set Add") {
+        const std::string output = runCapture("a = {1, 2}\na.add(3)\nprint(a == {1, 2, 3})");
+        REQUIRE(output == "True\n");
+    }
+
+    SECTION("Test Set Update") {
+        const std::string output = runCapture("a = {1, 2}\na.update({3})\nprint(a == {1, 2, 3})");
+        REQUIRE(output == "True\n");
+    }
+
+    SECTION("Test String as Set") {
+        const std::string output = runCapture("print(set('Hello') == {'H', 'e', 'l', 'o'})");
+        REQUIRE(output == "True\n");
+    }
+
+    SECTION("Test List as Set") {
+        const std::string output = runCapture("a = set([1, 2, 3])\nprint(a == {1, 2, 3})");
+        REQUIRE(output == "True\n");
     }
 }

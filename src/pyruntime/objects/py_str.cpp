@@ -6,15 +6,18 @@
 
 #include "pyruntime/objects/py_int.h"
 
-PyInt* PyStr::len() const { return new PyInt(raw.size()); }
+size_t PyStr::hash() const {
+    constexpr std::hash<std::string> hasher;
+    return hasher(raw);
+}
+
+PyInt* PyStr::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
 
 std::string PyStr::toString() const { return raw; }
 
 std::string PyStr::typeName() const { return "str"; }
 
 bool PyStr::isTruthy() const { return !raw.empty(); }
-
-const std::unordered_map<std::string, PyMethod> PyStr::attrs() const { return {}; }
 
 std::string PyStr::data() const { return raw; }
 

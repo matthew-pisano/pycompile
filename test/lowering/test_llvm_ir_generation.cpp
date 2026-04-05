@@ -48,6 +48,7 @@ TEST_CASE_METHOD(LLVMFixture, "Test Arithmetic Operators LLVM") {
     SECTION("Test Subtraction") { const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a - b"); }
 
     SECTION("Test Multiplication") { const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a * b"); }
+
     SECTION("Test Division") { const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a / b"); }
 
     SECTION("Test Floor Division") { const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a // b"); }
@@ -60,7 +61,6 @@ TEST_CASE_METHOD(LLVMFixture, "Test Arithmetic Operators LLVM") {
 
     SECTION("Test Binary Negation") { const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = ~a"); }
 }
-
 
 TEST_CASE_METHOD(LLVMFixture, "Test Boolean Operators LLVM") {
     SECTION("Test Boolean Negation") { const std::unique_ptr<llvm::Module> module = compile("a = True\nb = not a"); }
@@ -105,6 +105,7 @@ TEST_CASE_METHOD(LLVMFixture, "Test Comparators LLVM") {
     }
 
     SECTION("Test Less Than") { const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a < b"); }
+
     SECTION("Test Less Than Equal") {
         const std::unique_ptr<llvm::Module> module = compile("a = 2\nb = 2\nc = a <= b");
     }
@@ -137,9 +138,15 @@ TEST_CASE_METHOD(LLVMFixture, "Test Function Definition LLVM") {
 }
 
 
-TEST_CASE_METHOD(LLVMFixture, "Test List Operations LLVM") {
+TEST_CASE_METHOD(LLVMFixture, "Test Container Operators LLVM") {
+    SECTION("Test Index") { const std::unique_ptr<llvm::Module> module = compile("[1, 2][0]"); }
 
-    SECTION("Test Empty List") { const std::unique_ptr<llvm::Module> module = compile("a = []"); }
+    SECTION("Test Membership") { const std::unique_ptr<llvm::Module> module = compile("1 in [1, 2]"); }
+}
+
+
+TEST_CASE_METHOD(LLVMFixture, "Test List Operations LLVM") {
+    SECTION("Test Empty List") { const std::unique_ptr<llvm::Module> module = compile("a = list()"); }
 
     SECTION("Test Small List") { const std::unique_ptr<llvm::Module> module = compile("a = [1, 2, 3]"); }
 
@@ -148,13 +155,25 @@ TEST_CASE_METHOD(LLVMFixture, "Test List Operations LLVM") {
                 "a = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]");
     }
 
-    SECTION("Test List Addition") { const std::unique_ptr<llvm::Module> module = compile("a = [1, 2] + [3]"); }
-
     SECTION("Test List Append") { const std::unique_ptr<llvm::Module> module = compile("[1, 2].append(3)"); }
 
     SECTION("Test List Extend") { const std::unique_ptr<llvm::Module> module = compile("[1, 2].extend([3])"); }
+}
 
-    SECTION("Test List Index") { const std::unique_ptr<llvm::Module> module = compile("[1, 2][0]"); }
+
+TEST_CASE_METHOD(LLVMFixture, "Test Set Operations LLVM") {
+    SECTION("Test Empty Set") { const std::unique_ptr<llvm::Module> module = compile("a = set()"); }
+
+    SECTION("Test Small Set") { const std::unique_ptr<llvm::Module> module = compile("a = {1, 1, 1}"); }
+
+    SECTION("Test Large Set") {
+        const std::unique_ptr<llvm::Module> module = compile(
+                "a = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}");
+    }
+
+    SECTION("Test Set Add") { const std::unique_ptr<llvm::Module> module = compile("{1, 2}.add(3)"); }
+
+    SECTION("Test Set Update") { const std::unique_ptr<llvm::Module> module = compile("{1, 2}.update({3})"); }
 }
 
 

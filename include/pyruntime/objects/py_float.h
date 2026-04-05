@@ -12,15 +12,15 @@
 struct PyFloat : PyObj {
     explicit PyFloat(const double_t decimal) : raw(decimal) {}
 
-    std::string toString() const override;
+    [[nodiscard]] size_t hash() const override;
 
-    std::string typeName() const override;
+    [[nodiscard]] std::string toString() const override;
 
-    bool isTruthy() const override;
+    [[nodiscard]] std::string typeName() const override;
 
-    const std::unordered_map<std::string, PyMethod> attrs() const override { return {}; }
+    [[nodiscard]] bool isTruthy() const override;
 
-    double_t data() const;
+    [[nodiscard]] double_t data() const;
 
     bool operator==(const PyObj& other) const override;
 

@@ -9,6 +9,8 @@
 #include "pyruntime/objects/py_bool.h"
 #include "pyruntime/objects/py_int.h"
 
+size_t PyFloat::hash() const { return std::bit_cast<size_t>(raw); }
+
 std::string PyFloat::toString() const { return std::format("{}", raw); }
 
 std::string PyFloat::typeName() const { return "float"; }
@@ -21,7 +23,7 @@ bool PyFloat::operator==(const PyObj& other) const {
     if (const PyBool* b = dynamic_cast<const PyBool*>(&other))
         return raw == b->data();
     if (const PyInt* i = dynamic_cast<const PyInt*>(&other))
-        return raw == i->data();
+        return raw == static_cast<double_t>(i->data());
     if (const PyFloat* f = dynamic_cast<const PyFloat*>(&other))
         return raw == f->data();
     return false;

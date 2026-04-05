@@ -19,6 +19,10 @@ void compareOpCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ml
                       const ByteCodeInstruction& instr, ConversionMeta& meta);
 
 
+void containsOpCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
+                       const ByteCodeInstruction& instr, ConversionMeta& meta);
+
+
 void toBoolCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc, ConversionMeta& meta);
 
 

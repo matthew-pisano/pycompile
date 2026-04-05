@@ -27,7 +27,7 @@ struct PyObj {
 
     virtual ~PyObj() = default;
 
-    virtual PyMethod* getAttr(const char* attr);
+    virtual PyObj* getAttr(const std::string& name);
 
     [[nodiscard]] virtual PyStr* name() const;
 
@@ -35,13 +35,13 @@ struct PyObj {
 
     [[nodiscard]] virtual PyStr* str() const;
 
+    [[nodiscard]] virtual size_t hash() const = 0;
+
     [[nodiscard]] virtual std::string toString() const = 0;
 
     [[nodiscard]] virtual std::string typeName() const = 0;
 
     [[nodiscard]] virtual bool isTruthy() const = 0;
-
-    virtual const std::unordered_map<std::string, PyMethod> attrs() const = 0;
 
     void incref();
 
@@ -71,6 +71,26 @@ struct PyObjRef {
         PyObj* p = ptr;
         ptr = nullptr;
         return p;
+    }
+};
+
+
+struct PyObjPtrHash {
+    std::size_t operator()(const PyObj* s) const {
+        if (!s)
+            return 0; // Handle null pointers
+        return s->hash();
+    }
+};
+
+
+struct PyObjPtrEqual {
+    bool operator()(const PyObj* lhs, const PyObj* rhs) const {
+        if (lhs == rhs)
+            return true;
+        if (!lhs || !rhs)
+            return false;
+        return *lhs == *rhs;
     }
 };
 

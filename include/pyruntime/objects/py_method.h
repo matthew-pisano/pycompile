@@ -9,11 +9,13 @@
 
 #include "py_object.h"
 
-using PyMethodType = PyObj* (*) (PyObj*, PyObj**, int64_t);
+using PyMethodData = PyObj* (*) (PyObj*, PyObj**, int64_t);
 
 struct PyMethod : PyObj {
-    explicit PyMethod(std::string fnName, PyObj* self, const PyMethodType& func) :
+    explicit PyMethod(std::string fnName, PyObj* self, const PyMethodData& func) :
         fnName(std::move(fnName)), self(self), fn(func) {}
+
+    [[nodiscard]] size_t hash() const override;
 
     [[nodiscard]] std::string toString() const override;
 
@@ -21,20 +23,18 @@ struct PyMethod : PyObj {
 
     [[nodiscard]] bool isTruthy() const override;
 
-    [[nodiscard]] const std::unordered_map<std::string, PyMethod> attrs() const override;
-
     [[nodiscard]] std::string funcName() const;
 
     [[nodiscard]] PyObj* selfObj() const;
 
-    [[nodiscard]] PyMethodType data() const;
+    [[nodiscard]] PyMethodData data() const;
 
     bool operator==(const PyObj& other) const override;
 
 private:
     std::string fnName;
     PyObj* self;
-    PyMethodType fn;
+    PyMethodData fn;
 };
 
 #endif // PYCOMPILE_PY_METHOD_H

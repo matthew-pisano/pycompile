@@ -186,6 +186,17 @@ TEST_CASE_METHOD(JITFixture, "Test JIT String Operations") {
         const std::string output = runCapture("print('Hello there'[2])");
         REQUIRE(output == "l\n");
     }
+
+    SECTION("Test Set as String") {
+        const std::string output = runCapture(
+                "a = str({1, 2, 3})\nprint(len(a) == 9 and (\"'1'\" in a) and (\"'2'\" in a) and (\"'3'\" in a))");
+        REQUIRE(output == "True\n");
+    }
+
+    SECTION("Test List as String") {
+        const std::string output = runCapture("print(str([1, 2, 3]))");
+        REQUIRE(output == "[1, 2, 3]\n");
+    }
 }
 
 
@@ -248,6 +259,17 @@ TEST_CASE_METHOD(JITFixture, "Test JIT List Operations") {
     SECTION("Test List Extend") {
         const std::string output = runCapture("a = [1, 2]\na.extend([3])\nprint(a)");
         REQUIRE(output == "[1, 2, 3]\n");
+    }
+
+    SECTION("Test String as List") {
+        const std::string output = runCapture("print(list('Hello'))");
+        REQUIRE(output == "['H', 'e', 'l', 'l', 'o']\n");
+    }
+
+    SECTION("Test Set as List") {
+        const std::string output =
+                runCapture("a = list({1, 2, 3})\nprint(len(a) == 3 and (1 in a) and (2 in a) and (3 in a))");
+        REQUIRE(output == "True\n");
     }
 }
 
@@ -316,6 +338,16 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Set Operations") {
 
     SECTION("Test Set Update") {
         const std::string output = runCapture("a = {1, 2}\na.update({3})\nprint(a == {1, 2, 3})");
+        REQUIRE(output == "True\n");
+    }
+
+    SECTION("Test String as Set") {
+        const std::string output = runCapture("print(set('Hello') == {'H', 'e', 'l', 'o'})");
+        REQUIRE(output == "True\n");
+    }
+
+    SECTION("Test List as Set") {
+        const std::string output = runCapture("a = set([1, 2, 3])\nprint(a == {1, 2, 3})");
         REQUIRE(output == "True\n");
     }
 }

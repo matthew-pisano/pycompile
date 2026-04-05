@@ -4,6 +4,7 @@
 
 #ifndef PYCOMPILE_PY_LIST_H
 #define PYCOMPILE_PY_LIST_H
+#include <utility>
 #include <vector>
 
 #include "py_method.h"
@@ -12,8 +13,10 @@
 
 struct PyNone;
 
+using PyListData = std::vector<PyObj*>;
+
 struct PyList : PyObj {
-    explicit PyList(const std::vector<PyObj*>& list) : raw(list) {}
+    explicit PyList(PyListData list) : raw(std::move(list)) {}
 
     static PyObj* append(PyObj* self, PyObj** args, int64_t argc);
 
@@ -29,14 +32,14 @@ struct PyList : PyObj {
 
     [[nodiscard]] bool isTruthy() const override;
 
-    [[nodiscard]] std::vector<PyObj*> data() const;
+    [[nodiscard]] PyListData data() const;
 
-    std::vector<PyObj*>& data();
+    PyListData& data();
 
     bool operator==(const PyObj& other) const override;
 
 private:
-    std::vector<PyObj*> raw;
+    PyListData raw;
 };
 
 #endif // PYCOMPILE_PY_LIST_H

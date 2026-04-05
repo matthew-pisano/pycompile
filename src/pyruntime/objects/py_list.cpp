@@ -72,9 +72,9 @@ std::string PyList::typeName() const { return "list"; }
 
 bool PyList::isTruthy() const { return !raw.empty(); }
 
-std::vector<PyObj*> PyList::data() const { return raw; }
+PyListData PyList::data() const { return raw; }
 
-std::vector<PyObj*>& PyList::data() { return raw; }
+PyListData& PyList::data() { return raw; }
 
 bool PyList::operator==(const PyObj& other) const {
     if (const PyList* l = dynamic_cast<const PyList*>(&other))

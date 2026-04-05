@@ -14,6 +14,6 @@ bool PyFunction::isTruthy() const { return true; }
 
 std::string PyFunction::funcName() const { return fnName; }
 
-PyFunctionType PyFunction::data() const { return fn; }
+PyFunctionData PyFunction::data() const { return fn; }
 
 bool PyFunction::operator==(const PyObj&) const { return false; }

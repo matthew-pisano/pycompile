@@ -5,6 +5,7 @@
 #ifndef PYCOMPILE_PY_SET_H
 #define PYCOMPILE_PY_SET_H
 #include <unordered_set>
+#include <utility>
 
 #include "py_method.h"
 #include "py_object.h"
@@ -12,8 +13,10 @@
 
 struct PyNone;
 
+using PySetData = std::unordered_set<PyObj*>;
+
 struct PySet : PyObj {
-    explicit PySet(const std::unordered_set<PyObj*>& set) : raw(set) {}
+    explicit PySet(PySetData set) : raw(std::move(set)) {}
 
     static PyObj* add(PyObj* self, PyObj** args, int64_t argc);
 
@@ -29,14 +32,14 @@ struct PySet : PyObj {
 
     [[nodiscard]] bool isTruthy() const override;
 
-    [[nodiscard]] std::unordered_set<PyObj*> data() const;
+    [[nodiscard]] PySetData data() const;
 
-    std::unordered_set<PyObj*>& data();
+    PySetData& data();
 
     bool operator==(const PyObj& other) const override;
 
 private:
-    std::unordered_set<PyObj*> raw;
+    PySetData raw;
 };
 
 #endif // PYCOMPILE_PY_SET_H

@@ -37,9 +37,9 @@ PyObj* pyir_add(const PyObj* lhs, const PyObj* rhs) {
     if (pyir_isStr(lhs) && pyir_isStr(rhs))
         return new PyStr(dynamic_cast<const PyStr*>(lhs)->data() + dynamic_cast<const PyStr*>(rhs)->data());
     if (pyir_isList(lhs) && pyir_isList(rhs)) {
-        std::vector<PyObj*> lhsVal = dynamic_cast<const PyList*>(lhs)->data();
-        std::vector<PyObj*> rhsVal = dynamic_cast<const PyList*>(rhs)->data();
-        std::vector<PyObj*> result;
+        PyListData lhsVal = dynamic_cast<const PyList*>(lhs)->data();
+        PyListData rhsVal = dynamic_cast<const PyList*>(rhs)->data();
+        PyListData result;
         result.insert(result.end(), lhsVal.begin(), lhsVal.end());
         result.insert(result.end(), rhsVal.begin(), rhsVal.end());
         return new PyList(result);
@@ -54,8 +54,8 @@ PyObj* pyir_sub(const PyObj* lhs, const PyObj* rhs) {
     if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
         return new PyFloat(valueToFloat(lhs) - valueToFloat(rhs));
     if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
-        std::unordered_set<PyObj*> result = dynamic_cast<const PySet*>(lhs)->data();
-        const std::unordered_set<PyObj*> rSet = dynamic_cast<const PySet*>(rhs)->data();
+        PySetData result = dynamic_cast<const PySet*>(lhs)->data();
+        const PySetData rSet = dynamic_cast<const PySet*>(rhs)->data();
         for (PyObj* lItem : dynamic_cast<const PySet*>(lhs)->data())
             if (unorderedSetContains(rSet, lItem))
                 result.erase(lItem);
@@ -110,8 +110,8 @@ PyObj* pyir_mod(const PyObj* lhs, const PyObj* rhs) {
 
 PyObj* pyir_pipe(const PyObj* lhs, const PyObj* rhs) {
     if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
-        std::unordered_set<PyObj*> result = dynamic_cast<const PySet*>(lhs)->data();
-        const std::unordered_set<PyObj*> rhsSet = dynamic_cast<const PySet*>(rhs)->data();
+        PySetData result = dynamic_cast<const PySet*>(lhs)->data();
+        const PySetData rhsSet = dynamic_cast<const PySet*>(rhs)->data();
         result.insert(rhsSet.begin(), rhsSet.end());
         return new PySet(result);
     }
@@ -121,8 +121,8 @@ PyObj* pyir_pipe(const PyObj* lhs, const PyObj* rhs) {
 
 PyObj* pyir_ampersand(const PyObj* lhs, const PyObj* rhs) {
     if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
-        std::unordered_set<PyObj*> result;
-        const std::unordered_set<PyObj*> rSet = dynamic_cast<const PySet*>(rhs)->data();
+        PySetData result;
+        const PySetData rSet = dynamic_cast<const PySet*>(rhs)->data();
         for (PyObj* lItem : dynamic_cast<const PySet*>(lhs)->data())
             if (unorderedSetContains(rSet, lItem))
                 result.insert(lItem);
@@ -146,7 +146,7 @@ PyObj* pyir_idx(const PyObj* obj, const PyObj* idx) {
         return new PyStr(str[index]);
     }
     if (pyir_isList(obj)) {
-        const std::vector<PyObj*>& list = dynamic_cast<const PyList*>(obj)->data();
+        const PyListData& list = dynamic_cast<const PyList*>(obj)->data();
         if (index < 0)
             index += static_cast<int64_t>(list.size());
         if (index < 0 || index >= static_cast<int64_t>(list.size()))
@@ -229,9 +229,9 @@ PyObj* pyir_xor(const PyObj* lhs, const PyObj* rhs) {
     if (pyir_isBool(lhs) && pyir_isBool(rhs))
         return new PyBool((dynamic_cast<const PyBool*>(lhs)->data() ^ dynamic_cast<const PyBool*>(rhs)->data()) == 1);
     if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
-        const std::unordered_set<PyObj*> lSet = dynamic_cast<const PySet*>(lhs)->data();
-        const std::unordered_set<PyObj*> rSet = dynamic_cast<const PySet*>(rhs)->data();
-        std::unordered_set<PyObj*> result;
+        const PySetData lSet = dynamic_cast<const PySet*>(lhs)->data();
+        const PySetData rSet = dynamic_cast<const PySet*>(rhs)->data();
+        PySetData result;
 
         // Elements in lSet not in rSet
         for (PyObj* elem : lSet)

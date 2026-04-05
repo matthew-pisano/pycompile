@@ -72,9 +72,9 @@ std::string PySet::typeName() const { return "set"; }
 
 bool PySet::isTruthy() const { return !raw.empty(); }
 
-std::unordered_set<PyObj*> PySet::data() const { return raw; }
+PySetData PySet::data() const { return raw; }
 
-std::unordered_set<PyObj*>& PySet::data() { return raw; }
+PySetData& PySet::data() { return raw; }
 
 bool PySet::operator==(const PyObj& other) const {
     if (const PySet* s = dynamic_cast<const PySet*>(&other))

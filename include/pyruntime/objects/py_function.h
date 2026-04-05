@@ -9,10 +9,10 @@
 #include "py_method.h"
 #include "py_object.h"
 
-using PyFunctionType = PyObj* (*) (PyObj**, int64_t);
+using PyFunctionData = PyObj* (*) (PyObj**, int64_t);
 
 struct PyFunction : PyObj {
-    explicit PyFunction(std::string fnName, const PyFunctionType& func) : fnName(std::move(fnName)), fn(func) {}
+    explicit PyFunction(std::string fnName, const PyFunctionData& func) : fnName(std::move(fnName)), fn(func) {}
 
     [[nodiscard]] std::string toString() const override;
 
@@ -22,13 +22,13 @@ struct PyFunction : PyObj {
 
     [[nodiscard]] std::string funcName() const;
 
-    [[nodiscard]] PyFunctionType data() const;
+    [[nodiscard]] PyFunctionData data() const;
 
     bool operator==(const PyObj& other) const override;
 
 private:
     std::string fnName;
-    PyFunctionType fn;
+    PyFunctionData fn;
 };
 
 #endif // PYCOMPILE_PY_FUNCTION_H

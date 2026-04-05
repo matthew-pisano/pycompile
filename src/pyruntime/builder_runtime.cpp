@@ -25,7 +25,7 @@ PyObj* pyir_buildString(PyObj** parts, const int64_t count) {
 
 
 PyObj* pyir_buildList(PyObj** parts, const int64_t count) {
-    std::vector<PyObj*> result;
+    PyListData result;
     for (int64_t i = 0; i < count; i++) {
         parts[i]->incref();
         result.push_back(parts[i]);
@@ -41,7 +41,7 @@ void pyir_listAppend(PyObj* list, PyObj* item) { PyList::append(list, &item, 1);
 
 
 PyObj* pyir_buildSet(PyObj** parts, const int64_t count) {
-    std::unordered_set<PyObj*> result;
+    PySetData result;
     for (int64_t i = 0; i < count; i++) {
         parts[i]->incref();
         result.insert(parts[i]);

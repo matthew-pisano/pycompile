@@ -18,7 +18,7 @@ void pyir_popScope() {
 
 
 PyFunction* pyir_makeFunction(const char* fnName, void* fn_ptr) {
-    return new PyFunction(fnName, reinterpret_cast<PyFunctionType>(fn_ptr));
+    return new PyFunction(fnName, reinterpret_cast<PyFunctionData>(fn_ptr));
 }
 
 

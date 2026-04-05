@@ -8,15 +8,15 @@
 #include "py_object.h"
 
 struct PyNone : PyObj {
-    explicit PyNone() {}
+    explicit PyNone() = default;
 
-    size_t hash() const override;
+    [[nodiscard]] size_t hash() const override;
 
-    std::string toString() const override;
+    [[nodiscard]] std::string toString() const override;
 
-    std::string typeName() const override;
+    [[nodiscard]] std::string typeName() const override;
 
-    bool isTruthy() const override;
+    [[nodiscard]] bool isTruthy() const override;
 
     bool operator==(const PyObj& other) const override;
 };

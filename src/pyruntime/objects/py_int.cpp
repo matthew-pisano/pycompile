@@ -23,6 +23,6 @@ bool PyInt::operator==(const PyObj& other) const {
     if (const PyInt* i = dynamic_cast<const PyInt*>(&other))
         return raw == i->data();
     if (const PyFloat* f = dynamic_cast<const PyFloat*>(&other))
-        return raw == f->data();
+        return static_cast<double_t>(raw) == f->data();
     return false;
 }

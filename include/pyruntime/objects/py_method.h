@@ -15,7 +15,7 @@ struct PyMethod : PyObj {
     explicit PyMethod(std::string fnName, PyObj* self, const PyMethodData& func) :
         fnName(std::move(fnName)), self(self), fn(func) {}
 
-    size_t hash() const override;
+    [[nodiscard]] size_t hash() const override;
 
     [[nodiscard]] std::string toString() const override;
 

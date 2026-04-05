@@ -11,7 +11,7 @@ size_t PyStr::hash() const {
     return hasher(raw);
 }
 
-PyInt* PyStr::len() const { return new PyInt(raw.size()); }
+PyInt* PyStr::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
 
 std::string PyStr::toString() const { return raw; }
 

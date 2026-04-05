@@ -11,15 +11,15 @@
 struct PyBool : PyObj {
     explicit PyBool(const bool boolean) : raw(boolean) {}
 
-    size_t hash() const override;
+    [[nodiscard]] size_t hash() const override;
 
-    std::string toString() const override;
+    [[nodiscard]] std::string toString() const override;
 
-    std::string typeName() const override;
+    [[nodiscard]] std::string typeName() const override;
 
-    bool isTruthy() const override;
+    [[nodiscard]] bool isTruthy() const override;
 
-    bool data() const;
+    [[nodiscard]] bool data() const;
 
     bool operator==(const PyObj& other) const override;
 

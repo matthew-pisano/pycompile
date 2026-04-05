@@ -13,17 +13,17 @@ struct PyStr : PyObj {
     explicit PyStr(std::string str) : raw(std::move(str)) {}
     explicit PyStr(const char c) : raw(1, c) {}
 
-    PyInt* len() const override;
+    [[nodiscard]] PyInt* len() const override;
 
-    size_t hash() const override;
+    [[nodiscard]] size_t hash() const override;
 
-    std::string toString() const override;
+    [[nodiscard]] std::string toString() const override;
 
-    std::string typeName() const override;
+    [[nodiscard]] std::string typeName() const override;
 
-    bool isTruthy() const override;
+    [[nodiscard]] bool isTruthy() const override;
 
-    std::string data() const;
+    [[nodiscard]] std::string data() const;
 
     bool operator==(const PyObj& other) const override;
 

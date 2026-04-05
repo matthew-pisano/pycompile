@@ -13,7 +13,7 @@
 
 struct PyNone;
 
-using PySetData = std::unordered_set<PyObj*>;
+using PySetData = std::unordered_set<PyObj*, PyObjPtrHash, PyObjPtrEqual>;
 
 struct PySet : PyObj {
     explicit PySet(PySetData set) : raw(std::move(set)) {}

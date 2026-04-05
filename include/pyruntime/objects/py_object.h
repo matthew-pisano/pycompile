@@ -74,4 +74,24 @@ struct PyObjRef {
     }
 };
 
+
+struct PyObjPtrHash {
+    std::size_t operator()(const PyObj* s) const {
+        if (!s)
+            return 0; // Handle null pointers
+        return s->hash();
+    }
+};
+
+
+struct PyObjPtrEqual {
+    bool operator()(const PyObj* lhs, const PyObj* rhs) const {
+        if (lhs == rhs)
+            return true;
+        if (!lhs || !rhs)
+            return false;
+        return *lhs == *rhs;
+    }
+};
+
 #endif // PYCOMPILE_PY_OBJECT_H

@@ -15,24 +15,24 @@
 #include "pyruntime/objects/py_str.h"
 
 
-bool vectorContains(const std::vector<PyObj*>& vec, const PyObj* item) {
+bool vectorContains(const PyListData& vec, const PyObj* item) {
     return std::ranges::any_of(vec, [item](const PyObj* elem) { return *elem == *item; });
 }
 
 
-bool unorderedSetContains(const std::unordered_set<PyObj*>& set, const PyObj* item) {
+bool unorderedSetContains(const PySetData& set, const PyObj* item) {
     return std::ranges::any_of(set, [item](const PyObj* elem) { return *elem == *item; });
 }
 
 
-bool vectorEquality(const std::vector<PyObj*>& vec1, const std::vector<PyObj*>& vec2) {
+bool vectorEquality(const PyListData& vec1, const PyListData& vec2) {
     if (vec1.size() != vec2.size())
         return false;
     return std::ranges::all_of(vec1, [vec2](const PyObj* elem) { return vectorContains(vec2, elem); });
 }
 
 
-bool unorderedSetEquality(const std::unordered_set<PyObj*>& set1, const std::unordered_set<PyObj*>& set2) {
+bool unorderedSetEquality(const PySetData& set1, const PySetData& set2) {
     if (set1.size() != set2.size())
         return false;
     return std::ranges::all_of(set1, [set2](const PyObj* elem) { return unorderedSetContains(set2, elem); });
@@ -55,15 +55,15 @@ std::string valueToString(const PyObj* val, const bool quoteStrings) {
 }
 
 
-std::vector<PyObj*> valueToList(const PyObj* val) {
+PyListData valueToList(const PyObj* val) {
     if (const PyStr* pyString = dynamic_cast<const PyStr*>(val)) {
-        std::vector<PyObj*> result;
+        PyListData result;
         for (const char c : pyString->data())
             result.push_back(new PyStr(c));
         return result;
     }
     if (const PySet* pySet = dynamic_cast<const PySet*>(val)) {
-        std::vector<PyObj*> result;
+        PyListData result;
         for (PyObj* obj : pySet->data()) {
             obj->incref();
             result.push_back(obj);
@@ -76,15 +76,15 @@ std::vector<PyObj*> valueToList(const PyObj* val) {
 }
 
 
-std::unordered_set<PyObj*> valueToSet(const PyObj* val) {
+PySetData valueToSet(const PyObj* val) {
     if (const PyStr* pyString = dynamic_cast<const PyStr*>(val)) {
-        std::unordered_set<PyObj*> result;
+        PySetData result;
         for (const char c : pyString->data())
             result.insert(new PyStr(c));
         return result;
     }
     if (const PyList* pyList = dynamic_cast<const PyList*>(val)) {
-        std::unordered_set<PyObj*> result;
+        PySetData result;
         for (PyObj* obj : pyList->data()) {
             obj->incref();
             result.insert(obj);

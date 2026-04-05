@@ -9,23 +9,24 @@
 #include <unordered_set>
 #include <vector>
 
+#include "objects/py_list.h"
+#include "objects/py_object.h"
+#include "objects/py_set.h"
 
-struct PyObj;
+bool vectorContains(const PyListData& vec, const PyObj* item);
 
-bool vectorContains(const std::vector<PyObj*>& vec, const PyObj* item);
+bool unorderedSetContains(const PySetData& set, const PyObj* item);
 
-bool unorderedSetContains(const std::unordered_set<PyObj*>& set, const PyObj* item);
+bool vectorEquality(const PyListData& vec1, const PyListData& vec2);
 
-bool vectorEquality(const std::vector<PyObj*>& vec1, const std::vector<PyObj*>& vec2);
-
-bool unorderedSetEquality(const std::unordered_set<PyObj*>& set1, const std::unordered_set<PyObj*>& set2);
+bool unorderedSetEquality(const PySetData& set1, const PySetData& set2);
 
 double_t valueToFloat(const PyObj* val);
 
 std::string valueToString(const PyObj* val, bool quoteStrings = false);
 
-std::vector<PyObj*> valueToList(const PyObj* val);
+PyListData valueToList(const PyObj* val);
 
-std::unordered_set<PyObj*> valueToSet(const PyObj* val);
+PySetData valueToSet(const PyObj* val);
 
 #endif // PYCOMPILE_RUNTIME_UTIL_H

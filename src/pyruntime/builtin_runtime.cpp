@@ -14,6 +14,7 @@
 #include "pyruntime/objects/py_none.h"
 #include "pyruntime/objects/py_set.h"
 #include "pyruntime/objects/py_str.h"
+#include "pyruntime/objects/py_tuple.h"
 #include "pyruntime/runtime_util.h"
 
 
@@ -104,4 +105,14 @@ PyObj* pyir_builtinSet(PyObj** args, const int64_t argc) {
         return new PySet({});
 
     return new PySet(valueToSet(args[0]));
+}
+
+
+PyObj* pyir_builtinTuple(PyObj** args, const int64_t argc) {
+    if (argc > 1)
+        throw std::runtime_error("Too many arguments for tuple()");
+    if (argc == 0)
+        return new PyTuple({});
+
+    return new PyTuple(valueToList(args[0]));
 }

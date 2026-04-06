@@ -115,7 +115,7 @@ size_t PyDict::hash() const { throw std::runtime_error("Unhashable type " + type
 
 std::string PyDict::toString() const {
     if (raw.empty())
-        return "set()";
+        return "{}";
 
     std::string result = "{";
     for (const auto& [key, value] : raw)
@@ -127,7 +127,7 @@ std::string PyDict::toString() const {
     return result;
 }
 
-std::string PyDict::typeName() const { return "set"; }
+std::string PyDict::typeName() const { return "dict"; }
 
 bool PyDict::isTruthy() const { return !raw.empty(); }
 

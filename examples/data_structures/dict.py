@@ -10,13 +10,13 @@ a = {1: 'one', 2: 'two', 3: 'three'}
 print("Dict Get:", a.get(2))
 
 a = {1: 'one', 2: 'two', 3: 'three'}
-print("Dict Get:", a.keys())
+print("Dict Keys:", a.keys())
 
 a = {1: 'one', 2: 'two', 3: 'three'}
-print("Dict Get:", a.values())
+print("Dict Values:", a.values())
 
 a = {1: 'one', 2: 'two', 3: 'three'}
-print("Dict Get:", a.items())
+print("Dict Items:", a.items())
 
 a = {1: 'one', 2: 'two'}
 a.update({3: 'three'})

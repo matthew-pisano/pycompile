@@ -15,6 +15,7 @@
 #include "pyruntime/objects/py_object.h"
 #include "pyruntime/objects/py_set.h"
 #include "pyruntime/objects/py_str.h"
+#include "pyruntime/objects/py_tuple.h"
 #include "pyruntime/runtime_util.h"
 
 
@@ -24,6 +25,7 @@ bool pyir_isFloat(const PyObj* val) { return dynamic_cast<const PyFloat*>(val); 
 bool pyir_isStr(const PyObj* val) { return dynamic_cast<const PyStr*>(val); }
 bool pyir_isList(const PyObj* val) { return dynamic_cast<const PyList*>(val); }
 bool pyir_isSet(const PyObj* val) { return dynamic_cast<const PySet*>(val); }
+bool pyir_isTuple(const PyObj* val) { return dynamic_cast<const PyTuple*>(val); }
 
 
 int8_t pyir_isTruthy(const PyObj* val) { return val->isTruthy(); }
@@ -43,6 +45,14 @@ PyObj* pyir_add(const PyObj* lhs, const PyObj* rhs) {
         result.insert(result.end(), lhsVal.begin(), lhsVal.end());
         result.insert(result.end(), rhsVal.begin(), rhsVal.end());
         return new PyList(result);
+    }
+    if (pyir_isTuple(lhs) && pyir_isTuple(rhs)) {
+        PyListData lhsVal = dynamic_cast<const PyTuple*>(lhs)->data();
+        PyListData rhsVal = dynamic_cast<const PyTuple*>(rhs)->data();
+        PyListData result;
+        result.insert(result.end(), lhsVal.begin(), lhsVal.end());
+        result.insert(result.end(), rhsVal.begin(), rhsVal.end());
+        return new PyTuple(result);
     }
     throw std::runtime_error("Unsupported operand types for +");
 }
@@ -162,6 +172,10 @@ PyObj* pyir_idx(const PyObj* obj, const PyObj* idx) {
 PyBool* pyir_in(const PyObj* container, const PyObj* element) {
     if (const PyList* list = dynamic_cast<const PyList*>(container)) {
         for (const PyObj* obj : list->data())
+            if (*obj == *element)
+                return new PyBool(true);
+    } else if (const PyTuple* tuple = dynamic_cast<const PyTuple*>(container)) {
+        for (const PyObj* obj : tuple->data())
             if (*obj == *element)
                 return new PyBool(true);
     } else if (const PySet* set = dynamic_cast<const PySet*>(container)) {

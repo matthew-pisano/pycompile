@@ -13,6 +13,7 @@
 #include "pyruntime/objects/py_list.h"
 #include "pyruntime/objects/py_set.h"
 #include "pyruntime/objects/py_str.h"
+#include "pyruntime/objects/py_tuple.h"
 
 
 double_t valueToFloat(const PyObj* val) {
@@ -46,6 +47,14 @@ PyListData valueToList(const PyObj* val) {
         }
         return result;
     }
+    if (const PyTuple* pyTuple = dynamic_cast<const PyTuple*>(val)) {
+        PyListData result;
+        for (PyObj* obj : pyTuple->data()) {
+            obj->incref();
+            result.push_back(obj);
+        }
+        return result;
+    }
     if (const PyList* pyList = dynamic_cast<const PyList*>(val))
         return pyList->data();
     throw std::runtime_error(std::format("Cannot convert type '{}' to list", val->typeName()));
@@ -62,6 +71,14 @@ PySetData valueToSet(const PyObj* val) {
     if (const PyList* pyList = dynamic_cast<const PyList*>(val)) {
         PySetData result;
         for (PyObj* obj : pyList->data()) {
+            obj->incref();
+            result.insert(obj);
+        }
+        return result;
+    }
+    if (const PyTuple* pyTuple = dynamic_cast<const PyTuple*>(val)) {
+        PySetData result;
+        for (PyObj* obj : pyTuple->data()) {
             obj->incref();
             result.insert(obj);
         }

@@ -38,6 +38,8 @@ PyObj* pyir_builtinLen(PyObj** args, const int64_t argc) {
         return list->len();
     if (const PySet* set = dynamic_cast<PySet*>(args[0]))
         return set->len();
+    if (const PyTuple* tuple = dynamic_cast<PyTuple*>(args[0]))
+        return tuple->len();
     throw std::runtime_error("Object has no len()");
 }
 

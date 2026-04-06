@@ -9,6 +9,8 @@
 #include <string>
 #include <unordered_map>
 
+
+struct PyBool;
 struct PyMethod;
 struct PyStr;
 struct PyInt;
@@ -34,6 +36,10 @@ struct PyObj {
     [[nodiscard]] virtual PyInt* len() const;
 
     [[nodiscard]] virtual PyStr* str() const;
+
+    [[nodiscard]] virtual PyBool* contains(const PyObj* obj) const;
+
+    [[nodiscard]] virtual PyObj* idx(const PyObj* idx) const;
 
     [[nodiscard]] virtual size_t hash() const = 0;
 

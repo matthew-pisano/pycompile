@@ -6,9 +6,11 @@
 
 #include <stdexcept>
 
+#include "pyruntime/objects/py_bool.h"
 #include "pyruntime/objects/py_int.h"
 #include "pyruntime/objects/py_none.h"
 #include "pyruntime/objects/py_set.h"
+#include "pyruntime/objects/py_tuple.h"
 #include "pyruntime/runtime_util.h"
 
 PyObj* PyList::append(PyObj* self, PyObj** args, const int64_t argc) {
@@ -40,6 +42,11 @@ PyObj* PyList::extend(PyObj* self, PyObj** args, const int64_t argc) {
             v->incref();
             selfList->raw.push_back(v);
         }
+    else if (const PyTuple* srcTuple = dynamic_cast<const PyTuple*>(args[0]))
+        for (PyObj* v : srcTuple->data()) {
+            v->incref();
+            selfList->raw.push_back(v);
+        }
     else
         throw std::runtime_error("Can only extend with iterable types");
 
@@ -55,6 +62,26 @@ PyObj* PyList::getAttr(const std::string& name) {
 }
 
 PyInt* PyList::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
+
+PyBool* PyList::contains(const PyObj* obj) const {
+    for (const PyObj* elem : raw)
+        if (*elem == *obj)
+            return new PyBool(true);
+    return new PyBool(false);
+}
+
+PyObj* PyList::idx(const PyObj* idx) const {
+    if (const PyInt* idxVal = dynamic_cast<const PyInt*>(idx)) {
+        int64_t index = idxVal->data();
+        if (index < 0)
+            index += static_cast<int64_t>(raw.size());
+        if (index < 0 || index >= static_cast<int64_t>(raw.size()))
+            throw std::runtime_error("List index out of range");
+        raw[index]->incref(); // Return a new reference to the indexed value
+        return raw[index];
+    }
+    throw std::runtime_error("List indices must be integers");
+}
 
 size_t PyList::hash() const { throw std::runtime_error("Unhashable type " + typeName()); }
 

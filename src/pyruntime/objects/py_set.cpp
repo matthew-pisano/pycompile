@@ -7,9 +7,11 @@
 #include <algorithm>
 #include <stdexcept>
 
+#include "pyruntime/objects/py_bool.h"
 #include "pyruntime/objects/py_int.h"
 #include "pyruntime/objects/py_list.h"
 #include "pyruntime/objects/py_none.h"
+#include "pyruntime/objects/py_tuple.h"
 #include "pyruntime/runtime_util.h"
 
 PyObj* PySet::add(PyObj* self, PyObj** args, const int64_t argc) {
@@ -41,6 +43,11 @@ PyObj* PySet::update(PyObj* self, PyObj** args, const int64_t argc) {
             v->incref();
             selfSet->raw.insert(v);
         }
+    else if (const PyTuple* srcTuple = dynamic_cast<const PyTuple*>(args[0]))
+        for (PyObj* v : srcTuple->data()) {
+            v->incref();
+            selfSet->raw.insert(v);
+        }
     return new PyNone();
 }
 
@@ -53,6 +60,8 @@ PyObj* PySet::getAttr(const std::string& name) {
 }
 
 PyInt* PySet::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
+
+PyBool* PySet::contains(const PyObj* obj) const { return new PyBool(raw.contains(const_cast<PyObj*>(obj))); }
 
 size_t PySet::hash() const { throw std::runtime_error("Unhashable type " + typeName()); }
 

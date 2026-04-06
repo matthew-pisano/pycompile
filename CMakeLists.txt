@@ -103,6 +103,7 @@ add_library(stdpyir STATIC
         src/pyruntime/function_runtime.cpp
         src/pyruntime/objects/py_list.cpp
         src/pyruntime/objects/py_set.cpp
+        src/pyruntime/objects/py_tuple.cpp
         src/pyruntime/objects/py_str.cpp
         src/pyruntime/objects/py_int.cpp
         src/pyruntime/objects/py_float.cpp

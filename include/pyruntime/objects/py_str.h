@@ -15,6 +15,10 @@ struct PyStr : PyObj {
 
     [[nodiscard]] PyInt* len() const override;
 
+    [[nodiscard]] PyBool* contains(const PyObj* obj) const override;
+
+    PyObj* idx(const PyObj* idx) const override;
+
     [[nodiscard]] size_t hash() const override;
 
     [[nodiscard]] std::string toString() const override;

@@ -182,8 +182,8 @@ TEST_CASE_METHOD(JITFixture, "Test JIT String Operations") {
         REQUIRE(output == "Value is 42\n");
     }
 
-    SECTION("Test Index") {
-        const std::string output = runCapture("print('Hello there'[2])");
+    SECTION("Test List Index") {
+        const std::string output = runCapture("a = 'Hello there'\nprint(a[2])");
         REQUIRE(output == "l\n");
     }
 
@@ -237,7 +237,7 @@ TEST_CASE_METHOD(JITFixture, "Test JIT List Operations") {
     }
 
     SECTION("Test List Index") {
-        const std::string output = runCapture("print([1, 2][0])");
+        const std::string output = runCapture("a = [1, 2]\nprint(a[0])");
         REQUIRE(output == "1\n");
     }
 
@@ -247,7 +247,7 @@ TEST_CASE_METHOD(JITFixture, "Test JIT List Operations") {
     }
 
     SECTION("Test List Membership") {
-        const std::string output = runCapture("print(1 in [1, 2])");
+        const std::string output = runCapture("a = [1, 2]\nprint(1 in a)");
         REQUIRE(output == "True\n");
     }
 
@@ -270,6 +270,11 @@ TEST_CASE_METHOD(JITFixture, "Test JIT List Operations") {
         const std::string output =
                 runCapture("a = list({1, 2, 3})\nprint(len(a) == 3 and (1 in a) and (2 in a) and (3 in a))");
         REQUIRE(output == "True\n");
+    }
+
+    SECTION("Test Tuple as List") {
+        const std::string output = runCapture("print(list((1, 2, 3)))");
+        REQUIRE(output == "[1, 2, 3]\n");
     }
 }
 
@@ -311,6 +316,7 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Set Operations") {
         const std::string output = runCapture("print({1, 2} & {2, 3} == {2})");
         REQUIRE(output == "True\n");
     }
+
     SECTION("Test Set Difference") {
         const std::string output = runCapture("print({1, 2, 3} - {1, 4} == {2, 3})");
         REQUIRE(output == "True\n");
@@ -322,11 +328,11 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Set Operations") {
     }
 
     SECTION("Test Set Membership") {
-        const std::string output = runCapture("print(1 in {1, 2})");
+        const std::string output = runCapture("a = {1, 2}\nprint(1 in a)");
         REQUIRE(output == "True\n");
     }
 
-    SECTION("Test set Length") {
+    SECTION("Test Set Length") {
         const std::string output = runCapture("print(len({1, 2}))");
         REQUIRE(output == "2\n");
     }
@@ -348,6 +354,76 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Set Operations") {
 
     SECTION("Test List as Set") {
         const std::string output = runCapture("a = set([1, 2, 3])\nprint(a == {1, 2, 3})");
+        REQUIRE(output == "True\n");
+    }
+
+    SECTION("Test Tuple as Set") {
+        const std::string output = runCapture("a = set((1, 2, 3))\nprint(a == {1, 2, 3})");
+        REQUIRE(output == "True\n");
+    }
+}
+
+
+TEST_CASE_METHOD(JITFixture, "Test JIT Tuple Operations") {
+    SECTION("Test Load Tuple") {
+        const std::string output = runCapture("print(tuple())");
+        REQUIRE(output == "()\n");
+    }
+
+    SECTION("Test Single Element Tuple") {
+        const std::string output = runCapture("print((2,))");
+        REQUIRE(output == "(2,)\n");
+    }
+
+    SECTION("Test Multi Element Tuple") {
+        const std::string output = runCapture("print((1, 2, 3))");
+        REQUIRE(output == "(1, 2, 3)\n");
+    }
+
+    SECTION("Test Tuple Equality") {
+        std::string output = runCapture("print((1, 2, 3) == (1, 2, 3))");
+        REQUIRE(output == "True\n");
+
+        output = runCapture("print((1, 3, 2) == (1, 2, 3))");
+        REQUIRE(output == "False\n");
+
+        output = runCapture("print((1, 2, 3) == (3,))");
+        REQUIRE(output == "False\n");
+    }
+
+    SECTION("Test Tuple Add") {
+        const std::string output = runCapture("print((1, 2, 3) + (4,))");
+        REQUIRE(output == "(1, 2, 3, 4)\n");
+    }
+
+    SECTION("Test Tuple Membership") {
+        const std::string output = runCapture("a = (1, 2)\nprint(1 in a)");
+        REQUIRE(output == "True\n");
+    }
+
+    SECTION("Test Tuple Index") {
+        const std::string output = runCapture("a = (1, 2)\nprint(a[0])");
+        REQUIRE(output == "1\n");
+    }
+
+    SECTION("Test Tuple Length") {
+        const std::string output = runCapture("print(len((1, 2)))");
+        REQUIRE(output == "2\n");
+    }
+
+    SECTION("Test String as Tuple") {
+        const std::string output = runCapture("print(tuple('Hello'))");
+        REQUIRE(output == "('H', 'e', 'l', 'l', 'o')\n");
+    }
+
+    SECTION("Test List as Tuple") {
+        const std::string output = runCapture("print(tuple([1, 2, 3]))");
+        REQUIRE(output == "(1, 2, 3)\n");
+    }
+
+    SECTION("Test Set as Tuple") {
+        const std::string output =
+                runCapture("a = tuple({1, 2, 3})\nprint(len(a) == 3 and (1 in a) and (2 in a) and (3 in a))");
         REQUIRE(output == "True\n");
     }
 }

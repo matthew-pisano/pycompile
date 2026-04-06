@@ -2,8 +2,8 @@
 // Created by matthew on 3/29/26.
 //
 
-#ifndef PYCOMPILE_PY_LIST_H
-#define PYCOMPILE_PY_LIST_H
+#ifndef PYCOMPILE_PY_TUPLE_H
+#define PYCOMPILE_PY_TUPLE_H
 #include <utility>
 #include <vector>
 
@@ -13,16 +13,10 @@
 
 struct PyNone;
 
-using PyListData = std::vector<PyObj*>;
+using PyTupleData = std::vector<PyObj*>;
 
-struct PyList : PyObj {
-    explicit PyList(PyListData list) : raw(std::move(list)) {}
-
-    static PyObj* append(PyObj* self, PyObj** args, int64_t argc);
-
-    static PyObj* extend(PyObj* self, PyObj** args, int64_t argc);
-
-    PyObj* getAttr(const std::string& name) override;
+struct PyTuple : PyObj {
+    explicit PyTuple(PyTupleData tuple) : raw(std::move(tuple)) {}
 
     [[nodiscard]] PyInt* len() const override;
 
@@ -38,14 +32,12 @@ struct PyList : PyObj {
 
     [[nodiscard]] bool isTruthy() const override;
 
-    [[nodiscard]] PyListData data() const;
-
-    PyListData& data();
+    [[nodiscard]] PyTupleData data() const;
 
     bool operator==(const PyObj& other) const override;
 
 private:
-    PyListData raw;
+    PyTupleData raw;
 };
 
-#endif // PYCOMPILE_PY_LIST_H
+#endif // PYCOMPILE_PY_TUPLE_H

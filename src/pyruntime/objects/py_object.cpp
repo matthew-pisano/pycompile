@@ -23,3 +23,11 @@ PyObj* PyObj::getAttr(const std::string& name) { throw std::runtime_error("objec
 PyInt* PyObj::len() const { throw std::runtime_error(std::format("object of type '{}' has no len()", typeName())); }
 
 PyStr* PyObj::str() const { return new PyStr(toString()); }
+
+PyBool* PyObj::contains(const PyObj*) const {
+    throw std::runtime_error(std::format("object of type '{}' is not iterable", typeName()));
+}
+
+PyObj* PyObj::idx(const PyObj*) const {
+    throw std::runtime_error(std::format("object of type '{}' is not iterable", typeName()));
+}

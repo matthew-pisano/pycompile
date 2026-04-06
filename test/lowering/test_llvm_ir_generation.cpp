@@ -177,6 +177,13 @@ TEST_CASE_METHOD(LLVMFixture, "Test Set Operations LLVM") {
 }
 
 
+TEST_CASE_METHOD(LLVMFixture, "Test Tuple Operations LLVM") {
+    SECTION("Test Empty Tuple") { const std::unique_ptr<llvm::Module> module = compile("a = tuple()"); }
+
+    SECTION("Test Small Tuple") { const std::unique_ptr<llvm::Module> module = compile("a = (1, 2, 3)"); }
+}
+
+
 TEST_CASE_METHOD(LLVMFixture, "Test Hello World LLVM") {
     const std::unique_ptr<llvm::Module> module = compile("print('Hello world!')");
 }

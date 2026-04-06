@@ -15,6 +15,7 @@
 #include "pyruntime/objects/py_object.h"
 #include "pyruntime/objects/py_set.h"
 #include "pyruntime/objects/py_str.h"
+#include "pyruntime/objects/py_tuple.h"
 #include "pyruntime/runtime_util.h"
 
 
@@ -24,6 +25,7 @@ bool pyir_isFloat(const PyObj* val) { return dynamic_cast<const PyFloat*>(val); 
 bool pyir_isStr(const PyObj* val) { return dynamic_cast<const PyStr*>(val); }
 bool pyir_isList(const PyObj* val) { return dynamic_cast<const PyList*>(val); }
 bool pyir_isSet(const PyObj* val) { return dynamic_cast<const PySet*>(val); }
+bool pyir_isTuple(const PyObj* val) { return dynamic_cast<const PyTuple*>(val); }
 
 
 int8_t pyir_isTruthy(const PyObj* val) { return val->isTruthy(); }
@@ -43,6 +45,14 @@ PyObj* pyir_add(const PyObj* lhs, const PyObj* rhs) {
         result.insert(result.end(), lhsVal.begin(), lhsVal.end());
         result.insert(result.end(), rhsVal.begin(), rhsVal.end());
         return new PyList(result);
+    }
+    if (pyir_isTuple(lhs) && pyir_isTuple(rhs)) {
+        PyListData lhsVal = dynamic_cast<const PyTuple*>(lhs)->data();
+        PyListData rhsVal = dynamic_cast<const PyTuple*>(rhs)->data();
+        PyListData result;
+        result.insert(result.end(), lhsVal.begin(), lhsVal.end());
+        result.insert(result.end(), rhsVal.begin(), rhsVal.end());
+        return new PyTuple(result);
     }
     throw std::runtime_error("Unsupported operand types for +");
 }
@@ -132,55 +142,10 @@ PyObj* pyir_ampersand(const PyObj* lhs, const PyObj* rhs) {
 }
 
 
-PyObj* pyir_idx(const PyObj* obj, const PyObj* idx) {
-    if (!pyir_isInt(idx))
-        throw std::runtime_error("List indices must be integers");
-
-    int64_t index = dynamic_cast<const PyInt*>(idx)->data();
-    if (pyir_isStr(obj)) {
-        const std::string& str = dynamic_cast<const PyStr*>(obj)->data();
-        if (index < 0)
-            index += static_cast<int64_t>(str.size());
-        if (index < 0 || index >= static_cast<int64_t>(str.size()))
-            throw std::runtime_error("String index out of range");
-        return new PyStr(str[index]);
-    }
-    if (pyir_isList(obj)) {
-        const PyListData& list = dynamic_cast<const PyList*>(obj)->data();
-        if (index < 0)
-            index += static_cast<int64_t>(list.size());
-        if (index < 0 || index >= static_cast<int64_t>(list.size()))
-            throw std::runtime_error("List index out of range");
-        list[index]->incref(); // Return a new reference to the indexed value
-        return list[index];
-    }
-
-    throw std::runtime_error("Unsupported operand type for indexing");
-}
+PyObj* pyir_idx(const PyObj* obj, const PyObj* idx) { return obj->idx(idx); }
 
 
-PyBool* pyir_in(const PyObj* container, const PyObj* element) {
-    if (const PyList* list = dynamic_cast<const PyList*>(container)) {
-        for (const PyObj* obj : list->data())
-            if (*obj == *element)
-                return new PyBool(true);
-    } else if (const PySet* set = dynamic_cast<const PySet*>(container)) {
-        for (const PyObj* obj : set->data())
-            if (*obj == *element)
-                return new PyBool(true);
-    } else if (const PyStr* str = dynamic_cast<const PyStr*>(container)) {
-        if (const PyStr* character = dynamic_cast<const PyStr*>(element)) {
-            for (const char c : str->data())
-                if (character->data() == std::string(1, c))
-                    return new PyBool(true);
-        } else
-            throw std::runtime_error("Unsupported operand types for in");
-    } else
-        throw std::runtime_error("Unsupported operand types for in");
-
-    // Operation valid, but element not found for any path
-    return new PyBool(false);
-}
+PyBool* pyir_in(const PyObj* container, const PyObj* element) { return container->contains(element); }
 
 
 PyBool* pyir_eq(const PyObj* lhs, const PyObj* rhs) { return new PyBool(*lhs == *rhs); }

@@ -19,6 +19,19 @@ PyBool* PyTuple::contains(const PyObj* obj) const {
     return new PyBool(false);
 }
 
+PyObj* PyTuple::idx(const PyObj* idx) const {
+    if (const PyInt* idxVal = dynamic_cast<const PyInt*>(idx)) {
+        int64_t index = idxVal->data();
+        if (index < 0)
+            index += static_cast<int64_t>(raw.size());
+        if (index < 0 || index >= static_cast<int64_t>(raw.size()))
+            throw std::runtime_error("Tuple index out of range");
+        raw[index]->incref(); // Return a new reference to the indexed value
+        return raw[index];
+    }
+    throw std::runtime_error("Tuple indices must be integers");
+}
+
 size_t PyTuple::hash() const {
     size_t hash = 0;
     for (const PyObj* obj : raw)

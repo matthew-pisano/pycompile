@@ -182,8 +182,8 @@ TEST_CASE_METHOD(JITFixture, "Test JIT String Operations") {
         REQUIRE(output == "Value is 42\n");
     }
 
-    SECTION("Test Index") {
-        const std::string output = runCapture("print('Hello there'[2])");
+    SECTION("Test List Index") {
+        const std::string output = runCapture("a = 'Hello there'\nprint(a[2])");
         REQUIRE(output == "l\n");
     }
 
@@ -237,7 +237,7 @@ TEST_CASE_METHOD(JITFixture, "Test JIT List Operations") {
     }
 
     SECTION("Test List Index") {
-        const std::string output = runCapture("print([1, 2][0])");
+        const std::string output = runCapture("a = [1, 2]\nprint(a[0])");
         REQUIRE(output == "1\n");
     }
 
@@ -356,7 +356,8 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Set Operations") {
         const std::string output = runCapture("a = set([1, 2, 3])\nprint(a == {1, 2, 3})");
         REQUIRE(output == "True\n");
     }
- SECTION("Test Tuple as Set") {
+
+    SECTION("Test Tuple as Set") {
         const std::string output = runCapture("a = set((1, 2, 3))\nprint(a == {1, 2, 3})");
         REQUIRE(output == "True\n");
     }
@@ -398,6 +399,11 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Tuple Operations") {
     SECTION("Test Tuple Membership") {
         const std::string output = runCapture("a = (1, 2)\nprint(1 in a)");
         REQUIRE(output == "True\n");
+    }
+
+    SECTION("Test Tuple Index") {
+        const std::string output = runCapture("a = (1, 2)\nprint(a[0])");
+        REQUIRE(output == "1\n");
     }
 
     SECTION("Test Tuple Length") {

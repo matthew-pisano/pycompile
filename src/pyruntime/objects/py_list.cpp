@@ -70,6 +70,19 @@ PyBool* PyList::contains(const PyObj* obj) const {
     return new PyBool(false);
 }
 
+PyObj* PyList::idx(const PyObj* idx) const {
+    if (const PyInt* idxVal = dynamic_cast<const PyInt*>(idx)) {
+        int64_t index = idxVal->data();
+        if (index < 0)
+            index += static_cast<int64_t>(raw.size());
+        if (index < 0 || index >= static_cast<int64_t>(raw.size()))
+            throw std::runtime_error("List index out of range");
+        raw[index]->incref(); // Return a new reference to the indexed value
+        return raw[index];
+    }
+    throw std::runtime_error("List indices must be integers");
+}
+
 size_t PyList::hash() const { throw std::runtime_error("Unhashable type " + typeName()); }
 
 std::string PyList::toString() const {

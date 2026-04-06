@@ -142,31 +142,7 @@ PyObj* pyir_ampersand(const PyObj* lhs, const PyObj* rhs) {
 }
 
 
-PyObj* pyir_idx(const PyObj* obj, const PyObj* idx) {
-    if (!pyir_isInt(idx))
-        throw std::runtime_error("List indices must be integers");
-
-    int64_t index = dynamic_cast<const PyInt*>(idx)->data();
-    if (pyir_isStr(obj)) {
-        const std::string& str = dynamic_cast<const PyStr*>(obj)->data();
-        if (index < 0)
-            index += static_cast<int64_t>(str.size());
-        if (index < 0 || index >= static_cast<int64_t>(str.size()))
-            throw std::runtime_error("String index out of range");
-        return new PyStr(str[index]);
-    }
-    if (pyir_isList(obj)) {
-        const PyListData& list = dynamic_cast<const PyList*>(obj)->data();
-        if (index < 0)
-            index += static_cast<int64_t>(list.size());
-        if (index < 0 || index >= static_cast<int64_t>(list.size()))
-            throw std::runtime_error("List index out of range");
-        list[index]->incref(); // Return a new reference to the indexed value
-        return list[index];
-    }
-
-    throw std::runtime_error("Unsupported operand type for indexing");
-}
+PyObj* pyir_idx(const PyObj* obj, const PyObj* idx) { return obj->idx(idx); }
 
 
 PyBool* pyir_in(const PyObj* container, const PyObj* element) { return container->contains(element); }

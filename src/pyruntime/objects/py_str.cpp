@@ -22,6 +22,18 @@ PyBool* PyStr::contains(const PyObj* obj) const {
     throw std::runtime_error("Str objects can only contain other str objects");
 }
 
+PyObj* PyStr::idx(const PyObj* idx) const {
+    if (const PyInt* idxVal = dynamic_cast<const PyInt*>(idx)) {
+        int64_t index = idxVal->data();
+        if (index < 0)
+            index += static_cast<int64_t>(raw.size());
+        if (index < 0 || index >= static_cast<int64_t>(raw.size()))
+            throw std::runtime_error("Str index out of range");
+        return new PyStr(raw[index]);
+    }
+    throw std::runtime_error("Str indices must be integers");
+}
+
 std::string PyStr::toString() const { return raw; }
 
 std::string PyStr::typeName() const { return "str"; }

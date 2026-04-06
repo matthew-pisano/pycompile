@@ -42,6 +42,8 @@ struct PyList : PyObj {
 
     bool operator==(const PyObj& other) const override;
 
+    PyObj* idx(const PyObj* idx) const override;
+
 private:
     PyListData raw;
 };

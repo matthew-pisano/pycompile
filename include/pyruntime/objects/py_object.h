@@ -39,6 +39,8 @@ struct PyObj {
 
     [[nodiscard]] virtual PyBool* contains(const PyObj* obj) const;
 
+    [[nodiscard]] virtual PyObj* idx(const PyObj* idx) const;
+
     [[nodiscard]] virtual size_t hash() const = 0;
 
     [[nodiscard]] virtual std::string toString() const = 0;

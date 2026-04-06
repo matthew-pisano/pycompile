@@ -28,6 +28,8 @@ struct PyList : PyObj {
 
     [[nodiscard]] PyBool* contains(const PyObj* obj) const override;
 
+    PyObj* idx(const PyObj* idx) const override;
+
     [[nodiscard]] size_t hash() const override;
 
     [[nodiscard]] std::string toString() const override;
@@ -41,8 +43,6 @@ struct PyList : PyObj {
     PyListData& data();
 
     bool operator==(const PyObj& other) const override;
-
-    PyObj* idx(const PyObj* idx) const override;
 
 private:
     PyListData raw;

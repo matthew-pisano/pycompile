@@ -278,3 +278,11 @@ def PyIR_SetAdd : PyIR_Op<"set_add"> {
     let arguments = (ins ByteCodeObject_Type:$set, ByteCodeObject_Type:$item);
     let assemblyFormat = "$set `,` $item attr-dict `:` type($set) `,` type($item)";
 }
+
+
+def PyIR_BuildMap : PyIR_Op<"build_map"> {
+    let summary = "Constructs a map using the last N pairs of items on the stack";
+    let arguments = (ins Variadic<ByteCodeObject_Type>:$parts);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$parts attr-dict `:` functional-type($parts, $result)";
+}

@@ -129,8 +129,8 @@ PyObj* pyir_pipe(const PyObj* lhs, const PyObj* rhs) {
     }
     if (pyir_isDict(lhs) && pyir_isDict(rhs)) {
         PyDictData result = dynamic_cast<const PyDict*>(lhs)->data();
-        const PyDictData rhsDict = dynamic_cast<const PyDict*>(rhs)->data();
-        result.insert(rhsDict.begin(), rhsDict.end());
+        PyDictData rhsDict = dynamic_cast<const PyDict*>(rhs)->data();
+        result.merge(rhsDict);
         return new PyDict(result);
     }
     throw std::runtime_error("Unsupported operand types for |");

@@ -48,7 +48,7 @@ PyObj* PyList::extend(PyObj* self, PyObj** args, const int64_t argc) {
             selfList->raw.push_back(v);
         }
     else
-        throw std::runtime_error("Can only extend with iterable types");
+        throw std::runtime_error("Can only extend with iterable types, got" + args[0]->typeName());
 
     return new PyNone();
 }

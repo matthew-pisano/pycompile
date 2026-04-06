@@ -48,6 +48,9 @@ PyObj* PySet::update(PyObj* self, PyObj** args, const int64_t argc) {
             v->incref();
             selfSet->raw.insert(v);
         }
+    else
+        throw std::runtime_error("Can only update with iterable types, got" + args[0]->typeName());
+
     return new PyNone();
 }
 

@@ -4,7 +4,7 @@
 
 #ifndef PYCOMPILE_PY_DICT_H
 #define PYCOMPILE_PY_DICT_H
-#include <unordered_map>
+#include <map>
 #include <utility>
 
 #include "py_method.h"
@@ -13,7 +13,7 @@
 
 struct PyNone;
 
-using PyDictData = std::unordered_map<PyObj*, PyObj*, PyObjPtrHash, PyObjPtrEqual>;
+using PyDictData = std::map<PyObj*, PyObj*, PyObjPtrCompare>;
 
 struct PyDict : PyObj {
     explicit PyDict(PyDictData dict) : raw(std::move(dict)) {}

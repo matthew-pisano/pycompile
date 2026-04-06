@@ -100,4 +100,16 @@ struct PyObjPtrEqual {
     }
 };
 
+
+struct PyObjPtrCompare {
+    int operator()(const PyObj* lhs, const PyObj* rhs) const {
+        if (lhs == rhs)
+            return 0;
+        if (*lhs == *rhs)
+            return 0;
+        return 1;
+    }
+};
+
+
 #endif // PYCOMPILE_PY_OBJECT_H

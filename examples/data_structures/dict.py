@@ -1,27 +1,27 @@
 print("Empty Dict:", dict())
 
-print("Short Dict:", {1: '1', 2: '2', 3: '3'})
+print("Short Dict:", {1: 'one', 2: 'two', 3: 'three'})
 
-print("Dict Merge:", {1: '1', 2: '2'} | {3: '3'})
+print("Dict Merge:", {1: 'one', 2: 'two'} | {3: 'three'})
 
-print("Dict Length:", len({1: '1', 2: '2', 3: '3'}))
+print("Dict Length:", len({1: 'one', 2: 'two', 3: 'three'}))
 
-a = {1: '1', 2: '2', 3: '3'}
+a = {1: 'one', 2: 'two', 3: 'three'}
 print("Dict Get:", a.get(2))
 
-a = {1: '1', 2: '2', 3: '3'}
+a = {1: 'one', 2: 'two', 3: 'three'}
 print("Dict Get:", a.keys())
 
-a = {1: '1', 2: '2', 3: '3'}
+a = {1: 'one', 2: 'two', 3: 'three'}
 print("Dict Get:", a.values())
 
-a = {1: '1', 2: '2', 3: '3'}
+a = {1: 'one', 2: 'two', 3: 'three'}
 print("Dict Get:", a.items())
 
-a = {1: '1', 2: '2'}
-a.update({3: '3'})
+a = {1: 'one', 2: 'two'}
+a.update({3: 'three'})
 print("Dict Update:", a)
 
-print("Dict Membership:", 2 in {1: '1', 2: '2', 3: '3'})
+print("Dict Membership:", 2 in {1: 'one', 2: 'two', 3: 'three'})
 
-print("Bool Dict:", bool(dict()), bool({1: '1'}))
+print("Bool Dict:", bool(dict()), bool({1: 'one'}))

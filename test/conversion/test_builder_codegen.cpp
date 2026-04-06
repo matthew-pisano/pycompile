@@ -148,3 +148,27 @@ TEST_CASE_METHOD(MLIRFixture, "Test Build Set MLIR") {
         REQUIRE(mlir::isa<pyir::LoadConst>(setAddOp.getItem().getDefiningOp()));
     }
 }
+
+
+TEST_CASE_METHOD(MLIRFixture, "Test Load Tuple MLIR") {
+
+    SECTION("Test Empty Tuple") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = tuple()");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+
+        pyir::LoadName loadNameOp = mlir::dyn_cast<pyir::LoadName>(getOp(fn, 0));
+        REQUIRE(loadNameOp);
+        REQUIRE(loadNameOp.getVarName() == "tuple");
+    }
+
+    SECTION("Test Small Tuple") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = (1, 2, 3)");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+
+        pyir::LoadConst loadTupleOp = mlir::dyn_cast<pyir::LoadConst>(getOp(fn, 0));
+        REQUIRE(loadTupleOp);
+        mlir::ArrayAttr arrayAttr = mlir::dyn_cast<mlir::ArrayAttr>(loadTupleOp.getValue());
+        REQUIRE(arrayAttr);
+        REQUIRE(arrayAttr.getValue().size() == 3);
+    }
+}

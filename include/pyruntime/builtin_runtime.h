@@ -33,6 +33,8 @@ PyObj* pyir_builtinList(PyObj** args, int64_t argc);
 PyObj* pyir_builtinSet(PyObj** args, int64_t argc);
 
 PyObj* pyir_builtinTuple(PyObj** args, int64_t argc);
+
+PyObj* pyir_builtinDict(PyObj** args, int64_t argc);
 }
 
 #endif // PYCOMPILE_BUILTIN_RUNTIME_H

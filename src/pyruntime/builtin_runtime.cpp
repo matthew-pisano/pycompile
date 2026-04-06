@@ -8,6 +8,7 @@
 #include <stdexcept>
 
 #include "pyruntime/objects/py_bool.h"
+#include "pyruntime/objects/py_dict.h"
 #include "pyruntime/objects/py_float.h"
 #include "pyruntime/objects/py_int.h"
 #include "pyruntime/objects/py_list.h"
@@ -117,4 +118,11 @@ PyObj* pyir_builtinTuple(PyObj** args, const int64_t argc) {
         return new PyTuple({});
 
     return new PyTuple(valueToList(args[0]));
+}
+
+
+PyObj* pyir_builtinDict(PyObj**, const int64_t argc) {
+    if (argc > 0)
+        throw std::runtime_error("Too many arguments for set()");
+    return new PyDict({});
 }

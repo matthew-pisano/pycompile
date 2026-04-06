@@ -14,6 +14,7 @@
 #include "pyruntime/objects/py_list.h"
 #include "pyruntime/objects/py_none.h"
 #include "pyruntime/objects/py_str.h"
+#include "pyruntime/objects/py_tuple.h"
 #include "pyruntime/runtime_state.h"
 
 
@@ -79,7 +80,7 @@ PyObj* pyir_loadConstTuple(PyObj** items, const int64_t count) {
     result.reserve(count);
     for (int64_t i = 0; i < count; i++)
         result.push_back(items[i]);
-    return new PyList(result);
+    return new PyTuple(result);
 }
 
 PyObj* pyir_loadAttr(PyObj* obj, const char* name) { return obj->getAttr(name); }

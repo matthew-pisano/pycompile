@@ -9,6 +9,7 @@
 #include "pyruntime/objects/py_int.h"
 #include "pyruntime/objects/py_none.h"
 #include "pyruntime/objects/py_set.h"
+#include "pyruntime/objects/py_tuple.h"
 #include "pyruntime/runtime_util.h"
 
 PyObj* PyList::append(PyObj* self, PyObj** args, const int64_t argc) {
@@ -37,6 +38,11 @@ PyObj* PyList::extend(PyObj* self, PyObj** args, const int64_t argc) {
         }
     else if (const PySet* srcSet = dynamic_cast<const PySet*>(args[0]))
         for (PyObj* v : srcSet->data()) {
+            v->incref();
+            selfList->raw.push_back(v);
+        }
+    else if (const PyTuple* srcTuple = dynamic_cast<const PyTuple*>(args[0]))
+        for (PyObj* v : srcTuple->data()) {
             v->incref();
             selfList->raw.push_back(v);
         }

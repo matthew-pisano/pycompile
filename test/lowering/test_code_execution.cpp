@@ -247,7 +247,7 @@ TEST_CASE_METHOD(JITFixture, "Test JIT List Operations") {
     }
 
     SECTION("Test List Membership") {
-        const std::string output = runCapture("print(1 in [1, 2])");
+        const std::string output = runCapture("a = [1, 2]\nprint(1 in a)");
         REQUIRE(output == "True\n");
     }
 
@@ -322,7 +322,7 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Set Operations") {
     }
 
     SECTION("Test Set Membership") {
-        const std::string output = runCapture("print(1 in {1, 2})");
+        const std::string output = runCapture("a = {1, 2}\nprint(1 in a)");
         REQUIRE(output == "True\n");
     }
 

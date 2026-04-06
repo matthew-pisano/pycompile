@@ -4,6 +4,9 @@
 
 #include "pyruntime/objects/py_str.h"
 
+#include <stdexcept>
+
+#include "pyruntime/objects/py_bool.h"
 #include "pyruntime/objects/py_int.h"
 
 size_t PyStr::hash() const {
@@ -12,6 +15,12 @@ size_t PyStr::hash() const {
 }
 
 PyInt* PyStr::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
+
+PyBool* PyStr::contains(const PyObj* obj) const {
+    if (const PyStr* str = dynamic_cast<const PyStr*>(obj))
+        return new PyBool(raw.contains(str->data()));
+    throw std::runtime_error("Str objects can only contain other str objects");
+}
 
 std::string PyStr::toString() const { return raw; }
 

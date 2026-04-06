@@ -169,32 +169,7 @@ PyObj* pyir_idx(const PyObj* obj, const PyObj* idx) {
 }
 
 
-PyBool* pyir_in(const PyObj* container, const PyObj* element) {
-    if (const PyList* list = dynamic_cast<const PyList*>(container)) {
-        for (const PyObj* obj : list->data())
-            if (*obj == *element)
-                return new PyBool(true);
-    } else if (const PyTuple* tuple = dynamic_cast<const PyTuple*>(container)) {
-        for (const PyObj* obj : tuple->data())
-            if (*obj == *element)
-                return new PyBool(true);
-    } else if (const PySet* set = dynamic_cast<const PySet*>(container)) {
-        for (const PyObj* obj : set->data())
-            if (*obj == *element)
-                return new PyBool(true);
-    } else if (const PyStr* str = dynamic_cast<const PyStr*>(container)) {
-        if (const PyStr* character = dynamic_cast<const PyStr*>(element)) {
-            for (const char c : str->data())
-                if (character->data() == std::string(1, c))
-                    return new PyBool(true);
-        } else
-            throw std::runtime_error("Unsupported operand types for in");
-    } else
-        throw std::runtime_error("Unsupported operand types for in");
-
-    // Operation valid, but element not found for any path
-    return new PyBool(false);
-}
+PyBool* pyir_in(const PyObj* container, const PyObj* element) { return container->contains(element); }
 
 
 PyBool* pyir_eq(const PyObj* lhs, const PyObj* rhs) { return new PyBool(*lhs == *rhs); }

@@ -26,6 +26,8 @@ struct PyList : PyObj {
 
     [[nodiscard]] PyInt* len() const override;
 
+    [[nodiscard]] PyBool* contains(const PyObj* obj) const override;
+
     [[nodiscard]] size_t hash() const override;
 
     [[nodiscard]] std::string toString() const override;

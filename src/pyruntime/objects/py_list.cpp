@@ -6,6 +6,7 @@
 
 #include <stdexcept>
 
+#include "pyruntime/objects/py_bool.h"
 #include "pyruntime/objects/py_int.h"
 #include "pyruntime/objects/py_none.h"
 #include "pyruntime/objects/py_set.h"
@@ -61,6 +62,13 @@ PyObj* PyList::getAttr(const std::string& name) {
 }
 
 PyInt* PyList::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
+
+PyBool* PyList::contains(const PyObj* obj) const {
+    for (const PyObj* elem : raw)
+        if (*elem == *obj)
+            return new PyBool(true);
+    return new PyBool(false);
+}
 
 size_t PyList::hash() const { throw std::runtime_error("Unhashable type " + typeName()); }
 

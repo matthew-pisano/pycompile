@@ -6,10 +6,18 @@
 
 #include <stdexcept>
 
+#include "pyruntime/objects/py_bool.h"
 #include "pyruntime/objects/py_int.h"
 #include "pyruntime/runtime_util.h"
 
 PyInt* PyTuple::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
+
+PyBool* PyTuple::contains(const PyObj* obj) const {
+    for (const PyObj* elem : raw)
+        if (*elem == *obj)
+            return new PyBool(true);
+    return new PyBool(false);
+}
 
 size_t PyTuple::hash() const {
     size_t hash = 0;

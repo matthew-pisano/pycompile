@@ -151,3 +151,17 @@ mlir::LogicalResult SetAddLowering::matchAndRewrite(mlir::Operation* op, const m
     rewriter.eraseOp(op);
     return mlir::success();
 }
+
+
+mlir::LogicalResult BuildMapLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
+                                                      mlir::ConversionPatternRewriter& rewriter) const {
+    mlir::MLIRContext* ctx = op->getContext();
+    const mlir::ModuleOp module = getModule(op);
+    const mlir::Location loc = op->getLoc();
+
+    // declare: extern Value* pyir_buildMap(Value** parts, int64_t count)
+    const mlir::LLVM::LLVMFunctionType fnType =
+            mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), i64Type(ctx)});
+    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_buildMap", fnType);
+    return buildArrayType(ctx, op, operands, fn, rewriter, loc);
+}

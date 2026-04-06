@@ -62,6 +62,7 @@ struct PyIRToLLVMPass : mlir::PassWrapper<PyIRToLLVMPass, mlir::OperationPass<ml
         registry.insert<mlir::LLVM::LLVMDialect>();
     }
 
+protected:
     void runOnOperation() override {
         const mlir::ModuleOp module = getOperation();
         mlir::MLIRContext* ctx = &getContext();
@@ -94,8 +95,8 @@ void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns, mlir::LLVMTyp
                  StoreNameLowering, LoadConstLowering, PushNullLowering, CallLowering, PopTopLowering,
                  FormatSimpleLowering, BuildStringLowering, PushScopeLowering, PopScopeLowering, LoadArgLowering,
                  MakeFunctionLowering, ReturnValueLowering, BuildListLowering, ListExtendLowering, ListAppendLowering,
-                 LoadAttrLowering, ContainsOpLowering, BuildSetLowering, SetUpdateLowering, SetAddLowering>(
-            typeConverter, ctx);
+                 LoadAttrLowering, ContainsOpLowering, BuildSetLowering, SetUpdateLowering, SetAddLowering,
+                 BuildMapLowering>(typeConverter, ctx);
 }
 
 

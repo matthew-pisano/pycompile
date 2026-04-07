@@ -142,11 +142,15 @@ std::partial_ordering PyDict::operator<=>(const PyObj& other) const noexcept {
 
         for (auto& [key, value] : raw) {
             if (!d->raw.contains(key))
-                return raw.size() <=> d->raw.size();
-            if (d->raw.at(key) != value)
-                return raw.size() <=> d->raw.size();
+                return std::partial_ordering::unordered;
+            if (*d->raw.at(key) != *value)
+                return std::partial_ordering::unordered;
         }
         return std::partial_ordering::equivalent;
     }
     return std::partial_ordering::unordered;
+}
+
+bool PyDict::operator==(const PyObj& other) const noexcept {
+    return (*this <=> other) == std::partial_ordering::equivalent;
 }

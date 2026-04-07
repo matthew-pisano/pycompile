@@ -97,8 +97,12 @@ std::partial_ordering PySet::operator<=>(const PyObj& other) const noexcept {
 
         for (PyObj* elem : raw)
             if (!s->raw.contains(elem))
-                return raw.size() <=> s->raw.size();
+                return std::partial_ordering::unordered;
         return std::partial_ordering::equivalent;
     }
     return std::partial_ordering::unordered;
+}
+
+bool PySet::operator==(const PyObj& other) const noexcept {
+    return (*this <=> other) == std::partial_ordering::equivalent;
 }

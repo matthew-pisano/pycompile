@@ -28,3 +28,7 @@ std::partial_ordering PyFloat::operator<=>(const PyObj& other) const noexcept {
         return raw <=> f->data();
     return std::partial_ordering::unordered;
 }
+
+bool PyFloat::operator==(const PyObj& other) const noexcept {
+    return (*this <=> other) == std::partial_ordering::equivalent;
+}

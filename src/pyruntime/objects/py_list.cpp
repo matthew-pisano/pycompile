@@ -111,8 +111,12 @@ std::partial_ordering PyList::operator<=>(const PyObj& other) const noexcept {
 
         for (size_t i = 0; i < raw.size(); i++)
             if (*raw[i] != *l->raw[i])
-                return raw.size() <=> l->raw.size();
+                return std::partial_ordering::unordered;
         return std::partial_ordering::equivalent;
     }
     return std::partial_ordering::unordered;
+}
+
+bool PyList::operator==(const PyObj& other) const noexcept {
+    return (*this <=> other) == std::partial_ordering::equivalent;
 }

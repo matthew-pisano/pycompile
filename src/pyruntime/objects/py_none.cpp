@@ -17,3 +17,7 @@ std::partial_ordering PyNone::operator<=>(const PyObj& other) const noexcept {
         return std::partial_ordering::equivalent;
     return std::partial_ordering::unordered;
 }
+
+bool PyNone::operator==(const PyObj& other) const noexcept {
+    return (*this <=> other) == std::partial_ordering::equivalent;
+}

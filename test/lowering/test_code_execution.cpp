@@ -492,7 +492,7 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Dict Operations") {
     }
 
     SECTION("Test Dict Update") {
-        const std::string output = runCapture("a = {2: 'two', 3: 'three'}\na.update({1: 'one'})\nprint(a))");
+        const std::string output = runCapture("a = {2: 'two', 3: 'three'}\na.update({1: 'one'})\nprint(a)");
         REQUIRE(output == "{1: 'one', 2: 'two', 3: 'three'}\n");
     }
 }

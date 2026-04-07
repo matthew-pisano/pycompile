@@ -53,7 +53,8 @@ struct PyObj {
 
     void decref();
 
-    virtual std::partial_ordering operator<=>(const PyObj& other) const = default;
+    virtual std::partial_ordering operator<=>(const PyObj& other) const noexcept = 0;
+    virtual bool operator==(const PyObj& other) const noexcept = 0;
 
 private:
     std::atomic<int32_t> refcount{1};

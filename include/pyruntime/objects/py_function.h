@@ -28,6 +28,8 @@ struct PyFunction : PyObj {
 
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
 
+    bool operator==(const PyObj&) const noexcept override;
+
 private:
     std::string fnName;
     PyFunctionData fn;

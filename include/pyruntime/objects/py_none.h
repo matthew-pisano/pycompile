@@ -19,6 +19,8 @@ struct PyNone : PyObj {
     [[nodiscard]] bool isTruthy() const override;
 
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
+
+    bool operator==(const PyObj&) const noexcept override;
 };
 
 #endif // PYCOMPILE_PY_NONE_H

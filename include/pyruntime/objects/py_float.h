@@ -24,6 +24,8 @@ struct PyFloat : PyObj {
 
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
 
+    bool operator==(const PyObj&) const noexcept override;
+
 private:
     double_t raw;
 };

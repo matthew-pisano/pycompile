@@ -26,3 +26,7 @@ std::partial_ordering PyBool::operator<=>(const PyObj& other) const noexcept {
         return static_cast<double_t>(raw) <=> f->data();
     return std::partial_ordering::unordered;
 }
+
+bool PyBool::operator==(const PyObj& other) const noexcept {
+    return (*this <=> other) == std::partial_ordering::equivalent;
+}

@@ -184,6 +184,35 @@ TEST_CASE_METHOD(LLVMFixture, "Test Tuple Operations LLVM") {
 }
 
 
+TEST_CASE_METHOD(LLVMFixture, "Test Dict Operations LLVM") {
+    SECTION("Test Empty Dict") { const std::unique_ptr<llvm::Module> module = compile("a = dict()"); }
+
+    SECTION("Test Small Dict") {
+        const std::unique_ptr<llvm::Module> module = compile("a = {1: 'one', 2: 'two', 3: 'three'}");
+    }
+
+    SECTION("Test Dict Get") {
+        const std::unique_ptr<llvm::Module> module = compile("{1: 'one', 2: 'two', 3: 'three'}.get(2)");
+    }
+
+    SECTION("Test Dict Keys") {
+        const std::unique_ptr<llvm::Module> module = compile("{1: 'one', 2: 'two', 3: 'three'}.keys()");
+    }
+
+    SECTION("Test Dict Values") {
+        const std::unique_ptr<llvm::Module> module = compile("{1: 'one', 2: 'two', 3: 'three'}.values()");
+    }
+
+    SECTION("Test Dict Items") {
+        const std::unique_ptr<llvm::Module> module = compile("{1: 'one', 2: 'two', 3: 'three'}.items()");
+    }
+
+    SECTION("Test Dict Update") {
+        const std::unique_ptr<llvm::Module> module = compile("{2: 'two', 3: 'three'}.update({1: 'one'})");
+    }
+}
+
+
 TEST_CASE_METHOD(LLVMFixture, "Test Hello World LLVM") {
     const std::unique_ptr<llvm::Module> module = compile("print('Hello world!')");
 }

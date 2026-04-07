@@ -44,6 +44,12 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Dict Length") {
     REQUIRE(output == "3\n");
 }
 
+TEST_CASE_METHOD(JITFixture, "Test JIT Dict Index") {
+    const std::string output = runCapture("print({1: 'one', 2: 'two', 3: 'three'}[2])");
+    REQUIRE(output == "two\n");
+}
+
+
 TEST_CASE_METHOD(JITFixture, "Test JIT Dict Get") {
     std::string output = runCapture("print({1: 'one', 2: 'two', 3: 'three'}.get(2))");
     REQUIRE(output == "two\n");

@@ -22,13 +22,12 @@ PyObj* PyDict::get(PyObj* self, PyObj** args, const int64_t argc) {
     if (!selfDict)
         throw std::runtime_error("Can only get from dict types");
 
-    for (const auto& [key, value] : selfDict->raw)
-        if (*key == *args[0]) {
-            value->incref();
-            return value;
-        }
+    if (!selfDict->raw.contains(args[0]))
+        return new PyNone();
 
-    return new PyNone();
+    PyObj* value = selfDict->raw.at(args[0]);
+    value->incref();
+    return value;
 }
 
 

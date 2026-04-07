@@ -106,7 +106,11 @@ struct PyObjPtrCompare {
     bool operator()(const PyObj* lhs, const PyObj* rhs) const {
         if (!lhs || !rhs)
             return false;
-        return *lhs < *rhs;
+
+        const std::partial_ordering result = *lhs <=> *rhs;
+        if (result == std::partial_ordering::unordered)
+            return lhs->typeName() < rhs->typeName();
+        return result == std::partial_ordering::less;
     }
 };
 

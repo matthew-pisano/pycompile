@@ -20,7 +20,7 @@ struct PyInt : PyObj {
 
     [[nodiscard]] int64_t data() const;
 
-    bool operator==(const PyObj& other) const override;
+    std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
 
 private:
     int64_t raw;

@@ -135,17 +135,18 @@ PyDictData PyDict::data() const { return raw; }
 
 PyDictData& PyDict::data() { return raw; }
 
-bool PyDict::operator==(const PyObj& other) const {
+std::partial_ordering PyDict::operator<=>(const PyObj& other) const noexcept {
     if (const PyDict* d = dynamic_cast<const PyDict*>(&other)) {
         if (raw.size() != d->raw.size())
-            return false;
+            return raw.size() <=> d->raw.size();
 
         for (auto& [key, value] : raw) {
             if (!d->raw.contains(key))
-                return false;
+                return raw.size() <=> d->raw.size();
             if (d->raw.at(key) != value)
-                return false;
+                return raw.size() <=> d->raw.size();
         }
+        return std::partial_ordering::equivalent;
     }
-    return false;
+    return std::partial_ordering::unordered;
 }

@@ -90,11 +90,15 @@ PySetData PySet::data() const { return raw; }
 
 PySetData& PySet::data() { return raw; }
 
-bool PySet::operator==(const PyObj& other) const {
+std::partial_ordering PySet::operator<=>(const PyObj& other) const noexcept {
     if (const PySet* s = dynamic_cast<const PySet*>(&other)) {
         if (raw.size() != s->raw.size())
-            return false;
-        return std::ranges::all_of(raw, [s](PyObj* elem) { return s->raw.contains(elem); });
+            return raw.size() <=> s->raw.size();
+
+        for (PyObj* elem : raw)
+            if (!s->raw.contains(elem))
+                return raw.size() <=> s->raw.size();
+        return std::partial_ordering::equivalent;
     }
-    return false;
+    return std::partial_ordering::unordered;
 }

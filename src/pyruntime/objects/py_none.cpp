@@ -12,8 +12,8 @@ std::string PyNone::typeName() const { return "NoneType"; }
 
 bool PyNone::isTruthy() const { return false; }
 
-bool PyNone::operator==(const PyObj& other) const {
+std::partial_ordering PyNone::operator<=>(const PyObj& other) const noexcept {
     if (dynamic_cast<const PyNone*>(&other))
-        return true;
-    return false;
+        return std::partial_ordering::equivalent;
+    return std::partial_ordering::unordered;
 }

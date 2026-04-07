@@ -60,15 +60,15 @@ bool PyTuple::isTruthy() const { return !raw.empty(); }
 
 PyListData PyTuple::data() const { return raw; }
 
-bool PyTuple::operator==(const PyObj& other) const {
+std::partial_ordering PyTuple::operator<=>(const PyObj& other) const noexcept {
     if (const PyTuple* t = dynamic_cast<const PyTuple*>(&other)) {
         if (raw.size() != t->raw.size())
-            return false;
+            return raw.size() <=> t->raw.size();
 
         for (size_t i = 0; i < raw.size(); i++)
             if (*raw[i] != *t->raw[i])
-                return false;
-        return true;
+                return raw.size() <=> t->raw.size();
+        return std::partial_ordering::equivalent;
     }
-    return false;
+    return std::partial_ordering::unordered;
 }

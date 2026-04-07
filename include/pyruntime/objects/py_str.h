@@ -29,7 +29,7 @@ struct PyStr : PyObj {
 
     [[nodiscard]] std::string data() const;
 
-    bool operator==(const PyObj& other) const override;
+    std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
 
 private:
     std::string raw;

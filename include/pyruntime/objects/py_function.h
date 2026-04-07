@@ -26,7 +26,7 @@ struct PyFunction : PyObj {
 
     [[nodiscard]] PyFunctionData data() const;
 
-    bool operator==(const PyObj& other) const override;
+    std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
 
 private:
     std::string fnName;

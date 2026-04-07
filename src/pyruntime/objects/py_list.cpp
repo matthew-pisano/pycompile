@@ -104,15 +104,15 @@ PyListData PyList::data() const { return raw; }
 
 PyListData& PyList::data() { return raw; }
 
-bool PyList::operator==(const PyObj& other) const {
+std::partial_ordering PyList::operator<=>(const PyObj& other) const noexcept {
     if (const PyList* l = dynamic_cast<const PyList*>(&other)) {
         if (raw.size() != l->raw.size())
-            return false;
+            return raw.size() <=> l->raw.size();
 
         for (size_t i = 0; i < raw.size(); i++)
             if (*raw[i] != *l->raw[i])
-                return false;
-        return true;
+                return raw.size() <=> l->raw.size();
+        return std::partial_ordering::equivalent;
     }
-    return false;
+    return std::partial_ordering::unordered;
 }

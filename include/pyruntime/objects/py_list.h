@@ -42,7 +42,7 @@ struct PyList : PyObj {
 
     PyListData& data();
 
-    bool operator==(const PyObj& other) const override;
+    std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
 
 private:
     PyListData raw;

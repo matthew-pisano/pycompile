@@ -42,8 +42,8 @@ bool PyStr::isTruthy() const { return !raw.empty(); }
 
 std::string PyStr::data() const { return raw; }
 
-bool PyStr::operator==(const PyObj& other) const {
+std::partial_ordering PyStr::operator<=>(const PyObj& other) const noexcept {
     if (const PyStr* s = dynamic_cast<const PyStr*>(&other))
-        return raw == s->data();
-    return false;
+        return raw <=> s->data();
+    return std::partial_ordering::unordered;
 }

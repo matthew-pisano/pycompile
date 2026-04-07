@@ -34,7 +34,7 @@ struct PyDict : PyObj {
 
     [[nodiscard]] PyBool* contains(const PyObj* obj) const override;
 
-    size_t hash() const override;
+    [[nodiscard]] size_t hash() const override;
 
     [[nodiscard]] std::string toString() const override;
 
@@ -46,7 +46,7 @@ struct PyDict : PyObj {
 
     PyDictData& data();
 
-    bool operator==(const PyObj& other) const override;
+    std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
 
 private:
     PyDictData raw;

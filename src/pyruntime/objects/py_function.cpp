@@ -18,4 +18,4 @@ std::string PyFunction::funcName() const { return fnName; }
 
 PyFunctionData PyFunction::data() const { return fn; }
 
-bool PyFunction::operator==(const PyObj&) const { return false; }
+std::partial_ordering PyFunction::operator<=>(const PyObj&) const noexcept { return std::partial_ordering::unordered; }

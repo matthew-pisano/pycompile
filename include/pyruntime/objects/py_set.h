@@ -40,7 +40,7 @@ struct PySet : PyObj {
 
     PySetData& data();
 
-    bool operator==(const PyObj& other) const override;
+    std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
 
 private:
     PySetData raw;

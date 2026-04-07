@@ -140,6 +140,7 @@ struct JITFixture {
         addSymbol("pyir_buildSet", reinterpret_cast<void*>(pyir_buildSet));
         addSymbol("pyir_setUpdate", reinterpret_cast<void*>(pyir_setUpdate));
         addSymbol("pyir_setAdd", reinterpret_cast<void*>(pyir_setAdd));
+        addSymbol("pyir_buildMap", reinterpret_cast<void*>(pyir_buildMap));
 
         llvm::Error defineErr = dylib.define(llvm::orc::absoluteSymbols(symbols));
         REQUIRE(!defineErr);
@@ -425,5 +426,73 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Tuple Operations") {
         const std::string output =
                 runCapture("a = tuple({1, 2, 3})\nprint(len(a) == 3 and (1 in a) and (2 in a) and (3 in a))");
         REQUIRE(output == "True\n");
+    }
+}
+
+
+TEST_CASE_METHOD(JITFixture, "Test JIT Dict Operations") {
+    SECTION("Test Build Dict") {
+        std::string output = runCapture("print({})");
+        REQUIRE(output == "{}\n");
+
+        output = runCapture("print(dict())");
+        REQUIRE(output == "{}\n");
+
+        output = runCapture("print({1: 'one', 2: 'two', 3: 'three'})");
+        REQUIRE(output == "{1: 'one', 2: 'two', 3: 'three'}\n");
+    }
+
+    SECTION("Test Dict Equality") {
+        std::string output = runCapture("print({1: 'one', 2: 'two', 3: 'three'} == {1: 'one', 2: 'two', 3: 'three'})");
+        REQUIRE(output == "True\n");
+
+        output = runCapture("print({1: 'one', 2: 'two', 3: 'three'} == {1: 'one', 3: 'three', 2: 'two'})");
+        REQUIRE(output == "True\n");
+
+        output = runCapture("print({1: 'one', 2: 'two', 3: 'three'} == {1: 'one', 2: 'two'})");
+        REQUIRE(output == "False\n");
+    }
+
+    SECTION("Test Dict Merge") {
+        const std::string output = runCapture("print({2: 'two', 3: 'three'} | {1: 'one'})");
+        REQUIRE(output == "{1: 'one', 2: 'two', 3: 'three'}\n");
+    }
+
+    SECTION("Test Dict Membership") {
+        const std::string output = runCapture("a = {1: 'one', 2: 'two', 3: 'three'}\nprint(1 in a)");
+        REQUIRE(output == "True\n");
+    }
+
+    SECTION("Test Dict Length") {
+        const std::string output = runCapture("print(len({1: 'one', 2: 'two', 3: 'three'}))");
+        REQUIRE(output == "3\n");
+    }
+
+    SECTION("Test Dict Get") {
+        std::string output = runCapture("print({1: 'one', 2: 'two', 3: 'three'}.get(2))");
+        REQUIRE(output == "two\n");
+
+        output = runCapture("print({1: 'one', 2: 'two', 3: 'three'}.get('z'))");
+        REQUIRE(output == "None\n");
+    }
+
+    SECTION("Test Dict Keys") {
+        const std::string output = runCapture("print({1: 'one', 2: 'two', 3: 'three'}.keys())");
+        REQUIRE(output == "(1, 2, 3)\n");
+    }
+
+    SECTION("Test Dict Values") {
+        const std::string output = runCapture("print({1: 'one', 2: 'two', 3: 'three'}.values())");
+        REQUIRE(output == "('one', 'two', 'three')\n");
+    }
+
+    SECTION("Test Dict Items") {
+        const std::string output = runCapture("print({1: 'one', 2: 'two', 3: 'three'}.items())");
+        REQUIRE(output == "[(1, 'one'), (2, 'two'), (3, 'three')]\n");
+    }
+
+    SECTION("Test Dict Update") {
+        const std::string output = runCapture("a = {2: 'two', 3: 'three'}\na.update({1: 'one'})\nprint(a))");
+        REQUIRE(output == "{1: 'one', 2: 'two', 3: 'three'}\n");
     }
 }

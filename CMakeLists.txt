@@ -195,11 +195,16 @@ add_executable(pycompile-tests
         test/bytecode/test_bytecode.cpp
         test/conversion/test_pyir_codegen.cpp
         test/lowering/test_llvm_ir_generation.cpp
-        test/lowering/test_code_execution.cpp
+        test/execution/test_code_execution.cpp
         test/conversion/test_logical_codegen.cpp
         test/conversion/test_function_codegen.cpp
         test/conversion/test_control_flow_codegen.cpp
         test/conversion/test_builder_codegen.cpp
+        test/execution/test_str_execution.cpp
+        test/execution/test_list_execution.cpp
+        test/execution/test_set_execution.cpp
+        test/execution/test_tuple_execution.cpp
+        test/execution/test_dict_execution.cpp
 )
 target_link_libraries(pycompile-tests PRIVATE ${PYCOMPILE_LIBS} stdpyir Catch2::Catch2WithMain)
 target_include_directories(pycompile-tests SYSTEM PRIVATE

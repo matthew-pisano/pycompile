@@ -172,3 +172,37 @@ TEST_CASE_METHOD(MLIRFixture, "Test Load Tuple MLIR") {
         REQUIRE(arrayAttr.getValue().size() == 3);
     }
 }
+
+
+TEST_CASE_METHOD(MLIRFixture, "Test Build Dict MLIR") {
+
+    SECTION("Test Empty Dict") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = dict()");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+
+        pyir::LoadName loadNameOp = mlir::dyn_cast<pyir::LoadName>(getOp(fn, 0));
+        REQUIRE(loadNameOp);
+        REQUIRE(loadNameOp.getVarName() == "dict");
+    }
+
+    SECTION("Test Small Dict") {
+        const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = {1: 'one', 2: 'two', 3: 'three'}");
+        const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+
+        pyir::LoadConst loadNumOp = mlir::dyn_cast<pyir::LoadConst>(getOp(fn, 0));
+        REQUIRE(loadNumOp);
+        mlir::IntegerAttr intAttr = mlir::dyn_cast<mlir::IntegerAttr>(loadNumOp.getValue());
+        REQUIRE(intAttr);
+        REQUIRE(intAttr.getInt() == 1);
+
+        pyir::LoadConst loadStrOp = mlir::dyn_cast<pyir::LoadConst>(getOp(fn, 1));
+        REQUIRE(loadStrOp);
+        mlir::StringAttr StrAttr = mlir::dyn_cast<mlir::StringAttr>(loadStrOp.getValue());
+        REQUIRE(StrAttr);
+        REQUIRE(StrAttr.str() == "one");
+
+        pyir::BuildMap buildMapOp = mlir::dyn_cast<pyir::BuildMap>(getOp(fn, 6));
+        REQUIRE(buildMapOp);
+        REQUIRE(buildMapOp.getParts().size() == 6);
+    }
+}

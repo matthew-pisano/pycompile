@@ -74,5 +74,5 @@ std::partial_ordering PyTuple::operator<=>(const PyObj& other) const noexcept {
 }
 
 bool PyTuple::operator==(const PyObj& other) const noexcept {
-    return (*this <=> other) == std::partial_ordering::equivalent;
+    return *this <=> other == std::partial_ordering::equivalent;
 }

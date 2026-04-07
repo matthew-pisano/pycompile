@@ -118,5 +118,5 @@ std::partial_ordering PyList::operator<=>(const PyObj& other) const noexcept {
 }
 
 bool PyList::operator==(const PyObj& other) const noexcept {
-    return (*this <=> other) == std::partial_ordering::equivalent;
+    return *this <=> other == std::partial_ordering::equivalent;
 }

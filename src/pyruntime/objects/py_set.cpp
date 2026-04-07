@@ -104,5 +104,5 @@ std::partial_ordering PySet::operator<=>(const PyObj& other) const noexcept {
 }
 
 bool PySet::operator==(const PyObj& other) const noexcept {
-    return (*this <=> other) == std::partial_ordering::equivalent;
+    return *this <=> other == std::partial_ordering::equivalent;
 }

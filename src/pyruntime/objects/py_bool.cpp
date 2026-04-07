@@ -28,5 +28,5 @@ std::partial_ordering PyBool::operator<=>(const PyObj& other) const noexcept {
 }
 
 bool PyBool::operator==(const PyObj& other) const noexcept {
-    return (*this <=> other) == std::partial_ordering::equivalent;
+    return *this <=> other == std::partial_ordering::equivalent;
 }

@@ -49,5 +49,5 @@ std::partial_ordering PyStr::operator<=>(const PyObj& other) const noexcept {
 }
 
 bool PyStr::operator==(const PyObj& other) const noexcept {
-    return (*this <=> other) == std::partial_ordering::equivalent;
+    return *this <=> other == std::partial_ordering::equivalent;
 }

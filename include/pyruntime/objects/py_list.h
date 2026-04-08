@@ -53,15 +53,15 @@ private:
 
 
 struct PyListIter : PyIter {
-    explicit PyListIter(const PyListData::iterator begin, const PyListData::iterator end) : begin(begin), end(end) {}
+    explicit PyListIter(PyListData list) : list(std::move(list)) { it = this->list.begin(); }
 
     static PyObj* next(PyObj* self, PyObj**, int64_t argc);
 
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
 
 private:
-    PyListData::iterator begin;
-    PyListData::iterator end;
+    PyListData::iterator it;
+    PyListData list;
 };
 
 #endif // PYCOMPILE_PY_LIST_H

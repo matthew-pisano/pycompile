@@ -127,15 +127,15 @@ PyObj* pyir_builtinIter(PyObj** args, const int64_t argc) {
         throw std::runtime_error("iter() takes exactly one argument");
 
     if (const PyStr* str = dynamic_cast<PyStr*>(args[0]))
-        return new PyStrIter(str->data().begin(), str->data().end());
+        return new PyStrIter(str->data());
     if (const PyList* list = dynamic_cast<PyList*>(args[0]))
-        return new PyListIter(list->data().begin(), list->data().end());
+        return new PyListIter(list->data());
     if (const PySet* set = dynamic_cast<PySet*>(args[0]))
-        return new PySetIter(set->data().begin(), set->data().end());
+        return new PySetIter(set->data());
     if (const PyTuple* tuple = dynamic_cast<PyTuple*>(args[0]))
-        return new PyTupleIter(tuple->data().begin(), tuple->data().end());
+        return new PyTupleIter(tuple->data());
     if (const PyDict* dict = dynamic_cast<PyDict*>(args[0]))
-        return new PyDictIter(dict->data().begin(), dict->data().end());
+        return new PyDictIter(dict->data());
 
     throw std::runtime_error("cannot convert to iter()");
 }

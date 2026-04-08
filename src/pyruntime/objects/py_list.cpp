@@ -127,17 +127,17 @@ PyObj* PyListIter::next(PyObj* self, PyObj**, const int64_t argc) {
     PyListIter* selfIter = dynamic_cast<PyListIter*>(self);
     if (!selfIter)
         throw std::runtime_error("Can only get the next value of iterator types");
-    if (selfIter->begin == selfIter->end)
+    if (selfIter->it == selfIter->list.end())
         throw std::runtime_error("StopIteration()");
 
-    PyObj* obj = *selfIter->begin;
+    PyObj* obj = *selfIter->it;
     obj->incref();
-    ++selfIter->begin;
+    ++selfIter->it;
     return obj;
 }
 
 std::partial_ordering PyListIter::operator<=>(const PyObj& other) const noexcept {
-    if (const PyListIter* it = dynamic_cast<const PyListIter*>(&other))
-        return begin <=> it->begin;
+    if (const PyListIter* iter = dynamic_cast<const PyListIter*>(&other))
+        return it <=> iter->it;
     return std::partial_ordering::unordered;
 }

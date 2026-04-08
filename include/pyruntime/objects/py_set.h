@@ -51,15 +51,15 @@ private:
 
 
 struct PySetIter : PyIter {
-    explicit PySetIter(const PySetData::iterator begin, const PySetData::iterator end) : begin(begin), end(end) {}
+    explicit PySetIter(PySetData set) : set(std::move(set)) { it = this->set.begin(); }
 
     static PyObj* next(PyObj* self, PyObj**, int64_t argc);
 
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
 
 private:
-    PySetData::iterator begin;
-    PySetData::iterator end;
+    PySetData::iterator it;
+    PySetData set;
 };
 
 #endif // PYCOMPILE_PY_SET_H

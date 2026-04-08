@@ -58,16 +58,16 @@ PyObj* PyStrIter::next(PyObj* self, PyObj**, const int64_t argc) {
     PyStrIter* selfIter = dynamic_cast<PyStrIter*>(self);
     if (!selfIter)
         throw std::runtime_error("Can only get the next value of iterator types");
-    if (selfIter->begin == selfIter->end)
+    if (selfIter->it == selfIter->str.end())
         throw std::runtime_error("StopIteration()");
 
-    const char c = *selfIter->begin;
-    ++selfIter->begin;
+    const char c = *selfIter->it;
+    ++selfIter->it;
     return new PyStr(c);
 }
 
 std::partial_ordering PyStrIter::operator<=>(const PyObj& other) const noexcept {
-    if (const PyStrIter* it = dynamic_cast<const PyStrIter*>(&other))
-        return begin <=> it->begin;
+    if (const PyStrIter* iter = dynamic_cast<const PyStrIter*>(&other))
+        return it <=> iter->it;
     return std::partial_ordering::unordered;
 }

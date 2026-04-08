@@ -45,15 +45,16 @@ private:
 
 
 struct PyTupleIter : PyIter {
-    explicit PyTupleIter(const PyTupleData::iterator begin, const PyTupleData::iterator end) : begin(begin), end(end) {}
+    explicit PyTupleIter(PyTupleData tuple) : tuple(std::move(tuple)) {it = this->tuple.begin();}
 
     static PyObj* next(PyObj* self, PyObj**, int64_t argc);
 
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
 
 private:
-    PyTupleData::iterator begin;
-    PyTupleData::iterator end;
+    PyTupleData::iterator it;
+    PyTupleData tuple;
 };
+
 
 #endif // PYCOMPILE_PY_TUPLE_H

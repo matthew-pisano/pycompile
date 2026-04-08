@@ -113,18 +113,18 @@ PyObj* PySetIter::next(PyObj* self, PyObj**, const int64_t argc) {
     PySetIter* selfIter = dynamic_cast<PySetIter*>(self);
     if (!selfIter)
         throw std::runtime_error("Can only get the next value of iterator types");
-    if (selfIter->begin == selfIter->end)
+    if (selfIter->it == selfIter->set.end())
         throw std::runtime_error("StopIteration()");
 
-    PyObj* obj = *selfIter->begin;
+    PyObj* obj = *selfIter->it;
     obj->incref();
-    ++selfIter->begin;
+    ++selfIter->it;
     return obj;
 }
 
 std::partial_ordering PySetIter::operator<=>(const PyObj& other) const noexcept {
-    if (const PySetIter* it = dynamic_cast<const PySetIter*>(&other)) {
-        if (begin == it->begin)
+    if (const PySetIter* iter = dynamic_cast<const PySetIter*>(&other)) {
+        if (it == iter->it)
             return std::partial_ordering::equivalent;
     }
     return std::partial_ordering::unordered;

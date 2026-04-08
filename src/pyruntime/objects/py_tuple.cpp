@@ -83,17 +83,17 @@ PyObj* PyTupleIter::next(PyObj* self, PyObj**, const int64_t argc) {
     PyTupleIter* selfIter = dynamic_cast<PyTupleIter*>(self);
     if (!selfIter)
         throw std::runtime_error("Can only get the next value of iterator types");
-    if (selfIter->begin == selfIter->end)
+    if (selfIter->it == selfIter->tuple.end())
         throw std::runtime_error("StopIteration()");
 
-    PyObj* obj = *selfIter->begin;
+    PyObj* obj = *selfIter->it;
     obj->incref();
-    ++selfIter->begin;
+    ++selfIter->it;
     return obj;
 }
 
 std::partial_ordering PyTupleIter::operator<=>(const PyObj& other) const noexcept {
-    if (const PyTupleIter* it = dynamic_cast<const PyTupleIter*>(&other))
-        return begin <=> it->begin;
+    if (const PyTupleIter* iter = dynamic_cast<const PyTupleIter*>(&other))
+        return it <=> iter->it;
     return std::partial_ordering::unordered;
 }

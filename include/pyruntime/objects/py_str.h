@@ -40,15 +40,15 @@ private:
 
 
 struct PyStrIter : PyIter {
-    explicit PyStrIter(const std::string::iterator begin, const std::string::iterator end) : begin(begin), end(end) {}
+    explicit PyStrIter(std::string str) : str(std::move(str)) { it = this->str.begin(); }
 
     static PyObj* next(PyObj* self, PyObj**, int64_t argc);
 
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
 
 private:
-    std::string::iterator begin;
-    std::string::iterator end;
+    std::string::iterator it;
+    std::string str;
 };
 
 #endif // PYCOMPILE_PY_STR_H

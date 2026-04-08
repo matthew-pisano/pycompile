@@ -58,15 +58,15 @@ private:
 
 
 struct PyDictIter : PyIter {
-    explicit PyDictIter(const PyDictData::iterator begin, const PyDictData::iterator end) : begin(begin), end(end) {}
+    explicit PyDictIter(PyDictData dict) : dict(std::move(dict)) { it = this->dict.begin(); }
 
     static PyObj* next(PyObj* self, PyObj**, int64_t argc);
 
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
 
 private:
-    PyDictData::iterator begin;
-    PyDictData::iterator end;
+    PyDictData::iterator it;
+    PyDictData dict;
 };
 
 #endif // PYCOMPILE_PY_DICT_H

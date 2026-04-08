@@ -205,6 +205,7 @@ add_executable(pycompile-tests
         test/execution/test_set_execution.cpp
         test/execution/test_tuple_execution.cpp
         test/execution/test_dict_execution.cpp
+        test/execution/test_iter_execution.cpp
 )
 target_link_libraries(pycompile-tests PRIVATE ${PYCOMPILE_LIBS} stdpyir Catch2::Catch2WithMain)
 target_include_directories(pycompile-tests SYSTEM PRIVATE

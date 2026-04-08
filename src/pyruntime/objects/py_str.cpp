@@ -51,3 +51,23 @@ std::partial_ordering PyStr::operator<=>(const PyObj& other) const noexcept {
 bool PyStr::operator==(const PyObj& other) const noexcept {
     return *this <=> other == std::partial_ordering::equivalent;
 }
+
+PyObj* PyStrIter::next(PyObj* self, PyObj**, const int64_t argc) {
+    if (argc != 0)
+        throw std::runtime_error("next() takes no arguments");
+    PyStrIter* selfIter = dynamic_cast<PyStrIter*>(self);
+    if (!selfIter)
+        throw std::runtime_error("Can only get the next value of iterator types");
+    if (selfIter->begin == selfIter->end)
+        throw std::runtime_error("StopIteration()");
+
+    const char c = *selfIter->begin;
+    ++selfIter->begin;
+    return new PyStr(c);
+}
+
+std::partial_ordering PyStrIter::operator<=>(const PyObj& other) const noexcept {
+    if (const PyStrIter* it = dynamic_cast<const PyStrIter*>(&other))
+        return begin <=> it->begin;
+    return std::partial_ordering::unordered;
+}

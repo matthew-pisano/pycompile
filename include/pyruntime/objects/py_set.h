@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include <utility>
 
+#include "py_iter.h"
 #include "py_method.h"
 #include "py_object.h"
 
@@ -46,6 +47,19 @@ struct PySet : PyObj {
 
 private:
     PySetData raw;
+};
+
+
+struct PySetIter : PyIter {
+    explicit PySetIter(const PySetData::iterator begin, const PySetData::iterator end) : begin(begin), end(end) {}
+
+    static PyObj* next(PyObj* self, PyObj**, int64_t argc);
+
+    std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
+
+private:
+    PySetData::iterator begin;
+    PySetData::iterator end;
 };
 
 #endif // PYCOMPILE_PY_SET_H

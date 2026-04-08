@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "py_iter.h"
 #include "py_method.h"
 #include "py_object.h"
 
@@ -48,6 +49,19 @@ struct PyList : PyObj {
 
 private:
     PyListData raw;
+};
+
+
+struct PyListIter : PyIter {
+    explicit PyListIter(const PyListData::iterator begin, const PyListData::iterator end) : begin(begin), end(end) {}
+
+    static PyObj* next(PyObj* self, PyObj**, int64_t argc);
+
+    std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
+
+private:
+    PyListData::iterator begin;
+    PyListData::iterator end;
 };
 
 #endif // PYCOMPILE_PY_LIST_H

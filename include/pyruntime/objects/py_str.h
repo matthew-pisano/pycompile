@@ -6,6 +6,7 @@
 #define PYCOMPILE_PY_STR_H
 #include <utility>
 
+#include "py_iter.h"
 #include "py_method.h"
 #include "py_object.h"
 
@@ -35,6 +36,19 @@ struct PyStr : PyObj {
 
 private:
     std::string raw;
+};
+
+
+struct PyStrIter : PyIter {
+    explicit PyStrIter(const std::string::iterator begin, const std::string::iterator end) : begin(begin), end(end) {}
+
+    static PyObj* next(PyObj* self, PyObj**, int64_t argc);
+
+    std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
+
+private:
+    std::string::iterator begin;
+    std::string::iterator end;
 };
 
 #endif // PYCOMPILE_PY_STR_H

@@ -32,3 +32,8 @@ it = iter(a)
 print(next(it))
 print(next(it))
 print(next(it))
+
+print("Iterate Exhausted:")
+it = iter([1])
+next(it)
+next(it)

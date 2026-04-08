@@ -20,4 +20,8 @@ std::string PyMethod::funcName() const { return fnName; }
 
 PyMethodData PyMethod::data() const { return fn; }
 
-bool PyMethod::operator==(const PyObj&) const { return false; }
+std::partial_ordering PyMethod::operator<=>(const PyObj&) const noexcept { return std::partial_ordering::unordered; }
+
+bool PyMethod::operator==(const PyObj& other) const noexcept {
+    return *this <=> other == std::partial_ordering::equivalent;
+}

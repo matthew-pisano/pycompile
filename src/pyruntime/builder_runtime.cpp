@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <unordered_set>
 
+#include "pyruntime/objects/py_dict.h"
 #include "pyruntime/objects/py_list.h"
 #include "pyruntime/objects/py_set.h"
 #include "pyruntime/objects/py_str.h"
@@ -54,3 +55,14 @@ void pyir_setUpdate(PyObj* set, PyObj* items) { PySet::update(set, &items, 1); }
 
 
 void pyir_setAdd(PyObj* set, PyObj* item) { PySet::add(set, &item, 1); }
+
+
+PyObj* pyir_buildMap(PyObj** parts, const int64_t count) {
+    PyDictData result;
+    for (int64_t i = count - 1; i > 0; i -= 2) {
+        parts[i - 1]->incref();
+        parts[i]->incref();
+        result.insert({parts[i - 1], parts[i]});
+    }
+    return new PyDict(result);
+}

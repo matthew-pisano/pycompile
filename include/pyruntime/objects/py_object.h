@@ -53,7 +53,8 @@ struct PyObj {
 
     void decref();
 
-    virtual bool operator==(const PyObj& other) const = 0;
+    virtual std::partial_ordering operator<=>(const PyObj& other) const noexcept = 0;
+    virtual bool operator==(const PyObj& other) const noexcept = 0;
 
 private:
     std::atomic<int32_t> refcount{1};
@@ -99,5 +100,19 @@ struct PyObjPtrEqual {
         return *lhs == *rhs;
     }
 };
+
+
+struct PyObjPtrCompare {
+    bool operator()(const PyObj* lhs, const PyObj* rhs) const {
+        if (!lhs || !rhs)
+            return false;
+
+        const std::partial_ordering result = *lhs <=> *rhs;
+        if (result == std::partial_ordering::unordered)
+            return lhs->typeName() < rhs->typeName();
+        return result == std::partial_ordering::less;
+    }
+};
+
 
 #endif // PYCOMPILE_PY_OBJECT_H

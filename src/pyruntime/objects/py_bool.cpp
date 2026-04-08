@@ -17,12 +17,16 @@ bool PyBool::isTruthy() const { return raw; }
 
 bool PyBool::data() const { return raw; }
 
-bool PyBool::operator==(const PyObj& other) const {
+std::partial_ordering PyBool::operator<=>(const PyObj& other) const noexcept {
     if (const PyBool* b = dynamic_cast<const PyBool*>(&other))
-        return raw == b->data();
+        return raw <=> b->data();
     if (const PyInt* i = dynamic_cast<const PyInt*>(&other))
-        return raw == i->data();
+        return static_cast<int64_t>(raw) <=> i->data();
     if (const PyFloat* f = dynamic_cast<const PyFloat*>(&other))
-        return raw == f->data();
-    return false;
+        return static_cast<double_t>(raw) <=> f->data();
+    return std::partial_ordering::unordered;
+}
+
+bool PyBool::operator==(const PyObj& other) const noexcept {
+    return *this <=> other == std::partial_ordering::equivalent;
 }

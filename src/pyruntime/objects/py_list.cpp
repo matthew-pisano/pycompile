@@ -48,7 +48,7 @@ PyObj* PyList::extend(PyObj* self, PyObj** args, const int64_t argc) {
             selfList->raw.push_back(v);
         }
     else
-        throw std::runtime_error("Can only extend with iterable types");
+        throw std::runtime_error("Can only extend with iterable types, got" + args[0]->typeName());
 
     return new PyNone();
 }
@@ -104,15 +104,19 @@ PyListData PyList::data() const { return raw; }
 
 PyListData& PyList::data() { return raw; }
 
-bool PyList::operator==(const PyObj& other) const {
+std::partial_ordering PyList::operator<=>(const PyObj& other) const noexcept {
     if (const PyList* l = dynamic_cast<const PyList*>(&other)) {
         if (raw.size() != l->raw.size())
-            return false;
+            return raw.size() <=> l->raw.size();
 
         for (size_t i = 0; i < raw.size(); i++)
             if (*raw[i] != *l->raw[i])
-                return false;
-        return true;
+                return std::partial_ordering::unordered;
+        return std::partial_ordering::equivalent;
     }
-    return false;
+    return std::partial_ordering::unordered;
+}
+
+bool PyList::operator==(const PyObj& other) const noexcept {
+    return *this <=> other == std::partial_ordering::equivalent;
 }

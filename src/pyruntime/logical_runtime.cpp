@@ -9,6 +9,7 @@
 #include <stdexcept>
 
 #include "pyruntime/objects/py_bool.h"
+#include "pyruntime/objects/py_dict.h"
 #include "pyruntime/objects/py_float.h"
 #include "pyruntime/objects/py_int.h"
 #include "pyruntime/objects/py_list.h"
@@ -25,6 +26,7 @@ bool pyir_isFloat(const PyObj* val) { return dynamic_cast<const PyFloat*>(val); 
 bool pyir_isStr(const PyObj* val) { return dynamic_cast<const PyStr*>(val); }
 bool pyir_isList(const PyObj* val) { return dynamic_cast<const PyList*>(val); }
 bool pyir_isSet(const PyObj* val) { return dynamic_cast<const PySet*>(val); }
+bool pyir_isDict(const PyObj* val) { return dynamic_cast<const PyDict*>(val); }
 bool pyir_isTuple(const PyObj* val) { return dynamic_cast<const PyTuple*>(val); }
 
 
@@ -124,6 +126,12 @@ PyObj* pyir_pipe(const PyObj* lhs, const PyObj* rhs) {
         const PySetData rhsSet = dynamic_cast<const PySet*>(rhs)->data();
         result.insert(rhsSet.begin(), rhsSet.end());
         return new PySet(result);
+    }
+    if (pyir_isDict(lhs) && pyir_isDict(rhs)) {
+        PyDictData result = dynamic_cast<const PyDict*>(lhs)->data();
+        PyDictData rhsDict = dynamic_cast<const PyDict*>(rhs)->data();
+        result.merge(rhsDict);
+        return new PyDict(result);
     }
     throw std::runtime_error("Unsupported operand types for |");
 }

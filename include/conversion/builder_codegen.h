@@ -38,4 +38,8 @@ void setUpdateCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const
 void setAddCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const ByteCodeInstruction& instr,
                    ConversionMeta& meta);
 
+
+void buildMapCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
+                     const ByteCodeInstruction& instr, ConversionMeta& meta);
+
 #endif // PYCOMPILE_BUILDER_CODEGEN_H

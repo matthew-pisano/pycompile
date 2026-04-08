@@ -108,3 +108,21 @@ void setAddCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const By
     mlir::Value list = meta.stack.at(meta.stack.size() - *idx);
     builder.create<pyir::SetAdd>(loc, list, item);
 }
+
+
+void buildMapCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
+                     const ByteCodeInstruction& instr, ConversionMeta& meta) {
+    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const int64_t* countPtr = std::get_if<int64_t>(&instr.argval);
+    if (!countPtr)
+        throw std::runtime_error("BUILD_MAP must have an int argval");
+
+    int64_t count = *countPtr;
+    count *= 2; // Double count since Python counts in pairs, not individual objects
+    std::vector<mlir::Value> parts(count);
+    for (int64_t i = count - 1; i >= 0; i--) {
+        parts[i] = meta.stack.back();
+        meta.stack.pop_back();
+    }
+    meta.stack.push_back(builder.create<pyir::BuildMap>(loc, pyType, parts).getResult());
+}

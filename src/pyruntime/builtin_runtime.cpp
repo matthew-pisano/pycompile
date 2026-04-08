@@ -146,15 +146,15 @@ PyObj* pyir_builtinNext(PyObj** args, const int64_t argc) {
         throw std::runtime_error("next() takes exactly one argument");
 
     if (PyObj* iter = dynamic_cast<PyStrIter*>(args[0]))
-        return PyStrIter::next(iter, {}, 0);
+        return PyStrIter::next(iter, nullptr, 0);
     if (PyObj* iter = dynamic_cast<PyListIter*>(args[0]))
-        return PyListIter::next(iter, {}, 0);
+        return PyListIter::next(iter, nullptr, 0);
     if (PyObj* iter = dynamic_cast<PySetIter*>(args[0]))
-        return PySetIter::next(iter, {}, 0);
+        return PySetIter::next(iter, nullptr, 0);
     if (PyObj* iter = dynamic_cast<PyTupleIter*>(args[0]))
-        return PyTupleIter::next(iter, {}, 0);
+        return PyTupleIter::next(iter, nullptr, 0);
     if (PyObj* iter = dynamic_cast<PyDictIter*>(args[0]))
-        return PyDictIter::next(iter, {}, 0);
+        return PyDictIter::next(iter, nullptr, 0);
 
     throw std::runtime_error("cannot convert to iter()");
 }

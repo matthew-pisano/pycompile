@@ -23,22 +23,6 @@
 #include "utils.h"
 
 /**
- * Mangles a Python module name to work as a valid MLIR symbol
- * @param filename The path to the Python module
- * @return
- */
-std::string mangleModuleName(const std::string& filename) {
-    std::string result = "__pymodule_";
-    for (const char c : filename) {
-        if (std::isalnum(c))
-            result += c;
-        else
-            result += '_';
-    }
-    return result;
-}
-
-/**
  * Gets the location of the given instruction in terms of MLIR
  * @param ctx The MLIR context
  * @param instr The instruction to locate
@@ -252,29 +236,6 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
 }
 
 
-/**
- * Inserts a main function as an explicit entrypoint to the module.
- */
-void insertMainEntryPoint(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, llvm::StringRef moduleFnName) {
-    const mlir::UnknownLoc loc = mlir::UnknownLoc::get(&ctx);
-    mlir::IntegerType i32Type = builder.getIntegerType(32);
-
-    // main returns int
-    mlir::FunctionType mainType = builder.getFunctionType({}, {i32Type});
-    mlir::func::FuncOp mainFn = builder.create<mlir::func::FuncOp>(loc, "main", mainType);
-
-    mlir::Block* block = mainFn.addEntryBlock();
-    builder.setInsertionPointToStart(block);
-
-    // Call the compiled module function
-    builder.create<mlir::func::CallOp>(loc, moduleFnName, mlir::TypeRange{});
-
-    // return 0
-    mlir::arith::ConstantIntOp zero = builder.create<mlir::arith::ConstantIntOp>(loc, 0, 32);
-    builder.create<mlir::func::ReturnOp>(loc, mlir::ValueRange{zero});
-}
-
-
 mlir::OwningOpRef<mlir::ModuleOp> generatePyIR(mlir::MLIRContext& ctx, const ByteCodeModule& module) {
     // Dialects must be loaded before any ops are created
     ctx.loadDialect<pyir::PyIRDialect>();
@@ -288,11 +249,8 @@ mlir::OwningOpRef<mlir::ModuleOp> generatePyIR(mlir::MLIRContext& ctx, const Byt
     mlir::ModuleOp mlirModule = mlir::ModuleOp::create(fileLoc);
     builder.setInsertionPointToEnd(mlirModule.getBody());
 
-    const std::string mlirModuleName = mangleModuleName(baseModuleName);
+    const std::string mlirModuleName = "__pymodule";
     buildMLIRModule(builder, ctx, module, mlirModuleName);
-    // Reset insertion point to module level before emitting main
-    builder.setInsertionPointToEnd(mlirModule.getBody());
-    insertMainEntryPoint(builder, ctx, mlirModuleName);
 
     // Verify the module is well-formed before returning
     if (mlir::failed(mlir::verify(mlirModule))) {

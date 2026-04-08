@@ -185,7 +185,8 @@ void linkObjectFile(const std::filesystem::path& obj, const std::filesystem::pat
     const std::string objStr = obj.string();
     const std::string outStr = output.string();
     const std::string runtimeLib = PYIR_RUNTIME_LIB_PATH;
-    const std::vector<llvm::StringRef> args = {*cppCompiler, objStr, runtimeLib, "-o", outStr};
+    const std::string runtimeMain = PYIR_RUNTIME_MAIN_PATH;
+    const std::vector<llvm::StringRef> args = {*cppCompiler, objStr, runtimeLib, runtimeMain, "-o", outStr};
 
     std::string errMsg;
     int ret = llvm::sys::ExecuteAndWait(*cppCompiler, args, std::nullopt, {}, 0, 0, &errMsg);

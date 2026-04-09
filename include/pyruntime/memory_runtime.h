@@ -33,6 +33,8 @@ PyObj* pyir_loadConstNone();
 PyObj* pyir_loadConstTuple(PyObj** items, int64_t count);
 
 PyObj* pyir_loadAttr(PyObj* obj, const char* name);
+
+void pyir_storeSubscr(PyObj* container, const PyObj* idx, PyObj* value);
 }
 
 #endif // PYCOMPILE_MEMORY_RUNTIME_H

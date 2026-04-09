@@ -112,12 +112,20 @@ PyInt* PyDict::len() const { return new PyInt(static_cast<int64_t>(raw.size()));
 PyBool* PyDict::contains(const PyObj* obj) const { return new PyBool(raw.contains(const_cast<PyObj*>(obj))); }
 
 PyObj* PyDict::idx(const PyObj* idx) const {
-    if (raw.contains(const_cast<PyObj*>(idx))) {
-        PyObj* value = raw.at(const_cast<PyObj*>(idx));
+    PyObj* mutIdx = const_cast<PyObj*>(idx);
+    if (raw.contains(mutIdx)) {
+        PyObj* value = raw.at(mutIdx);
         value->incref();
         return value;
     }
     throw std::runtime_error("Key " + idx->toString() + " not found");
+}
+
+void PyDict::setIdx(const PyObj* idx, PyObj* value) {
+    PyObj* mutIdx = const_cast<PyObj*>(idx);
+    if (raw.contains(mutIdx))
+        raw[mutIdx]->decref(); // Decref the old value
+    raw[mutIdx] = value;
 }
 
 size_t PyDict::hash() const { throw std::runtime_error("Unhashable type " + typeName()); }

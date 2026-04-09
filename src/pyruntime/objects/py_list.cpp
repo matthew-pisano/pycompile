@@ -83,6 +83,19 @@ PyObj* PyList::idx(const PyObj* idx) const {
     throw std::runtime_error("List indices must be integers");
 }
 
+void PyList::setIdx(const PyObj* idx, PyObj* value) {
+    if (const PyInt* idxVal = dynamic_cast<const PyInt*>(idx)) {
+        int64_t index = idxVal->data();
+        if (index < 0)
+            index += static_cast<int64_t>(raw.size());
+        if (index < 0 || index >= static_cast<int64_t>(raw.size()))
+            throw std::runtime_error("List index out of range");
+        raw[index]->decref(); // Decref the old value
+        raw[index] = value;
+    }
+    throw std::runtime_error("List indices must be integers");
+}
+
 size_t PyList::hash() const { throw std::runtime_error("Unhashable type " + typeName()); }
 
 std::string PyList::toString() const {

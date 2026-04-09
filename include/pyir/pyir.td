@@ -220,6 +220,13 @@ def PyIR_StoreDeref : PyIR_Op<"store_deref"> {
 }
 
 
+def PyIR_StoreSubscr : PyIR_Op<"store_subscr"> {
+    let summary = "Stores a value into the given collection at the given index";
+    let arguments = (ins ByteCodeObject_Type:$collection, ByteCodeObject_Type:$idx, ByteCodeObject_Type:$value);
+    let assemblyFormat = "$collection `,` $idx `,` $value attr-dict `:` type($value)";
+}
+
+
 def PyIR_FormatSimple : PyIR_Op<"format_simple", [Pure]> {
     let summary = "Convert a value to its string representation";
     let arguments = (ins ByteCodeObject_Type:$value);

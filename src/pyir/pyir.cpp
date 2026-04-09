@@ -15,7 +15,8 @@ namespace pyir {
         addOperations<ToBool, IsTruthy, BinaryOp, Call, LoadConst, LoadDeref, LoadFast, LoadName, StoreName, PopTop,
                       PushNull, Resume, ReturnValue, StoreFast, StoreDeref, UnaryNot, UnaryNegative, UnaryInvert,
                       CompareOp, FormatSimple, BuildString, MakeFunction, PushScope, PopScope, LoadArg, BuildList,
-                      ListExtend, ListAppend, LoadAttr, ContainsOp, BuildSet, SetUpdate, SetAdd, BuildMap>();
+                      ListExtend, ListAppend, LoadAttr, ContainsOp, BuildSet, SetUpdate, SetAdd, BuildMap,
+                      StoreSubscr>();
 
         addTypes<ByteCodeObjectType>();
         addAttributes<NoneAttr>();

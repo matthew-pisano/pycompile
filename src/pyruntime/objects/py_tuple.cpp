@@ -76,3 +76,24 @@ std::partial_ordering PyTuple::operator<=>(const PyObj& other) const noexcept {
 bool PyTuple::operator==(const PyObj& other) const noexcept {
     return *this <=> other == std::partial_ordering::equivalent;
 }
+
+PyObj* PyTupleIter::next(PyObj* self, PyObj**, const int64_t argc) {
+    if (argc != 0)
+        throw std::runtime_error("next() takes no arguments");
+    PyTupleIter* selfIter = dynamic_cast<PyTupleIter*>(self);
+    if (!selfIter)
+        throw std::runtime_error("Can only get the next value of iterator types");
+    if (selfIter->it == selfIter->tuple.end())
+        throw std::runtime_error("StopIteration()");
+
+    PyObj* obj = *selfIter->it;
+    obj->incref();
+    ++selfIter->it;
+    return obj;
+}
+
+std::partial_ordering PyTupleIter::operator<=>(const PyObj& other) const noexcept {
+    if (const PyTupleIter* iter = dynamic_cast<const PyTupleIter*>(&other))
+        return it <=> iter->it;
+    return std::partial_ordering::unordered;
+}

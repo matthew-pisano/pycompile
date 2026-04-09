@@ -120,3 +120,24 @@ std::partial_ordering PyList::operator<=>(const PyObj& other) const noexcept {
 bool PyList::operator==(const PyObj& other) const noexcept {
     return *this <=> other == std::partial_ordering::equivalent;
 }
+
+PyObj* PyListIter::next(PyObj* self, PyObj**, const int64_t argc) {
+    if (argc != 0)
+        throw std::runtime_error("next() takes no arguments");
+    PyListIter* selfIter = dynamic_cast<PyListIter*>(self);
+    if (!selfIter)
+        throw std::runtime_error("Can only get the next value of iterator types");
+    if (selfIter->it == selfIter->list.end())
+        throw std::runtime_error("StopIteration()");
+
+    PyObj* obj = *selfIter->it;
+    obj->incref();
+    ++selfIter->it;
+    return obj;
+}
+
+std::partial_ordering PyListIter::operator<=>(const PyObj& other) const noexcept {
+    if (const PyListIter* iter = dynamic_cast<const PyListIter*>(&other))
+        return it <=> iter->it;
+    return std::partial_ordering::unordered;
+}

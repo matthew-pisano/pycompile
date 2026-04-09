@@ -163,3 +163,26 @@ std::partial_ordering PyDict::operator<=>(const PyObj& other) const noexcept {
 bool PyDict::operator==(const PyObj& other) const noexcept {
     return *this <=> other == std::partial_ordering::equivalent;
 }
+
+PyObj* PyDictIter::next(PyObj* self, PyObj**, const int64_t argc) {
+    if (argc != 0)
+        throw std::runtime_error("next() takes no arguments");
+    PyDictIter* selfIter = dynamic_cast<PyDictIter*>(self);
+    if (!selfIter)
+        throw std::runtime_error("Can only get the next value of iterator types");
+    if (selfIter->it == selfIter->dict.end())
+        throw std::runtime_error("StopIteration()");
+
+    PyObj* obj = selfIter->it->first;
+    obj->incref();
+    ++selfIter->it;
+    return obj;
+}
+
+std::partial_ordering PyDictIter::operator<=>(const PyObj& other) const noexcept {
+    if (const PyDictIter* iter = dynamic_cast<const PyDictIter*>(&other)) {
+        if (it == iter->it)
+            return std::partial_ordering::equivalent;
+    }
+    return std::partial_ordering::unordered;
+}

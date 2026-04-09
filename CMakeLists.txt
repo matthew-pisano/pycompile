@@ -94,6 +94,13 @@ target_include_directories(pyir SYSTEM PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 # Runtime Standard Library
 # ================
 
+add_library(pyirmain STATIC
+        src/pyruntime/main_runtime.cpp
+)
+set_target_properties(pyirmain PROPERTIES
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+)
+
 add_library(stdpyir STATIC
         src/pyruntime/builder_runtime.cpp
         src/pyruntime/logical_runtime.cpp
@@ -175,8 +182,9 @@ target_include_directories(pycompile SYSTEM PRIVATE
 )
 target_compile_definitions(pycompile PRIVATE
         "PYIR_RUNTIME_LIB_PATH=\"${CMAKE_BINARY_DIR}/lib/libstdpyir.a\""
+        "PYIR_RUNTIME_MAIN_PATH=\"${CMAKE_BINARY_DIR}/lib/libpyirmain.a\""
 )
-add_dependencies(pycompile stdpyir)
+add_dependencies(pycompile stdpyir pyirmain)
 
 
 # ================
@@ -205,6 +213,8 @@ add_executable(pycompile-tests
         test/execution/test_set_execution.cpp
         test/execution/test_tuple_execution.cpp
         test/execution/test_dict_execution.cpp
+        test/execution/test_iter_execution.cpp
+        test/execution/pyir_run_module.cpp
 )
 target_link_libraries(pycompile-tests PRIVATE ${PYCOMPILE_LIBS} stdpyir Catch2::Catch2WithMain)
 target_include_directories(pycompile-tests SYSTEM PRIVATE
@@ -214,6 +224,7 @@ target_include_directories(pycompile-tests SYSTEM PRIVATE
 )
 target_compile_definitions(pycompile-tests PRIVATE
         "PYIR_RUNTIME_LIB_PATH=\"${CMAKE_BINARY_DIR}/lib/libstdpyir.a\""
+        "PYIR_RUNTIME_MAIN_PATH=\"${CMAKE_BINARY_DIR}/lib/libpyirmain.a\""
 )
 
 include(CTest)

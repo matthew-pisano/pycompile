@@ -7,6 +7,7 @@
 #include <map>
 #include <utility>
 
+#include "py_iter.h"
 #include "py_method.h"
 #include "py_object.h"
 
@@ -33,7 +34,7 @@ struct PyDict : PyObj {
     [[nodiscard]] PyInt* len() const override;
 
     [[nodiscard]] PyBool* contains(const PyObj* obj) const override;
- PyObj* idx(const PyObj* idx) const override;
+    PyObj* idx(const PyObj* idx) const override;
 
     [[nodiscard]] size_t hash() const override;
 
@@ -53,6 +54,19 @@ struct PyDict : PyObj {
 
 private:
     PyDictData raw;
+};
+
+
+struct PyDictIter : PyIter {
+    explicit PyDictIter(PyDictData dict) : dict(std::move(dict)) { it = this->dict.begin(); }
+
+    static PyObj* next(PyObj* self, PyObj**, int64_t argc);
+
+    std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
+
+private:
+    PyDictData::iterator it;
+    PyDictData dict;
 };
 
 #endif // PYCOMPILE_PY_DICT_H

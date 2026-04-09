@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "py_iter.h"
 #include "py_method.h"
 #include "py_object.h"
 
@@ -41,5 +42,19 @@ struct PyTuple : PyObj {
 private:
     PyTupleData raw;
 };
+
+
+struct PyTupleIter : PyIter {
+    explicit PyTupleIter(PyTupleData tuple) : tuple(std::move(tuple)) {it = this->tuple.begin();}
+
+    static PyObj* next(PyObj* self, PyObj**, int64_t argc);
+
+    std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
+
+private:
+    PyTupleData::iterator it;
+    PyTupleData tuple;
+};
+
 
 #endif // PYCOMPILE_PY_TUPLE_H

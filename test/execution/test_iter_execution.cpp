@@ -32,7 +32,9 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Iter Tuple Creation") {
     REQUIRE(output == "<iterator>\n");
 }
 
-TEST_CASE_METHOD(JITFixture, "Test JIT Empty Iterator") { REQUIRE_THROWS(runCapture("a = iter([])\nnext(a)")); }
+TEST_CASE_METHOD(JITFixture, "Test JIT Empty Iterator") {
+    REQUIRE_THROWS_WITH(runCapture("a = iter([])\nnext(a)"), "StopIteration()");
+}
 
 TEST_CASE_METHOD(JITFixture, "Test JIT Iterator") {
     const std::string output = runCapture("a = iter([1, 2, 3])\nprint(next(a))\nprint(next(a))\nprint(next(a))");

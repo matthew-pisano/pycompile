@@ -5,6 +5,7 @@
 #ifndef PYCOMPILE_EXECUTION_TEST_UTILS_H
 #define PYCOMPILE_EXECUTION_TEST_UTILS_H
 
+#include <iostream>
 #include <llvm/ExecutionEngine/Orc/LLJIT.h>
 #include <llvm/ExecutionEngine/Orc/ThreadSafeModule.h>
 #include <llvm/Support/TargetSelect.h>
@@ -12,6 +13,7 @@
 #include "conversion/pyir_codegen.h"
 #include "lowering/llvm_export.h"
 #include "lowering/pyir_lowering.h"
+#include "pyir_run_module.h"
 #include "pyruntime/builder_runtime.h"
 #include "pyruntime/function_runtime.h"
 #include "pyruntime/logical_runtime.h"
@@ -141,21 +143,39 @@ struct JITFixture {
         addSymbol("pyir_setAdd", reinterpret_cast<void*>(pyir_setAdd));
         addSymbol("pyir_buildMap", reinterpret_cast<void*>(pyir_buildMap));
 
+        // Symbols for test error handling
+        addSymbol("pyir_runModule", reinterpret_cast<void*>(pyir_runModule));
+        addSymbol("pyir_getLastError", reinterpret_cast<void*>(pyir_getLastError));
+
         llvm::Error defineErr = dylib.define(llvm::orc::absoluteSymbols(symbols));
         REQUIRE(!defineErr);
 
-        // Look up and call main
-        llvm::Expected<llvm::orc::ExecutorAddr> mainSym = (*jit)->lookup("main");
-        REQUIRE(mainSym);
-        auto* mainFn = mainSym->toPtr<int()>();
-        return mainFn();
+        // Look up and call the module function directly, wrapping in try-catch
+        llvm::Expected<llvm::orc::ExecutorAddr> moduleSym = (*jit)->lookup("__pymodule");
+        REQUIRE(moduleSym);
+        auto* moduleFn = moduleSym->toPtr<void()>();
+
+        const int result = pyir_runModule(moduleFn);
+        if (result != 0)
+            throw std::runtime_error(pyir_getLastError());
+        return result;
     }
 
     /**
      * Run and capture stdout output.
      */
     std::string runCapture(const std::string& source) {
-        return captureStdout([&] { run(source); });
+        std::exception_ptr ex;
+        std::string output = captureStdout([&] {
+            try {
+                run(source);
+            } catch (...) {
+                ex = std::current_exception();
+            }
+        });
+        if (ex)
+            std::rethrow_exception(ex);
+        return output;
     }
 };
 

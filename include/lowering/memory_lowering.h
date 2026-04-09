@@ -163,4 +163,22 @@ struct LoadArgLowering : PyIROpConversion {
                                         mlir::ConversionPatternRewriter& rewriter) const override;
 };
 
+
+/**
+ * Lowers pyir.store_subscr to a call to the runtime function pyir_storeSubscr.
+ *
+ * Stores a heap-allocated Value* into a collection at the given index.
+ * Both the collection and index are heap-allocated Value* pointers.
+ *
+ * pyir.store_subscr %collection, %idx, %value : !pyir.object, !pyir.object, !pyir.object
+ *     llvm.call @pyir_storeSubscr(%collection, %idx, %value)
+ */
+struct StoreSubscrLowering : PyIROpConversion {
+    StoreSubscrLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::StoreSubscr::getOperationName(), tc, ctx) {}
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override;
+};
+
 #endif // PYCOMPILE_MEMORY_LOWERING_H

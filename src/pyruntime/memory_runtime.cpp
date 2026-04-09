@@ -9,6 +9,7 @@
 #include <unordered_map>
 
 #include "pyruntime/objects/py_bool.h"
+#include "pyruntime/objects/py_dict.h"
 #include "pyruntime/objects/py_float.h"
 #include "pyruntime/objects/py_int.h"
 #include "pyruntime/objects/py_list.h"
@@ -83,4 +84,8 @@ PyObj* pyir_loadConstTuple(PyObj** items, const int64_t count) {
     return new PyTuple(result);
 }
 
+
 PyObj* pyir_loadAttr(PyObj* obj, const char* name) { return obj->getAttr(name); }
+
+
+void pyir_storeSubscr(PyObj* container, const PyObj* idx, PyObj* value) { container->setIdx(idx, value); }

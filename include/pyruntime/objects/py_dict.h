@@ -34,7 +34,10 @@ struct PyDict : PyObj {
     [[nodiscard]] PyInt* len() const override;
 
     [[nodiscard]] PyBool* contains(const PyObj* obj) const override;
+
     PyObj* idx(const PyObj* idx) const override;
+
+    void setIdx(const PyObj* idx, PyObj* value) override;
 
     [[nodiscard]] size_t hash() const override;
 

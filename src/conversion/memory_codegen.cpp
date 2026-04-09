@@ -215,3 +215,14 @@ void loadAttrCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mli
     meta.stack.push_back(builder.create<pyir::LoadAttr>(loc, pyType, obj, *name).getResult());
     meta.stack.push_back(builder.create<pyir::PushNull>(loc, pyType).getResult());
 }
+
+
+void storeSubscrCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, ConversionMeta& meta) {
+    mlir::Value idx = meta.stack.back();
+    meta.stack.pop_back();
+    mlir::Value collection = meta.stack.back();
+    meta.stack.pop_back();
+    mlir::Value value = meta.stack.back();
+    meta.stack.pop_back();
+    builder.create<pyir::StoreSubscr>(loc, collection, idx, value);
+}

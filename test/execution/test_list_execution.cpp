@@ -47,6 +47,12 @@ TEST_CASE_METHOD(JITFixture, "Test JIT List Index") {
     REQUIRE(output == "1\n");
 }
 
+TEST_CASE_METHOD(JITFixture, "Test JIT List Set Index") {
+    const std::string output = runCapture("a = [1, 2]\na[1] = 3\nprint(a)");
+    REQUIRE(output == "[1, 3]\n");
+}
+
+
 TEST_CASE_METHOD(JITFixture, "Test JIT List Length") {
     const std::string output = runCapture("print(len([1, 2]))");
     REQUIRE(output == "2\n");

@@ -82,6 +82,8 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             return loadDerefCodegen(builder, ctx, loc, instr, module.info, meta);
         case PythonOpcode::STORE_DEREF:
             return storeDerefCodegen(builder, loc, instr, module.info, meta);
+        case PythonOpcode::STORE_SUBSCR:
+            return storeSubscrCodegen(builder, loc, meta);
         case PythonOpcode::BINARY_OP:
             return binaryOpCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::COMPARE_OP:

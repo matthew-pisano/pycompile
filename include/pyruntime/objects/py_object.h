@@ -41,6 +41,8 @@ struct PyObj {
 
     [[nodiscard]] virtual PyObj* idx(const PyObj* idx) const;
 
+    virtual void setIdx(const PyObj* idx, PyObj* value);
+
     [[nodiscard]] virtual size_t hash() const = 0;
 
     [[nodiscard]] virtual std::string toString() const = 0;

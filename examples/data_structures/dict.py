@@ -25,3 +25,6 @@ print("Dict Update:", a)
 print("Dict Membership:", 2 in {1: 'one', 2: 'two', 3: 'three'})
 
 print("Bool Dict:", bool(dict()), bool({1: 'one'}))
+
+a[3] = 'threeagain'
+print("Modified Dict:", a)

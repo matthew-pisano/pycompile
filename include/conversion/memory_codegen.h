@@ -54,4 +54,7 @@ void loadConstCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ml
 void loadAttrCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                      const ByteCodeInstruction& instr, ConversionMeta& meta);
 
+
+void storeSubscrCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, ConversionMeta& meta);
+
 #endif // PYCOMPILE_MEMORY_CODEGEN_H

@@ -23,3 +23,6 @@ print("List Membership:", 0 in [1, 2])
 print("List of Strings:", list("Hello"))
 
 print("Bool Lists:", bool([]), bool([1]))
+
+a[2] = 'three'
+print("Modified List:", a)

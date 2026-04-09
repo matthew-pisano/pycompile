@@ -92,6 +92,7 @@ void PyList::setIdx(const PyObj* idx, PyObj* value) {
             throw std::runtime_error("List index out of range");
         raw[index]->decref(); // Decref the old value
         raw[index] = value;
+        return;
     }
     throw std::runtime_error("List indices must be integers");
 }

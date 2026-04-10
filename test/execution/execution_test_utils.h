@@ -145,6 +145,11 @@ struct JITFixture {
         addSymbol("pyir_setAdd", reinterpret_cast<void*>(pyir_setAdd));
         addSymbol("pyir_buildMap", reinterpret_cast<void*>(pyir_buildMap));
         addSymbol("pyir_storeSubscr", reinterpret_cast<void*>(pyir_storeSubscr));
+        addSymbol("pyir_builtinEnumerate", reinterpret_cast<void*>(pyir_builtinEnumerate));
+        addSymbol("pyir_builtinIsInstance", reinterpret_cast<void*>(pyir_builtinIsInstance));
+        addSymbol("pyir_builtinRange", reinterpret_cast<void*>(pyir_builtinRange));
+        addSymbol("pyir_builtinType", reinterpret_cast<void*>(pyir_builtinType));
+        addSymbol("pyir_builtinZip", reinterpret_cast<void*>(pyir_builtinZip));
 
         // Symbols for test error handling
         addSymbol("pyir_runModule", reinterpret_cast<void*>(pyir_runModule));

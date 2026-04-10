@@ -176,16 +176,39 @@ PyObj* pyir_builtinNext(PyObj** args, const int64_t argc) {
 }
 
 
-PyObj* pyir_builtinEnumerate(PyObj** args, int64_t argc) {}
+PyObj* pyir_builtinEnumerate(PyObj** args, const int64_t argc) { return new PyNone(); }
 
 
-PyObj* pyir_builtinIsInstance(PyObj** args, int64_t argc) {}
+PyObj* pyir_builtinIsInstance(PyObj** args, const int64_t argc) { return new PyNone(); }
 
 
-PyObj* pyir_builtinRange(PyObj** args, int64_t argc) {}
+PyObj* pyir_builtinRange(PyObj** args, const int64_t argc) {
+    if (argc == 0)
+        throw std::runtime_error("range() takes at least one argument");
+    int64_t startIdx = 0;
+    int64_t endIdx = 0;
+    if (argc >= 1) {
+        if (const PyInt* endInteger = dynamic_cast<PyInt*>(args[argc == 1 ? 0 : 1]))
+            endIdx = endInteger->data();
+        else
+            throw std::runtime_error("range() expects integer arguments");
+    }
+    if (argc == 2) {
+        if (const PyInt* startInteger = dynamic_cast<PyInt*>(args[0]))
+            startIdx = startInteger->data();
+        else
+            throw std::runtime_error("range() expects integer arguments");
+    } else if (argc > 2)
+        throw std::runtime_error("range() takes at most two arguments");
+
+    std::vector<PyObj*> seq;
+    for (int64_t i = startIdx; i < endIdx; i++)
+        seq.push_back(new PyInt(i));
+    return new PyTuple(seq);
+}
 
 
-PyObj* pyir_builtinType(PyObj** args, int64_t argc) {}
+PyObj* pyir_builtinType(PyObj** args, const int64_t argc) { return new PyNone(); }
 
 
-PyObj* pyir_builtinZip(PyObj** args, int64_t argc) {}
+PyObj* pyir_builtinZip(PyObj** args, const int64_t argc) { return new PyNone(); }

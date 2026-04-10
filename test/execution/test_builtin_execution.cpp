@@ -9,10 +9,10 @@
 
 TEST_CASE_METHOD(JITFixture, "Test JIT Range") {
     std::string output = runCapture("print(range(5))");
-    REQUIRE(output == "[0, 1, 2, 3, 4]\n");
+    REQUIRE(output == "(0, 1, 2, 3, 4)\n");
 
     output = runCapture("print(range(3, 5))");
-    REQUIRE(output == "[3, 4]\n");
+    REQUIRE(output == "(3, 4)\n");
 }
 
 TEST_CASE_METHOD(JITFixture, "Test JIT Enumerate") {

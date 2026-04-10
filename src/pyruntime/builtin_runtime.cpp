@@ -21,6 +21,22 @@
 #include "pyruntime/runtime_util.h"
 
 
+static std::string moduleFile;
+static std::string moduleName;
+
+
+PyObj* pyir_builtinVarName() { return new PyStr(moduleName); }
+
+
+PyObj* pyir_builtinVarFile() { return new PyStr(moduleFile); }
+
+
+void pyir_initModule(const char* file, const char* name) {
+    moduleFile = file;
+    moduleName = name;
+}
+
+
 PyObj* pyir_builtinPrint(PyObj** args, const int64_t argc) {
     for (int64_t i = 0; i < argc; i++) {
         if (i > 0)

@@ -9,12 +9,12 @@
 extern "C" {
 
 struct PyObj;
-struct PyNone;
-struct PyInt;
-struct PyBool;
-struct PyStr;
-struct PyFloat;
-struct PyList;
+
+PyObj* pyir_builtinVarName();
+
+PyObj* pyir_builtinVarFile();
+
+void pyir_initModule(const char* file, const char* name);
 
 PyObj* pyir_builtinPrint(PyObj** args, int64_t argc);
 

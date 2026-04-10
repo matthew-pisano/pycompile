@@ -10,11 +10,14 @@
 #include "builtin_runtime.h"
 #include "objects/py_function.h"
 
-const std::unordered_map<std::string, PyFunctionData> builtins = {
+const std::unordered_map<std::string, PyFunctionData> builtinFuncs = {
         {"print", pyir_builtinPrint}, {"len", pyir_builtinLen},   {"int", pyir_builtinInt},
         {"float", pyir_builtinFloat}, {"str", pyir_builtinStr},   {"bool", pyir_builtinBool},
         {"list", pyir_builtinList},   {"set", pyir_builtinSet},   {"tuple", pyir_builtinTuple},
         {"dict", pyir_builtinDict},   {"iter", pyir_builtinIter}, {"next", pyir_builtinNext}};
+
+const std::unordered_map<std::string, PyFunctionData> builtinVars = {{"print", pyir_builtinPrint},
+                                                                     {"len", pyir_builtinLen}};
 
 inline std::unordered_map<std::string, PyObj*> moduleScope;
 inline std::vector<std::unordered_map<std::string, PyObj*>> scopeStack;

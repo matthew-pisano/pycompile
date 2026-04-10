@@ -174,3 +174,18 @@ PyObj* pyir_builtinNext(PyObj** args, const int64_t argc) {
 
     throw std::runtime_error("cannot convert to iter()");
 }
+
+
+PyObj* pyir_builtinEnumerate(PyObj** args, int64_t argc) {}
+
+
+PyObj* pyir_builtinIsInstance(PyObj** args, int64_t argc) {}
+
+
+PyObj* pyir_builtinRange(PyObj** args, int64_t argc) {}
+
+
+PyObj* pyir_builtinType(PyObj** args, int64_t argc) {}
+
+
+PyObj* pyir_builtinZip(PyObj** args, int64_t argc) {}

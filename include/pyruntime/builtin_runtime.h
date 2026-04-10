@@ -39,6 +39,16 @@ PyObj* pyir_builtinDict(PyObj** args, int64_t argc);
 PyObj* pyir_builtinIter(PyObj** args, int64_t argc);
 
 PyObj* pyir_builtinNext(PyObj** args, int64_t argc);
+
+PyObj* pyir_builtinEnumerate(PyObj** args, int64_t argc);
+
+PyObj* pyir_builtinIsInstance(PyObj** args, int64_t argc);
+
+PyObj* pyir_builtinRange(PyObj** args, int64_t argc);
+
+PyObj* pyir_builtinType(PyObj** args, int64_t argc);
+
+PyObj* pyir_builtinZip(PyObj** args, int64_t argc);
 }
 
 #endif // PYCOMPILE_BUILTIN_RUNTIME_H

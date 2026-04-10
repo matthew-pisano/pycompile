@@ -16,8 +16,10 @@ const std::unordered_map<std::string, PyFunctionData> builtinFuncs = {
         {"list", pyir_builtinList},   {"set", pyir_builtinSet},   {"tuple", pyir_builtinTuple},
         {"dict", pyir_builtinDict},   {"iter", pyir_builtinIter}, {"next", pyir_builtinNext}};
 
-const std::unordered_map<std::string, PyFunctionData> builtinVars = {{"print", pyir_builtinPrint},
-                                                                     {"len", pyir_builtinLen}};
+
+using PyBuiltinVarFunction = PyObj* (*) ();
+const std::unordered_map<std::string, PyBuiltinVarFunction> builtinVars = {{"__file__", pyir_builtinVarFile},
+                                                                           {"__name__", pyir_builtinVarName}};
 
 inline std::unordered_map<std::string, PyObj*> moduleScope;
 inline std::vector<std::unordered_map<std::string, PyObj*>> scopeStack;

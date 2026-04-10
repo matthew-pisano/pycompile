@@ -41,9 +41,12 @@ void pyir_storeFast(const char* name, PyObj* val) {
 
 
 PyObj* pyir_loadName(const char* name) {
-    // Check for builtins
+    // Check for builtin functions
     if (const auto it = builtinFuncs.find(name); it != builtinFuncs.end())
         return new PyFunction(it->first, it->second);
+    // Check for builtin variables
+    if (const auto it = builtinVars.find(name); it != builtinVars.end())
+        return it->second();
     // Check for names in module scope
     if (const auto it = moduleScope.find(name); it != moduleScope.end()) {
         it->second->incref();

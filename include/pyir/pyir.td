@@ -31,6 +31,13 @@ def PyIR_NoneAttr : AttrDef<PyIR_Dialect, "None"> {
 class PyIR_Op<string mnemonic, list<Trait> traits = []> : Op<PyIR_Dialect, mnemonic, traits>;
 
 
+def PyIR_InitModule : PyIR_Op<"init_module"> {
+    let summary = "Initialize module-level metadata";
+    let arguments = (ins StrAttr:$file, StrAttr:$name);
+    let assemblyFormat = "$file `,` $name attr-dict";
+}
+
+
 def PyIR_Resume : PyIR_Op<"resume"> {
     let summary = "Resume execution of a generator or start a module";
     let arguments = (ins SI64Attr:$arg);

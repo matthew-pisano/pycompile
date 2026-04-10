@@ -6,6 +6,28 @@
 #include "pyir/pyir_attrs.h"
 
 
+mlir::LogicalResult InitModuleLowering::matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
+                                                        mlir::ConversionPatternRewriter& rewriter) const {
+    pyir::InitModule initModule = mlir::cast<pyir::InitModule>(op);
+    mlir::MLIRContext* ctx = op->getContext();
+    const mlir::ModuleOp module = getModule(op);
+    const mlir::Location loc = op->getLoc();
+
+    // declare: extern void pyir_initModule(const char* file, const char* name)
+    const mlir::LLVM::LLVMFunctionType fnType =
+            mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
+    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_initModule", fnType);
+
+    const std::string globalFile = "__pyir_str_" + initModule.getFile().str();
+    const std::string globalName = "__pyir_str_" + initModule.getName().str();
+    const mlir::Value filePtr = getOrInsertStringConstant(rewriter, module, loc, globalFile, initModule.getFile());
+    const mlir::Value namePtr = getOrInsertStringConstant(rewriter, module, loc, globalName, initModule.getName());
+    rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{filePtr, namePtr});
+    rewriter.eraseOp(op);
+    return mlir::success();
+}
+
+
 mlir::LogicalResult LoadFastLowering::matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                                       mlir::ConversionPatternRewriter& rewriter) const {
     pyir::LoadFast loadFast = mlir::cast<pyir::LoadFast>(op);

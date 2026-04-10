@@ -10,6 +10,26 @@
 
 
 /**
+ * Lowers pyir.init_module to a call to the runtime function pyir_initModule.
+ *
+ * The file and name strings are stored as global constants and passed as const char* pointers.
+ * The runtime pre-populates the module scope with dunder variables such as __name__ and __file__.
+ *
+ * pyir.init_module "<embedded>", "__main__"
+ *     %file_ptr = llvm.mlir.addressof @__pyir_str___pymodule_file__
+ *     %name_ptr = llvm.mlir.addressof @__pyir_str___pymodule_name__
+ *                 llvm.call @pyir_initModule(%file_ptr, %name_ptr)
+ */
+struct InitModuleLowering : PyIROpConversion {
+    InitModuleLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::InitModule::getOperationName(), tc, ctx) {}
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
+                                        mlir::ConversionPatternRewriter& rewriter) const override;
+};
+
+
+/**
  * Lowers pyir.load_fast to a call to the runtime function pyir_loadFast.
  *
  * The name string is stored as a constant and passed as a const char* pointer. The runtime resolves the name

@@ -15,6 +15,7 @@
 #include "lowering/pyir_lowering.h"
 #include "pyir_run_module.h"
 #include "pyruntime/builder_runtime.h"
+#include "pyruntime/builtin_runtime.h"
 #include "pyruntime/function_runtime.h"
 #include "pyruntime/logical_runtime.h"
 #include "pyruntime/memory_runtime.h"
@@ -97,6 +98,7 @@ struct JITFixture {
         };
 
         // Register all runtime functions
+        addSymbol("pyir_initModule", reinterpret_cast<void*>(pyir_initModule));
         addSymbol("pyir_loadName", reinterpret_cast<void*>(pyir_loadName));
         addSymbol("pyir_storeName", reinterpret_cast<void*>(pyir_storeName));
         addSymbol("pyir_loadFast", reinterpret_cast<void*>(pyir_loadFast));

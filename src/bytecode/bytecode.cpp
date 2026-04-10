@@ -118,7 +118,7 @@ std::vector<std::string> extractPyTupleStrings(PyObject* code, const char* attr)
 }
 
 // Forward declaration
-ByteCodeModule generatePythonByteCode(PyObject* code, const std::string& filename, int depth = 0);
+ByteCodeModule generatePythonByteCode(PyObject* code, const std::string& filename, bool isMain, int depth = 0);
 
 
 /**
@@ -254,7 +254,7 @@ ByteCodeInstruction decodeByteCodeInstruction(PyObject* pyobject, const std::str
         instr.argval = decodeFrozenSet(argval, filename, instr);
     } else if (PyCode_Check(argval)) {
         instr.argvalType = ArgvalType::Code;
-        instr.argval = std::make_shared<ByteCodeModule>(generatePythonByteCode(argval, filename, depth + 1));
+        instr.argval = std::make_shared<ByteCodeModule>(generatePythonByteCode(argval, filename, false, depth + 1));
     } else if (Py_IsNone(argval)) {
         instr.argvalType = ArgvalType::None;
         instr.argval = ArgvalNone{};
@@ -270,14 +270,15 @@ ByteCodeInstruction decodeByteCodeInstruction(PyObject* pyobject, const std::str
  * This function is recursive and will disassemble nested code objects (e.g. lambdas, comprehensions) up to a max depth.
  * @param code A Python code object containing the program to be translated.
  * @param filename The filename of the compiled module.
+ * @param isMain Whether the bytecode represents the program's main module
  * @param depth The current recursion depth for nested code objects (default is 0).
  * @return A ByteCodeModule struct containing the metadata and instructions of the code object.
  * @throws std::runtime_error if the max nested function depth is exceeded, or if there are errors during disassembly.
  */
-ByteCodeModule generatePythonByteCode(PyObject* code, const std::string& filename, const int depth) {
+ByteCodeModule generatePythonByteCode(PyObject* code, const std::string& filename, const bool isMain, const int depth) {
     ByteCodeModule result;
     result.filename = filename;
-    result.moduleName = std::filesystem::path(filename).stem();
+    result.moduleName = isMain ? "__main__" : std::filesystem::path(filename).stem();
 
     if (depth > NESTED_FUNCTION_DEPTH)
         throw std::runtime_error("Maximum nested function depth exceeded");
@@ -338,7 +339,7 @@ std::vector<ByteCodeModule> compilePython(const std::vector<std::string>& fileCo
             if (!code)
                 throw std::runtime_error(getPythonErrorTraceback());
 
-            bytecodeModules.push_back(generatePythonByteCode(code, fileNames[i]));
+            bytecodeModules.push_back(generatePythonByteCode(code, fileNames[i], i == 0));
             Py_DECREF(code); // Destroy object before scope ends
         } catch (const std::runtime_error& e) {
             throw std::runtime_error(std::filesystem::path(fileNames[i]).filename().string() + ": " + e.what());

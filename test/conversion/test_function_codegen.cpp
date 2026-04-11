@@ -21,23 +21,23 @@ TEST_CASE_METHOD(MLIRFixture, "Test Function Definition MLIR") {
         mlir::func::FuncOp nestedFn = fns[1];
 
         // Validate module-level ops
-        REQUIRE(mlir::isa<pyir::MakeFunction>(getOp(moduleFn, 0)));
-        REQUIRE(mlir::isa<pyir::StoreName>(getOp(moduleFn, 1)));
-        REQUIRE(mlir::isa<pyir::LoadName>(getOp(moduleFn, 2)));
-        REQUIRE(mlir::isa<pyir::PushNull>(getOp(moduleFn, 3)));
-        REQUIRE(mlir::isa<pyir::Call>(getOp(moduleFn, 4)));
-        REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(moduleFn, 5)));
+        REQUIRE(mlir::isa<pyir::MakeFunction>(getOp(moduleFn, 1)));
+        REQUIRE(mlir::isa<pyir::StoreName>(getOp(moduleFn, 2)));
+        REQUIRE(mlir::isa<pyir::LoadName>(getOp(moduleFn, 3)));
+        REQUIRE(mlir::isa<pyir::PushNull>(getOp(moduleFn, 4)));
+        REQUIRE(mlir::isa<pyir::Call>(getOp(moduleFn, 5)));
+        REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(moduleFn, 6)));
 
         // make_function references the nested fn by name
-        pyir::MakeFunction makeFunc = mlir::cast<pyir::MakeFunction>(getOp(moduleFn, 0));
+        pyir::MakeFunction makeFunc = mlir::cast<pyir::MakeFunction>(getOp(moduleFn, 1));
         REQUIRE(makeFunc.getFnName().starts_with("__pyfn_"));
 
         // store_name stores it as "foo"
-        pyir::StoreName storeName = mlir::cast<pyir::StoreName>(getOp(moduleFn, 1));
+        pyir::StoreName storeName = mlir::cast<pyir::StoreName>(getOp(moduleFn, 2));
         REQUIRE(storeName.getVarName() == "foo");
 
         // call has no args (foo takes no arguments)
-        pyir::Call callOp = mlir::cast<pyir::Call>(getOp(moduleFn, 4));
+        pyir::Call callOp = mlir::cast<pyir::Call>(getOp(moduleFn, 5));
         REQUIRE(callOp.getNumOperands() == 1); // callee only, no args
         // Nested function __pyfn_*
         REQUIRE(nestedFn.getName().starts_with("__pyfn_"));
@@ -85,24 +85,24 @@ TEST_CASE_METHOD(MLIRFixture, "Test Function Definition MLIR") {
         mlir::func::FuncOp nestedFn = fns[1];
 
         // Validate module-level ops
-        REQUIRE(mlir::isa<pyir::MakeFunction>(getOp(moduleFn, 0)));
-        REQUIRE(mlir::isa<pyir::StoreName>(getOp(moduleFn, 1)));
-        REQUIRE(mlir::isa<pyir::LoadName>(getOp(moduleFn, 2)));
-        REQUIRE(mlir::isa<pyir::PushNull>(getOp(moduleFn, 3)));
-        REQUIRE(mlir::isa<pyir::LoadConst>(getOp(moduleFn, 4)));
-        REQUIRE(mlir::isa<pyir::Call>(getOp(moduleFn, 5)));
-        REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(moduleFn, 6)));
+        REQUIRE(mlir::isa<pyir::MakeFunction>(getOp(moduleFn, 1)));
+        REQUIRE(mlir::isa<pyir::StoreName>(getOp(moduleFn, 2)));
+        REQUIRE(mlir::isa<pyir::LoadName>(getOp(moduleFn, 3)));
+        REQUIRE(mlir::isa<pyir::PushNull>(getOp(moduleFn, 4)));
+        REQUIRE(mlir::isa<pyir::LoadConst>(getOp(moduleFn, 5)));
+        REQUIRE(mlir::isa<pyir::Call>(getOp(moduleFn, 6)));
+        REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(moduleFn, 7)));
 
         // make_function references the nested fn by name
-        pyir::MakeFunction makeFunc = mlir::cast<pyir::MakeFunction>(getOp(moduleFn, 0));
+        pyir::MakeFunction makeFunc = mlir::cast<pyir::MakeFunction>(getOp(moduleFn, 1));
         REQUIRE(makeFunc.getFnName().starts_with("__pyfn_"));
 
         // store_name stores it as "foo"
-        pyir::StoreName storeName = mlir::cast<pyir::StoreName>(getOp(moduleFn, 1));
+        pyir::StoreName storeName = mlir::cast<pyir::StoreName>(getOp(moduleFn, 2));
         REQUIRE(storeName.getVarName() == "foo");
 
         // call has one arg (foo takes one argument)
-        pyir::Call callOp = mlir::cast<pyir::Call>(getOp(moduleFn, 5));
+        pyir::Call callOp = mlir::cast<pyir::Call>(getOp(moduleFn, 6));
         REQUIRE(callOp.getNumOperands() == 2); // callee only, no args
 
         // Nested function __pyfn_*
@@ -151,30 +151,30 @@ TEST_CASE_METHOD(MLIRFixture, "Test Function Definition MLIR") {
         mlir::func::FuncOp nestedFn = fns[1];
 
         // Validate module-level ops
-        REQUIRE(mlir::isa<pyir::MakeFunction>(getOp(moduleFn, 0)));
-        REQUIRE(mlir::isa<pyir::StoreName>(getOp(moduleFn, 1)));
-        REQUIRE(mlir::isa<pyir::LoadName>(getOp(moduleFn, 2)));
-        REQUIRE(mlir::isa<pyir::PushNull>(getOp(moduleFn, 3)));
-        REQUIRE(mlir::isa<pyir::LoadName>(getOp(moduleFn, 4)));
-        REQUIRE(mlir::isa<pyir::PushNull>(getOp(moduleFn, 5)));
-        REQUIRE(mlir::isa<pyir::Call>(getOp(moduleFn, 6)));
+        REQUIRE(mlir::isa<pyir::MakeFunction>(getOp(moduleFn, 1)));
+        REQUIRE(mlir::isa<pyir::StoreName>(getOp(moduleFn, 2)));
+        REQUIRE(mlir::isa<pyir::LoadName>(getOp(moduleFn, 3)));
+        REQUIRE(mlir::isa<pyir::PushNull>(getOp(moduleFn, 4)));
+        REQUIRE(mlir::isa<pyir::LoadName>(getOp(moduleFn, 5)));
+        REQUIRE(mlir::isa<pyir::PushNull>(getOp(moduleFn, 6)));
         REQUIRE(mlir::isa<pyir::Call>(getOp(moduleFn, 7)));
-        REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(moduleFn, 8)));
+        REQUIRE(mlir::isa<pyir::Call>(getOp(moduleFn, 8)));
+        REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(moduleFn, 9)));
 
         // make_function references the nested fn by name
-        pyir::MakeFunction makeFunc = mlir::cast<pyir::MakeFunction>(getOp(moduleFn, 0));
+        pyir::MakeFunction makeFunc = mlir::cast<pyir::MakeFunction>(getOp(moduleFn, 1));
         REQUIRE(makeFunc.getFnName().starts_with("__pyfn_"));
 
         // store_name stores it as "foo"
-        pyir::StoreName storeName = mlir::cast<pyir::StoreName>(getOp(moduleFn, 1));
+        pyir::StoreName storeName = mlir::cast<pyir::StoreName>(getOp(moduleFn, 2));
         REQUIRE(storeName.getVarName() == "foo");
 
         // call has no args (foo takes no arguments)
-        pyir::Call callOp = mlir::cast<pyir::Call>(getOp(moduleFn, 6));
+        pyir::Call callOp = mlir::cast<pyir::Call>(getOp(moduleFn, 7));
         REQUIRE(callOp.getNumOperands() == 1); // callee only, no args
 
         // load_name inside module is "print"
-        pyir::LoadName loadName = mlir::cast<pyir::LoadName>(getOp(moduleFn, 2));
+        pyir::LoadName loadName = mlir::cast<pyir::LoadName>(getOp(moduleFn, 3));
         REQUIRE(loadName.getVarName() == "print");
 
         // Nested function __pyfn_*
@@ -206,5 +206,16 @@ TEST_CASE_METHOD(MLIRFixture, "Test Bound Method MLIR") {
     SECTION("Test List Append") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("[1, 2].append(3)");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+
+        pyir::LoadAttr loadAttr = mlir::cast<pyir::LoadAttr>(getOp(fn, 4));
+        REQUIRE(loadAttr);
+        REQUIRE(loadAttr.getAttrName() == "append");
+
+        pyir::LoadConst loadConst = mlir::cast<pyir::LoadConst>(getOp(fn, 6));
+        REQUIRE(loadConst);
+        mlir::IntegerAttr intAttr = mlir::dyn_cast<mlir::IntegerAttr>(loadConst.getValue());
+        REQUIRE(intAttr);
+        REQUIRE(intAttr.getValue() == 3);
+        REQUIRE(mlir::isa<pyir::Call>(getOp(fn, 7)));
     }
 }

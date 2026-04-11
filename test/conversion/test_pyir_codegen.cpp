@@ -14,14 +14,14 @@ TEST_CASE_METHOD(MLIRFixture, "Test Hello World MLIR") {
     mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
 
     // Verify Op types
-    REQUIRE(mlir::isa<pyir::LoadName>(getOp(fn, 0)));
-    REQUIRE(mlir::isa<pyir::PushNull>(getOp(fn, 1)));
-    REQUIRE(mlir::isa<pyir::LoadConst>(getOp(fn, 2)));
-    REQUIRE(mlir::isa<pyir::Call>(getOp(fn, 3)));
-    REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(fn, 4)));
+    REQUIRE(mlir::isa<pyir::LoadName>(getOp(fn, 1)));
+    REQUIRE(mlir::isa<pyir::PushNull>(getOp(fn, 2)));
+    REQUIRE(mlir::isa<pyir::LoadConst>(getOp(fn, 3)));
+    REQUIRE(mlir::isa<pyir::Call>(getOp(fn, 4)));
+    REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(fn, 5)));
 
     // Call op with valid arguments
-    pyir::Call callOp = mlir::dyn_cast<pyir::Call>(getOp(fn, 3));
+    pyir::Call callOp = mlir::dyn_cast<pyir::Call>(getOp(fn, 4));
     REQUIRE(callOp);
     REQUIRE(callOp.getNumOperands() == 2);
 
@@ -32,7 +32,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Hello World MLIR") {
     REQUIRE(loadName.getVarName() == "print");
 
     // Print is being called on the correct string
-    pyir::LoadConst loadConst = mlir::dyn_cast<pyir::LoadConst>(getOp(fn, 2));
+    pyir::LoadConst loadConst = mlir::dyn_cast<pyir::LoadConst>(getOp(fn, 3));
     REQUIRE(loadConst);
     mlir::StringAttr strAttr = mlir::dyn_cast<mlir::StringAttr>(loadConst.getValue());
     REQUIRE(strAttr);
@@ -45,33 +45,33 @@ TEST_CASE_METHOD(MLIRFixture, "Test Simple Arithmetic MLIR") {
     mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
 
     // Verify Op types
-    REQUIRE(mlir::isa<pyir::LoadConst>(getOp(fn, 0)));
-    REQUIRE(mlir::isa<pyir::StoreName>(getOp(fn, 1)));
-    REQUIRE(mlir::isa<pyir::LoadConst>(getOp(fn, 2)));
-    REQUIRE(mlir::isa<pyir::StoreName>(getOp(fn, 3)));
-    REQUIRE(mlir::isa<pyir::LoadName>(getOp(fn, 4)));
+    REQUIRE(mlir::isa<pyir::LoadConst>(getOp(fn, 1)));
+    REQUIRE(mlir::isa<pyir::StoreName>(getOp(fn, 2)));
+    REQUIRE(mlir::isa<pyir::LoadConst>(getOp(fn, 3)));
+    REQUIRE(mlir::isa<pyir::StoreName>(getOp(fn, 4)));
     REQUIRE(mlir::isa<pyir::LoadName>(getOp(fn, 5)));
-    REQUIRE(mlir::isa<pyir::BinaryOp>(getOp(fn, 6)));
-    REQUIRE(mlir::isa<pyir::StoreName>(getOp(fn, 7)));
-    REQUIRE(mlir::isa<pyir::LoadName>(getOp(fn, 8)));
-    REQUIRE(mlir::isa<pyir::PushNull>(getOp(fn, 9)));
-    REQUIRE(mlir::isa<pyir::LoadName>(getOp(fn, 10)));
-    REQUIRE(mlir::isa<pyir::Call>(getOp(fn, 11)));
-    REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(fn, 12)));
+    REQUIRE(mlir::isa<pyir::LoadName>(getOp(fn, 6)));
+    REQUIRE(mlir::isa<pyir::BinaryOp>(getOp(fn, 7)));
+    REQUIRE(mlir::isa<pyir::StoreName>(getOp(fn, 8)));
+    REQUIRE(mlir::isa<pyir::LoadName>(getOp(fn, 9)));
+    REQUIRE(mlir::isa<pyir::PushNull>(getOp(fn, 10)));
+    REQUIRE(mlir::isa<pyir::LoadName>(getOp(fn, 11)));
+    REQUIRE(mlir::isa<pyir::Call>(getOp(fn, 12)));
+    REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(fn, 13)));
 
     // The integer 1 is being loaded
-    pyir::LoadConst loadOneOp = mlir::dyn_cast<pyir::LoadConst>(getOp(fn, 0));
+    pyir::LoadConst loadOneOp = mlir::dyn_cast<pyir::LoadConst>(getOp(fn, 1));
     REQUIRE(loadOneOp);
     mlir::IntegerAttr intAttr = mlir::dyn_cast<mlir::IntegerAttr>(loadOneOp.getValue());
     REQUIRE(intAttr);
     REQUIRE(intAttr.getInt() == 1);
 
     // The integer is being stored in variable a
-    pyir::StoreName storeAOp = mlir::dyn_cast<pyir::StoreName>(getOp(fn, 1));
+    pyir::StoreName storeAOp = mlir::dyn_cast<pyir::StoreName>(getOp(fn, 2));
     REQUIRE(storeAOp);
     REQUIRE(storeAOp.getVarName() == "a");
     // The binary op is addition
-    pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+    pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 7));
     REQUIRE(binaryOp);
     REQUIRE(binaryOp.getOp() == "+");
 
@@ -86,7 +86,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Simple Arithmetic MLIR") {
     REQUIRE(rhsLoad.getVarName() == "b");
 
     // Call op with valid arguments
-    pyir::Call callOp = mlir::dyn_cast<pyir::Call>(getOp(fn, 11));
+    pyir::Call callOp = mlir::dyn_cast<pyir::Call>(getOp(fn, 12));
     REQUIRE(callOp);
     REQUIRE(callOp.getNumOperands() == 2);
 

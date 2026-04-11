@@ -14,10 +14,10 @@ TEST_CASE_METHOD(MLIRFixture, "Test Conditional MLIR") {
     mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
 
     // Verify Op types
-    REQUIRE(mlir::isa<pyir::IsTruthy>(getOp(fn, 4)));
-    REQUIRE(mlir::isa<mlir::cf::CondBranchOp>(getOp(fn, 5)));
+    REQUIRE(mlir::isa<pyir::IsTruthy>(getOp(fn, 5)));
+    REQUIRE(mlir::isa<mlir::cf::CondBranchOp>(getOp(fn, 6)));
 
-    mlir::cf::CondBranchOp condBr = mlir::cast<mlir::cf::CondBranchOp>(getOp(fn, 5));
+    mlir::cf::CondBranchOp condBr = mlir::cast<mlir::cf::CondBranchOp>(getOp(fn, 6));
     REQUIRE(mlir::isa<pyir::IsTruthy>(condBr.getCondition().getDefiningOp()));
 
     // Verify blocks

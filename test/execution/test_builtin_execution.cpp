@@ -51,9 +51,28 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Type") {
         REQUIRE(output == "<class 'tuple'>\n");
     }
 
-    SECTION("Test Type Iter") {
+    SECTION("Test Type Str Iter") {
+        const std::string output = runCapture("print(type(iter('')))");
+        REQUIRE(output == "<class 'str_iterator'>\n");
+    }
+
+    SECTION("Test Type List Iter") {
         const std::string output = runCapture("print(type(iter([])))");
         REQUIRE(output == "<class 'list_iterator'>\n");
+    }
+ SECTION("Test Type Dict Iter") {
+        const std::string output = runCapture("print(type(iter({})))");
+        REQUIRE(output == "<class 'dict_iterator'>\n");
+    }
+
+    SECTION("Test Type Set Iter") {
+        const std::string output = runCapture("print(type(iter(set())))");
+        REQUIRE(output == "<class 'set_iterator'>\n");
+    }
+
+    SECTION("Test Type Tuple Iter") {
+        const std::string output = runCapture("print(type(iter(())))");
+        REQUIRE(output == "<class 'tuple_iterator'>\n");
     }
 }
 

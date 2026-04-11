@@ -59,6 +59,10 @@ struct PyListIter : PyIter {
 
     static PyObj* next(PyObj* self, PyObj**, int64_t argc);
 
+    [[nodiscard]] std::string toString() const override { return "<list_iterator>"; }
+
+    [[nodiscard]] std::string typeName() const override { return "list_iterator"; }
+
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
 
 private:

@@ -5,6 +5,7 @@
 #include "pyruntime/builtin_runtime.h"
 
 #include <cmath>
+#include <format>
 #include <ranges>
 #include <stdexcept>
 
@@ -254,7 +255,11 @@ PyObj* pyir_builtinRange(PyObj** args, const int64_t argc) {
 }
 
 
-PyObj* pyir_builtinType(PyObj** args, const int64_t argc) { return new PyNone(); }
+PyObj* pyir_builtinType(PyObj** args, const int64_t argc) {
+    if (argc == 0)
+        throw std::runtime_error("type() takes at least one argument");
+    return new PyStr(std::format("<class '{}'>", args[0]->typeName()));
+}
 
 
 PyObj* pyir_builtinZip(PyObj** args, const int64_t argc) { return new PyNone(); }

@@ -21,8 +21,25 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Enumerate") {
 }
 
 TEST_CASE_METHOD(JITFixture, "Test JIT Zip") {
-    const std::string output = runCapture("print(zip([1, 2, 3], ['a', 'b', 'c']))");
-    REQUIRE(output == "[(1, 'a'), (2, 'b'), (3, 'c')]\n");
+    SECTION("Test Zip List") {
+        const std::string output = runCapture("print(zip([1, 2, 3]))");
+        REQUIRE(output == "[(1,), (2,), (3,)]\n");
+    }
+
+    SECTION("Test Zip List Tuple") {
+        const std::string output = runCapture("print(zip([1, 2, 3], ('a', 'b', 'c')))");
+        REQUIRE(output == "[(1, 'a'), (2, 'b'), (3, 'c')]\n");
+    }
+
+    SECTION("Test Zip List Dict") {
+        const std::string output = runCapture("print(zip([1, 2, 3], {'a': 1, 'b': 2, 'c': 3}))");
+        REQUIRE(output == "[(1, 'a'), (2, 'b'), (3, 'c')]\n");
+    }
+
+    SECTION("Test Zip List Tuple Dict") {
+        const std::string output = runCapture("print(zip([1, 2, 3], (1.1, 2.2, 3.3, 4.4), {'a': 1, 'b': 2, 'c': 3}))");
+        REQUIRE(output == "[(1, 1.1, 'a'), (2, 2.2, 'b'), (3, 3.3, 'c')]\n");
+    }
 }
 
 TEST_CASE_METHOD(JITFixture, "Test JIT Type") {
@@ -60,7 +77,7 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Type") {
         const std::string output = runCapture("print(type(iter([])))");
         REQUIRE(output == "<class 'list_iterator'>\n");
     }
- SECTION("Test Type Dict Iter") {
+    SECTION("Test Type Dict Iter") {
         const std::string output = runCapture("print(type(iter({})))");
         REQUIRE(output == "<class 'dict_iterator'>\n");
     }

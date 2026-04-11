@@ -13,11 +13,11 @@ TEST_CASE_METHOD(MLIRFixture, "Test Operation Order MLIR") {
     const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = 3\nd = (a + b) * c");
     const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
 
-    pyir::BinaryOp addOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 8));
+    pyir::BinaryOp addOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 9));
     REQUIRE(addOp);
     REQUIRE(addOp.getOp() == "+");
 
-    pyir::BinaryOp mulOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 10));
+    pyir::BinaryOp mulOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 11));
     REQUIRE(mulOp);
     REQUIRE(mulOp.getOp() == "*");
 }
@@ -27,7 +27,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Arithmetic Operators MLIR") {
     SECTION("Test Addition") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a + b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "+");
     }
@@ -35,7 +35,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Arithmetic Operators MLIR") {
     SECTION("Test Float Addition") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2.1\nb = 2.1\nc = a + b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "+");
     }
@@ -43,7 +43,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Arithmetic Operators MLIR") {
     SECTION("Test Subtraction") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a - b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "-");
     }
@@ -51,14 +51,14 @@ TEST_CASE_METHOD(MLIRFixture, "Test Arithmetic Operators MLIR") {
     SECTION("Test Multiplication") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a * b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "*");
     }
     SECTION("Test Division") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a / b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "/");
     }
@@ -66,7 +66,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Arithmetic Operators MLIR") {
     SECTION("Test Floor Division") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a // b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "//");
     }
@@ -74,7 +74,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Arithmetic Operators MLIR") {
     SECTION("Test Exponentiation") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a ** b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "**");
     }
@@ -82,7 +82,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Arithmetic Operators MLIR") {
     SECTION("Test Modulo") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a % b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "%");
     }
@@ -90,14 +90,14 @@ TEST_CASE_METHOD(MLIRFixture, "Test Arithmetic Operators MLIR") {
     SECTION("Test Integer Negation") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = True\nb = -a");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::UnaryNegative unaryOp = mlir::dyn_cast<pyir::UnaryNegative>(getOp(fn, 3));
+        pyir::UnaryNegative unaryOp = mlir::dyn_cast<pyir::UnaryNegative>(getOp(fn, 4));
         REQUIRE(unaryOp);
     }
 
     SECTION("Test Binary Negation") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = ~a");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::UnaryInvert unaryOp = mlir::dyn_cast<pyir::UnaryInvert>(getOp(fn, 3));
+        pyir::UnaryInvert unaryOp = mlir::dyn_cast<pyir::UnaryInvert>(getOp(fn, 4));
         REQUIRE(unaryOp);
     }
 }
@@ -107,7 +107,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Boolean Operators MLIR") {
     SECTION("Test Boolean Negation") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = True\nb = not a");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::UnaryNot unaryOp = mlir::dyn_cast<pyir::UnaryNot>(getOp(fn, 4));
+        pyir::UnaryNot unaryOp = mlir::dyn_cast<pyir::UnaryNot>(getOp(fn, 5));
         REQUIRE(unaryOp);
     }
 
@@ -116,10 +116,10 @@ TEST_CASE_METHOD(MLIRFixture, "Test Boolean Operators MLIR") {
         mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
 
         // Verify Op types
-        REQUIRE(mlir::isa<pyir::IsTruthy>(getOp(fn, 6)));
-        REQUIRE(mlir::isa<mlir::cf::CondBranchOp>(getOp(fn, 7)));
+        REQUIRE(mlir::isa<pyir::IsTruthy>(getOp(fn, 7)));
+        REQUIRE(mlir::isa<mlir::cf::CondBranchOp>(getOp(fn, 8)));
 
-        mlir::cf::CondBranchOp condBr = mlir::cast<mlir::cf::CondBranchOp>(getOp(fn, 7));
+        mlir::cf::CondBranchOp condBr = mlir::cast<mlir::cf::CondBranchOp>(getOp(fn, 8));
         REQUIRE(mlir::isa<pyir::IsTruthy>(condBr.getCondition().getDefiningOp()));
 
         // Verify blocks
@@ -146,10 +146,10 @@ TEST_CASE_METHOD(MLIRFixture, "Test Boolean Operators MLIR") {
         mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
 
         // Verify Op types
-        REQUIRE(mlir::isa<pyir::IsTruthy>(getOp(fn, 6)));
-        REQUIRE(mlir::isa<mlir::cf::CondBranchOp>(getOp(fn, 7)));
+        REQUIRE(mlir::isa<pyir::IsTruthy>(getOp(fn, 7)));
+        REQUIRE(mlir::isa<mlir::cf::CondBranchOp>(getOp(fn, 8)));
 
-        mlir::cf::CondBranchOp condBr = mlir::cast<mlir::cf::CondBranchOp>(getOp(fn, 7));
+        mlir::cf::CondBranchOp condBr = mlir::cast<mlir::cf::CondBranchOp>(getOp(fn, 8));
         REQUIRE(mlir::isa<pyir::IsTruthy>(condBr.getCondition().getDefiningOp()));
 
         // Verify blocks
@@ -174,7 +174,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Boolean Operators MLIR") {
     SECTION("Test Boolean XOR") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = True\nb = True\nc = a ^ b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "^");
     }
@@ -184,7 +184,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Boolean Operators MLIR") {
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
 
         // Call op with valid arguments
-        pyir::Call callOp = mlir::dyn_cast<pyir::Call>(getOp(fn, 3));
+        pyir::Call callOp = mlir::dyn_cast<pyir::Call>(getOp(fn, 4));
         REQUIRE(callOp);
         REQUIRE(callOp.getNumOperands() == 2);
 
@@ -201,14 +201,14 @@ TEST_CASE_METHOD(MLIRFixture, "Test Comparators MLIR") {
     SECTION("Test Boolean Negation") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = True\nb = not a");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::UnaryNot unaryOp = mlir::dyn_cast<pyir::UnaryNot>(getOp(fn, 4));
+        pyir::UnaryNot unaryOp = mlir::dyn_cast<pyir::UnaryNot>(getOp(fn, 5));
         REQUIRE(unaryOp);
     }
 
     SECTION("Test Boolean Equality") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = True\nb = True\nc = a == b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "==");
     }
@@ -216,7 +216,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Comparators MLIR") {
     SECTION("Test Integer Equality") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a == b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "==");
     }
@@ -224,7 +224,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Comparators MLIR") {
     SECTION("Test Float Equality") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2.1\nb = 2.1\nc = a == b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "==");
     }
@@ -232,7 +232,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Comparators MLIR") {
     SECTION("Test String Equality") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 'g'\nb = 'g'\nc = a == b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "==");
     }
@@ -240,7 +240,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Comparators MLIR") {
     SECTION("Test Negative Equality") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = True\nb = True\nc = a != b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "!=");
     }
@@ -248,14 +248,14 @@ TEST_CASE_METHOD(MLIRFixture, "Test Comparators MLIR") {
     SECTION("Test Less Than") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a < b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "<");
     }
     SECTION("Test Less Than Equal") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a <= b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "<=");
     }
@@ -263,7 +263,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Comparators MLIR") {
     SECTION("Test Greater Than") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a > b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == ">");
     }
@@ -271,7 +271,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Comparators MLIR") {
     SECTION("Test Greater Than Equal") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = 2\nb = 2\nc = a >= b");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 6));
+        pyir::CompareOp binaryOp = mlir::dyn_cast<pyir::CompareOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == ">=");
     }
@@ -282,7 +282,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Container Operators MLIR") {
     SECTION("Test Index") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = [1, 2]\nb = a[0]");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 6));
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 7));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "[]");
     }
@@ -290,7 +290,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Container Operators MLIR") {
     SECTION("Test Membership") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("1 in [1, 2]");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::ContainsOp containsOp = mlir::dyn_cast<pyir::ContainsOp>(getOp(fn, 2));
+        pyir::ContainsOp containsOp = mlir::dyn_cast<pyir::ContainsOp>(getOp(fn, 3));
         REQUIRE(containsOp);
         REQUIRE(containsOp.getOp() == "in");
     }
@@ -298,7 +298,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Container Operators MLIR") {
     SECTION("Test Union") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("{1} | {2}");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 4));
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 5));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "|");
     }
@@ -306,7 +306,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Container Operators MLIR") {
     SECTION("Test Intersection") {
         const mlir::OwningOpRef<mlir::ModuleOp> module = compile("{1} & {2}");
         const mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
-        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 4));
+        pyir::BinaryOp binaryOp = mlir::dyn_cast<pyir::BinaryOp>(getOp(fn, 5));
         REQUIRE(binaryOp);
         REQUIRE(binaryOp.getOp() == "&");
     }

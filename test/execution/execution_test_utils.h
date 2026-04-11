@@ -15,6 +15,7 @@
 #include "lowering/pyir_lowering.h"
 #include "pyir_run_module.h"
 #include "pyruntime/builder_runtime.h"
+#include "pyruntime/builtin_runtime.h"
 #include "pyruntime/function_runtime.h"
 #include "pyruntime/logical_runtime.h"
 #include "pyruntime/memory_runtime.h"
@@ -97,6 +98,7 @@ struct JITFixture {
         };
 
         // Register all runtime functions
+        addSymbol("pyir_initModule", reinterpret_cast<void*>(pyir_initModule));
         addSymbol("pyir_loadName", reinterpret_cast<void*>(pyir_loadName));
         addSymbol("pyir_storeName", reinterpret_cast<void*>(pyir_storeName));
         addSymbol("pyir_loadFast", reinterpret_cast<void*>(pyir_loadFast));
@@ -143,6 +145,11 @@ struct JITFixture {
         addSymbol("pyir_setAdd", reinterpret_cast<void*>(pyir_setAdd));
         addSymbol("pyir_buildMap", reinterpret_cast<void*>(pyir_buildMap));
         addSymbol("pyir_storeSubscr", reinterpret_cast<void*>(pyir_storeSubscr));
+        addSymbol("pyir_builtinEnumerate", reinterpret_cast<void*>(pyir_builtinEnumerate));
+        addSymbol("pyir_builtinIsInstance", reinterpret_cast<void*>(pyir_builtinIsInstance));
+        addSymbol("pyir_builtinRange", reinterpret_cast<void*>(pyir_builtinRange));
+        addSymbol("pyir_builtinType", reinterpret_cast<void*>(pyir_builtinType));
+        addSymbol("pyir_builtinZip", reinterpret_cast<void*>(pyir_builtinZip));
 
         // Symbols for test error handling
         addSymbol("pyir_runModule", reinterpret_cast<void*>(pyir_runModule));

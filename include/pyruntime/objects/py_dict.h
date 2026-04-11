@@ -65,6 +65,10 @@ struct PyDictIter : PyIter {
 
     static PyObj* next(PyObj* self, PyObj**, int64_t argc);
 
+    [[nodiscard]] std::string toString() const override { return "<dict_iterator>"; }
+
+    [[nodiscard]] std::string typeName() const override { return "dict_iterator"; }
+
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
 
 private:

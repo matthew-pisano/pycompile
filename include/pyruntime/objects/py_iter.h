@@ -16,10 +16,6 @@ struct PyNone;
 struct PyIter : PyObj {
     [[nodiscard]] size_t hash() const override { throw std::runtime_error("Unhashable type " + typeName()); }
 
-    [[nodiscard]] std::string toString() const override { return "<iterator>"; }
-
-    [[nodiscard]] std::string typeName() const override { return "iter"; }
-
     [[nodiscard]] bool isTruthy() const override { return true; }
 
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override = 0;

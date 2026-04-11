@@ -210,6 +210,10 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
             builder.create<pyir::StoreFast>(preambleLoc, module.info.varnames[i], argVal);
         }
     }
+    // For modules, setup dunder variables and state
+    else
+        builder.create<pyir::InitModule>(preambleLoc, module.filename, module.moduleName);
+
 
     // Exception table handler targets also get blocks
     for (const ExceptionTableEntry& e : module.info.exceptionTable)

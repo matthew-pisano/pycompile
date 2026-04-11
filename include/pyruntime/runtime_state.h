@@ -26,7 +26,8 @@ const std::unordered_map<std::string, PyFunctionData> builtinFuncs = {{"print", 
                                                                       {"isinstance", pyir_builtinIsInstance},
                                                                       {"range", pyir_builtinRange},
                                                                       {"type", pyir_builtinType},
-                                                                      {"zip", pyir_builtinZip}};
+                                                                      {"zip", pyir_builtinZip},
+                                                                      {"input", pyir_builtinInput}};
 
 
 using PyBuiltinVarFunction = PyObj* (*) ();

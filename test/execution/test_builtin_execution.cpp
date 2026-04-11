@@ -110,3 +110,16 @@ TEST_CASE_METHOD(JITFixture, "Test JIT File") {
     const std::string output = runCapture("print(__file__)");
     REQUIRE(output == "<embedded>\n");
 }
+
+
+TEST_CASE_METHOD(JITFixture, "Test JIT Input") {
+    SECTION("Test Input Without Prompt") {
+        const std::string output = runCaptureWithInput("print(input())", "Hello there!");
+        REQUIRE(output == "Hello there!\n");
+    }
+
+    SECTION("Test Input With Prompt") {
+        const std::string output = runCaptureWithInput("print(input('User: '))", "Hello there!");
+        REQUIRE(output == "User: Hello there!\n");
+    }
+}

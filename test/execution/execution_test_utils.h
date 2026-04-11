@@ -36,8 +36,15 @@ static std::string captureStdout(const std::function<void()>& fn) {
     dup2(pipeFileDescriptor[1], STDOUT_FILENO);
     close(pipeFileDescriptor[1]);
 
-    fn();
-    fflush(stdout);
+    try {
+        fn();
+        fflush(stdout);
+    } catch (...) {
+        // Always restore stdout, even on exception
+        dup2(savedStdout, STDOUT_FILENO);
+        close(savedStdout);
+        throw;
+    }
 
     // Restore stdout
     dup2(savedStdout, STDOUT_FILENO);
@@ -52,6 +59,39 @@ static std::string captureStdout(const std::function<void()>& fn) {
     close(pipeFileDescriptor[0]);
 
     return output;
+}
+
+
+/**
+ * Runs a function with stdin redirected to read from the given string.
+ *
+ * @param fn The function to execute.
+ * @param input The string to feed into stdin.
+ */
+static void withStdinInput(const std::function<void()>& fn, const std::string& input) {
+    int pipeFileDescriptor[2];
+    pipe(pipeFileDescriptor);
+
+    write(pipeFileDescriptor[1], input.c_str(), input.size());
+    close(pipeFileDescriptor[1]);
+
+    const int savedStdin = dup(STDIN_FILENO);
+    dup2(pipeFileDescriptor[0], STDIN_FILENO);
+    close(pipeFileDescriptor[0]);
+
+    try {
+        fn();
+    } catch (...) {
+        // Always restore stdin, even on exception
+        dup2(savedStdin, STDIN_FILENO);
+        close(savedStdin);
+        clearerr(stdin); // clear any EOF or error flags on the C stdin stream
+        throw;
+    }
+
+    dup2(savedStdin, STDIN_FILENO);
+    close(savedStdin);
+    clearerr(stdin); // clear EOF flag set when pipe read end was exhausted
 }
 
 
@@ -180,6 +220,24 @@ struct JITFixture {
             } catch (...) {
                 ex = std::current_exception();
             }
+        });
+        if (ex)
+            std::rethrow_exception(ex);
+        return output;
+    }
+
+    std::string runCaptureWithInput(const std::string& source, const std::string& input) {
+        std::exception_ptr ex;
+        std::string output = captureStdout([&] {
+            withStdinInput(
+                    [&] {
+                        try {
+                            run(source);
+                        } catch (...) {
+                            ex = std::current_exception();
+                        }
+                    },
+                    input);
         });
         if (ex)
             std::rethrow_exception(ex);

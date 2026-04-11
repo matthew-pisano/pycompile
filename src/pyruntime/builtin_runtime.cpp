@@ -313,8 +313,13 @@ PyObj* pyir_builtinInput(PyObj** args, const int64_t argc) {
     if (argc > 0)
         printf("%s", valueToString(args[0]).c_str());
 
-    std::string line;
-    std::getline(std::cin, line);
+    char buf[4096];
+    if (!fgets(buf, sizeof(buf), stdin))
+        return new PyStr("");
 
+    std::string line(buf);
+    // Strip trailing newline
+    if (!line.empty() && line.back() == '\n')
+        line.pop_back();
     return new PyStr(line);
 }

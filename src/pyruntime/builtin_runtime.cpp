@@ -176,7 +176,45 @@ PyObj* pyir_builtinNext(PyObj** args, const int64_t argc) {
 }
 
 
-PyObj* pyir_builtinEnumerate(PyObj** args, const int64_t argc) { return new PyNone(); }
+PyObj* pyir_builtinEnumerate(PyObj** args, const int64_t argc) {
+    if (argc == 0)
+        throw std::runtime_error("enumerate() takes at least one argument");
+    std::vector<PyObj*> result;
+    if (const PyStr* str = dynamic_cast<PyStr*>(args[0]))
+        for (size_t i = 0; i < str->data().size(); i++) {
+            result.push_back(new PyTuple({new PyInt(static_cast<int64_t>(i)), new PyStr(str->data()[i])}));
+        }
+    if (const PyList* list = dynamic_cast<PyList*>(args[0]))
+        for (size_t i = 0; i < list->data().size(); i++) {
+            PyObj* elem = list->data()[i];
+            elem->incref();
+            result.push_back(new PyTuple({new PyInt(static_cast<int64_t>(i)), elem}));
+        }
+    if (const PyTuple* tuple = dynamic_cast<PyTuple*>(args[0]))
+        for (size_t i = 0; i < tuple->data().size(); i++) {
+            PyObj* elem = tuple->data()[i];
+            elem->incref();
+            result.push_back(new PyTuple({new PyInt(static_cast<int64_t>(i)), elem}));
+        }
+    if (const PySet* set = dynamic_cast<PySet*>(args[0])) {
+        size_t i = 0;
+        for (PyObj* elem : set->data()) {
+            elem->incref();
+            result.push_back(new PyTuple({new PyInt(static_cast<int64_t>(i)), elem}));
+            i++;
+        }
+    }
+    if (PyDict* dict = dynamic_cast<PyDict*>(args[0])) {
+        size_t i = 0;
+        for (const auto& key : dict->data() | std::views::keys) {
+            key->incref();
+            result.push_back(new PyTuple({new PyInt(static_cast<int64_t>(i)), key}));
+            i++;
+        }
+    }
+
+    return new PyList(result);
+}
 
 
 PyObj* pyir_builtinIsInstance(PyObj** args, const int64_t argc) { return new PyNone(); }

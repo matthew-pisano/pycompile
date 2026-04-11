@@ -58,10 +58,10 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Type") {
 }
 
 TEST_CASE_METHOD(JITFixture, "Test JIT Is Instance") {
-    std::string output = runCapture("isinstance([], list)");
+    std::string output = runCapture("print(isinstance([], list))");
     REQUIRE(output == "True\n");
 
-    output = runCapture("isinstance({}, list)");
+    output = runCapture("print(isinstance({}, list))");
     REQUIRE(output == "False\n");
 }
 

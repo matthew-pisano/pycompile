@@ -11,6 +11,7 @@
 #include "pyruntime/objects/py_bool.h"
 #include "pyruntime/objects/py_dict.h"
 #include "pyruntime/objects/py_float.h"
+#include "pyruntime/objects/py_function.h"
 #include "pyruntime/objects/py_int.h"
 #include "pyruntime/objects/py_iter.h"
 #include "pyruntime/objects/py_list.h"
@@ -178,7 +179,7 @@ PyObj* pyir_builtinNext(PyObj** args, const int64_t argc) {
 
 PyObj* pyir_builtinEnumerate(PyObj** args, const int64_t argc) {
     if (argc == 0)
-        throw std::runtime_error("enumerate() takes at least one argument");
+        throw std::runtime_error("enumerate() takes one argument");
     std::vector<PyObj*> result;
     if (const PyStr* str = dynamic_cast<PyStr*>(args[0]))
         for (size_t i = 0; i < str->data().size(); i++) {
@@ -217,7 +218,14 @@ PyObj* pyir_builtinEnumerate(PyObj** args, const int64_t argc) {
 }
 
 
-PyObj* pyir_builtinIsInstance(PyObj** args, const int64_t argc) { return new PyNone(); }
+PyObj* pyir_builtinIsInstance(PyObj** args, const int64_t argc) {
+    if (argc < 2)
+        throw std::runtime_error("enumerate() takes two arguments");
+    const PyObj* instance = args[0];
+    if (const PyFunction* type = dynamic_cast<PyFunction*>(args[1]))
+        return new PyBool(instance->typeName() == type->funcName());
+    throw std::runtime_error("isinstance() takes a tye as the second argument");
+}
 
 
 PyObj* pyir_builtinRange(PyObj** args, const int64_t argc) {

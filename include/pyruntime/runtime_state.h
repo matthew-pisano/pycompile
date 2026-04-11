@@ -23,7 +23,7 @@ const std::unordered_map<std::string, PyFunctionData> builtinFuncs = {{"print", 
                                                                       {"iter", pyir_builtinIter},
                                                                       {"next", pyir_builtinNext},
                                                                       {"enumerate", pyir_builtinEnumerate},
-                                                                      {"isInstance", pyir_builtinIsInstance},
+                                                                      {"isinstance", pyir_builtinIsInstance},
                                                                       {"range", pyir_builtinRange},
                                                                       {"type", pyir_builtinType},
                                                                       {"zip", pyir_builtinZip}};

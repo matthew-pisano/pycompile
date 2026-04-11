@@ -21,6 +21,16 @@ void jumpForwardCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, con
 }
 
 
+void jumpBackwardCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const ByteCodeInstruction& instr,
+                         const ConversionMeta& meta) {
+    const int64_t* target = std::get_if<int64_t>(&instr.argval);
+    if (!target)
+        throw PyCompileError("JUMP_BACKWARD must have an int argval", loc);
+    mlir::Block* dest = meta.offsetToBlock.at(*target);
+    builder.create<mlir::cf::BranchOp>(loc, dest);
+}
+
+
 inline void popJumpIfCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, mlir::func::FuncOp& fn,
                              const int64_t* target, const bool truthy, ConversionMeta& meta) {
     mlir::Value cond = meta.stack.back();

@@ -15,6 +15,10 @@ void jumpForwardCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, con
                         const ConversionMeta& meta);
 
 
+void jumpBackwardCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const ByteCodeInstruction& instr,
+                         const ConversionMeta& meta);
+
+
 void popJumpIfTrueCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, mlir::func::FuncOp& fn,
                           const ByteCodeInstruction& instr, ConversionMeta& meta);
 

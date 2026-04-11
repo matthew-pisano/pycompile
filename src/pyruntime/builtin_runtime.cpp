@@ -182,30 +182,7 @@ PyObj* pyir_builtinEnumerate(PyObj** args, const int64_t argc) {
     if (argc == 0)
         throw std::runtime_error("enumerate() takes one argument");
     std::vector<PyObj*> result;
-    if (const PyStr* str = dynamic_cast<PyStr*>(args[0]))
-        for (size_t i = 0; i < str->data().size(); i++) {
-            result.push_back(new PyTuple({new PyInt(static_cast<int64_t>(i)), new PyStr(str->data()[i])}));
-        }
-    if (const PyList* list = dynamic_cast<PyList*>(args[0]))
-        for (size_t i = 0; i < list->data().size(); i++) {
-            PyObj* elem = list->data()[i];
-            elem->incref();
-            result.push_back(new PyTuple({new PyInt(static_cast<int64_t>(i)), elem}));
-        }
-    if (const PyTuple* tuple = dynamic_cast<PyTuple*>(args[0]))
-        for (size_t i = 0; i < tuple->data().size(); i++) {
-            PyObj* elem = tuple->data()[i];
-            elem->incref();
-            result.push_back(new PyTuple({new PyInt(static_cast<int64_t>(i)), elem}));
-        }
-    if (const PySet* set = dynamic_cast<PySet*>(args[0])) {
-        size_t i = 0;
-        for (PyObj* elem : set->data()) {
-            elem->incref();
-            result.push_back(new PyTuple({new PyInt(static_cast<int64_t>(i)), elem}));
-            i++;
-        }
-    }
+    // Iterate over keys for dict
     if (PyDict* dict = dynamic_cast<PyDict*>(args[0])) {
         size_t i = 0;
         for (const auto& key : dict->data() | std::views::keys) {
@@ -213,6 +190,15 @@ PyObj* pyir_builtinEnumerate(PyObj** args, const int64_t argc) {
             result.push_back(new PyTuple({new PyInt(static_cast<int64_t>(i)), key}));
             i++;
         }
+    } else {
+        PyInt* length = args[0]->len();
+        for (int64_t i = 0; i < length->data(); i++) {
+            PyInt* idx = new PyInt(i);
+            PyObj* elem = args[0]->idx(idx);
+            elem->incref();
+            result.push_back(new PyTuple({idx, elem}));
+        }
+        length->decref();
     }
 
     return new PyList(result);
@@ -262,4 +248,59 @@ PyObj* pyir_builtinType(PyObj** args, const int64_t argc) {
 }
 
 
-PyObj* pyir_builtinZip(PyObj** args, const int64_t argc) { return new PyNone(); }
+PyObj* getShortestContainer(PyObj** args, const int64_t argc) {
+    if (argc < 1)
+        throw std::runtime_error("Expected at least one element to compare the lengths of");
+    int64_t minLength = INT64_MAX;
+    PyObj* shortest = nullptr;
+    for (int64_t i = 0; i < argc; i++) {
+        PyInt* length = args[i]->len();
+        if (length->data() < minLength) {
+            minLength = length->data();
+            shortest = args[i];
+        }
+        length->decref();
+    }
+
+    return shortest;
+}
+
+
+PyObj* pyir_builtinZip(PyObj** args, const int64_t argc) {
+    if (argc < 1)
+        throw std::runtime_error("zip() takes at least one argument");
+    const PyObj* shortest = getShortestContainer(args, argc);
+    const PyInt* shortestLen = shortest->len();
+    std::vector<std::vector<PyObj*>> zipped(shortestLen->data());
+    for (int64_t elemIdx = 0; elemIdx < shortestLen->data(); elemIdx++)
+        zipped[elemIdx] = std::vector<PyObj*>(argc);
+
+    for (int64_t containerIdx = 0; containerIdx < argc; containerIdx++) {
+        // Iterate over keys for dict
+        if (PyDict* dict = dynamic_cast<PyDict*>(args[containerIdx])) {
+            int64_t elemIdx = 0;
+            for (const auto& key : dict->data() | std::views::keys) {
+                if (elemIdx > shortestLen->data())
+                    break;
+
+                key->incref();
+                zipped[elemIdx][containerIdx] = key;
+                elemIdx++;
+            }
+        } else {
+            PyInt* length = args[containerIdx]->len();
+            for (int64_t elemIdx = 0; elemIdx < shortestLen->data(); elemIdx++) {
+                const PyInt* idx = new PyInt(elemIdx);
+                PyObj* elem = args[containerIdx]->idx(idx);
+                elem->incref();
+                zipped[elemIdx][containerIdx] = elem;
+            }
+            length->decref();
+        }
+    }
+
+    std::vector<PyObj*> result;
+    for (int64_t elemIdx = 0; elemIdx < shortestLen->data(); elemIdx++)
+        result.push_back(new PyTuple(zipped[elemIdx]));
+    return new PyList(result);
+}

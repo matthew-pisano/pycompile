@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <format>
+#include <iostream>
 #include <ranges>
 #include <stdexcept>
 
@@ -303,4 +304,22 @@ PyObj* pyir_builtinZip(PyObj** args, const int64_t argc) {
     for (int64_t elemIdx = 0; elemIdx < shortestLen->data(); elemIdx++)
         result.push_back(new PyTuple(zipped[elemIdx]));
     return new PyList(result);
+}
+
+PyObj* pyir_builtinInput(PyObj** args, const int64_t argc) {
+    if (argc > 1)
+        throw std::runtime_error("input() expects at most one argument");
+
+    if (argc > 0)
+        printf("%s", valueToString(args[0]).c_str());
+
+    char buf[4096];
+    if (!fgets(buf, sizeof(buf), stdin))
+        return new PyStr("");
+
+    std::string line(buf);
+    // Strip trailing newline
+    if (!line.empty() && line.back() == '\n')
+        line.pop_back();
+    return new PyStr(line);
 }

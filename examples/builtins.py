@@ -8,6 +8,8 @@ print("Type List:", type([]))
 
 print("Instance:", isinstance([], list))
 
+print(input("User Input: "))
+
 print("Name:", __name__)
 
 print("File:", __file__)

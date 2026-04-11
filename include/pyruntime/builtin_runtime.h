@@ -49,6 +49,8 @@ PyObj* pyir_builtinRange(PyObj** args, int64_t argc);
 PyObj* pyir_builtinType(PyObj** args, int64_t argc);
 
 PyObj* pyir_builtinZip(PyObj** args, int64_t argc);
+
+PyObj* pyir_builtinInput(PyObj** args, int64_t argc);
 }
 
 #endif // PYCOMPILE_BUILTIN_RUNTIME_H

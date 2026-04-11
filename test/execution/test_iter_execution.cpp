@@ -9,27 +9,27 @@
 
 TEST_CASE_METHOD(JITFixture, "Test JIT Iter Str Creation") {
     const std::string output = runCapture("print(iter('123'))");
-    REQUIRE(output == "<iterator>\n");
+    REQUIRE(output == "<str_iterator>\n");
 }
 
 TEST_CASE_METHOD(JITFixture, "Test JIT Iter List Creation") {
     const std::string output = runCapture("print(iter([1, 2, 3]))");
-    REQUIRE(output == "<iterator>\n");
+    REQUIRE(output == "<list_iterator>\n");
 }
 
 TEST_CASE_METHOD(JITFixture, "Test JIT Iter Set Creation") {
     const std::string output = runCapture("print(iter({1, 2, 3}))");
-    REQUIRE(output == "<iterator>\n");
+    REQUIRE(output == "<set_iterator>\n");
 }
 
 TEST_CASE_METHOD(JITFixture, "Test JIT Iter Dict Creation") {
     const std::string output = runCapture("print(iter({1: 'one', 2: 'two', 3: 'three'}))");
-    REQUIRE(output == "<iterator>\n");
+    REQUIRE(output == "<dict_iterator>\n");
 }
 
 TEST_CASE_METHOD(JITFixture, "Test JIT Iter Tuple Creation") {
     const std::string output = runCapture("print(iter((1, 2, 3)))");
-    REQUIRE(output == "<iterator>\n");
+    REQUIRE(output == "<tuple_iterator>\n");
 }
 
 TEST_CASE_METHOD(JITFixture, "Test JIT Empty Iterator") {

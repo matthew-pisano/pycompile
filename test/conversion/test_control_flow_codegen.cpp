@@ -38,3 +38,34 @@ TEST_CASE_METHOD(MLIRFixture, "Test Conditional MLIR") {
     mlir::Block& falseBlock = *blockIt++;
     REQUIRE(mlir::isa<mlir::func::ReturnOp>(falseBlock.getTerminator()));
 }
+
+
+TEST_CASE_METHOD(MLIRFixture, "Test While MLIR") {
+    const mlir::OwningOpRef<mlir::ModuleOp> module = compile("a = True\nwhile a:\n  ...");
+    mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
+
+    // Verify Op types
+    REQUIRE(mlir::isa<mlir::cf::BranchOp>(getOp(fn, 3)));
+
+    // Verify blocks
+    const llvm::iplist<mlir::Block>& blocks = fn.getBlocks();
+    REQUIRE(blocks.size() == 4); // Entry block, true block, and false block
+
+    mlir::Region::iterator blockIt = fn.getBody().begin();
+
+    // Entry block should end with br
+    mlir::Block& entryBlock = *blockIt++;
+    REQUIRE(mlir::isa<mlir::cf::BranchOp>(entryBlock.getTerminator()));
+
+    // Post loop block
+    mlir::Block& endBlock = *blockIt++;
+    REQUIRE(mlir::isa<mlir::func::ReturnOp>(endBlock.getTerminator()));
+
+    // Loop Condition block
+    mlir::Block& conditionBlock = *blockIt++;
+    REQUIRE(mlir::isa<mlir::cf::CondBranchOp>(conditionBlock.getTerminator()));
+
+    // Loop body block
+    mlir::Block& bodyBlock = *blockIt++;
+    REQUIRE(mlir::isa<mlir::cf::BranchOp>(bodyBlock.getTerminator()));
+}

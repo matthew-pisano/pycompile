@@ -58,10 +58,27 @@ mlir::LogicalResult BinaryOpLowering::matchAndRewrite(mlir::Operation* op, const
     pyir::BinaryOp binaryOp = mlir::cast<pyir::BinaryOp>(op);
 
     // Map operator string to runtime function name
-    static const std::unordered_map<std::string, std::string> opToFn = {
-            {"+", "pyir_add"},  {"-", "pyir_sub"},       {"*", "pyir_mul"},      {"/", "pyir_div"},
-            {"^", "pyir_xor"},  {"//", "pyir_floorDiv"}, {"**", "pyir_exp"},     {"%", "pyir_mod"},
-            {"[]", "pyir_idx"}, {"|", "pyir_pipe"},      {"&", "pyir_ampersand"}};
+    static const std::unordered_map<std::string, std::string> opToFn = {{"+", "pyir_add"},
+                                                                        {"-", "pyir_sub"},
+                                                                        {"*", "pyir_mul"},
+                                                                        {"/", "pyir_div"},
+                                                                        {"^", "pyir_xor"},
+                                                                        {"//", "pyir_floorDiv"},
+                                                                        {"**", "pyir_exp"},
+                                                                        {"%", "pyir_mod"},
+                                                                        {"[]", "pyir_idx"},
+                                                                        {"|", "pyir_pipe"},
+                                                                        {"&", "pyir_ampersand"},
+                                                                        {"+=", "pyir_addAssign"},
+                                                                        {"-=", "pyir_subAssign"},
+                                                                        {"*=", "pyir_mulAssign"},
+                                                                        {"/=", "pyir_divAssign"},
+                                                                        {"^=", "pyir_xorAssign"},
+                                                                        {"//=", "pyir_floorDivAssign"},
+                                                                        {"**=", "pyir_expAssign"},
+                                                                        {"%=", "pyir_modAssign"},
+                                                                        {"|=", "pyir_pipeAssign"},
+                                                                        {"&=", "pyir_ampersandAssign"}};
 
     const std::string opStr = binaryOp.getOp().str();
     const auto it = opToFn.find(opStr);

@@ -76,7 +76,8 @@ TEST_CASE_METHOD(MLIRFixture, "Test For MLIR") {
     mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
 
     // Verify Op types
-    REQUIRE(mlir::isa<mlir::cf::BranchOp>(getOp(fn, 3)));
+    REQUIRE(mlir::isa<pyir::GetIter>(getOp(fn, 5)));
+    REQUIRE(mlir::isa<mlir::cf::BranchOp>(getOp(fn, 6)));
 
     // Verify blocks
     const llvm::iplist<mlir::Block>& blocks = fn.getBlocks();
@@ -88,13 +89,13 @@ TEST_CASE_METHOD(MLIRFixture, "Test For MLIR") {
     mlir::Block& entryBlock = *blockIt++;
     REQUIRE(mlir::isa<mlir::cf::BranchOp>(entryBlock.getTerminator()));
 
+    // For iter block
+    mlir::Block& forIterBlock = *blockIt++;
+    REQUIRE(mlir::isa<pyir::ForIter>(forIterBlock.getTerminator()));
+
     // Post loop block
     mlir::Block& endBlock = *blockIt++;
     REQUIRE(mlir::isa<mlir::func::ReturnOp>(endBlock.getTerminator()));
-
-    // Loop Condition block
-    mlir::Block& conditionBlock = *blockIt++;
-    REQUIRE(mlir::isa<mlir::cf::CondBranchOp>(conditionBlock.getTerminator()));
 
     // Loop body block
     mlir::Block& bodyBlock = *blockIt++;

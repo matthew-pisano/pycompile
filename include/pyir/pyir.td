@@ -300,3 +300,19 @@ def PyIR_BuildMap : PyIR_Op<"build_map"> {
     let results   = (outs ByteCodeObject_Type:$result);
     let assemblyFormat = "$parts attr-dict `:` functional-type($parts, $result)";
 }
+
+
+def PyIR_GetIter : PyIR_Op<"get_iter"> {
+    let summary = "Gets the corresponding iterator for the given container";
+    let arguments = (ins ByteCodeObject_Type:$container);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$container attr-dict `:` type($container) `->` type($result)";
+}
+
+
+def PyIR_ForIter : PyIR_Op<"for_iter", [Terminator]> {
+ let summary = "Advance an iterator, branching to exit block when exhausted";
+    let arguments = (ins ByteCodeObject_Type:$iterator);
+    let successors = (successor AnySuccessor:$body, AnySuccessor:$exit);
+    let assemblyFormat = "$iterator `->` `body` $body `,` `exit` $exit attr-dict `:` type($iterator)";
+}

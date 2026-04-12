@@ -32,8 +32,6 @@ jobs:
           sudo add-apt-repository -y ppa:deadsnakes/ppa
           sudo apt update
           sudo apt-get install -y python3.14 python3.14-venv
-          python3.14 -m ensurepip --upgrade
-          python3.14 -m pip install mypy pytest
 
       - name: Run Clang Format
         run: |
@@ -55,19 +53,25 @@ jobs:
           sudo add-apt-repository -y ppa:deadsnakes/ppa
           sudo apt update
           sudo apt-get install -y python3.14 python3.14-venv python3.14-dev
-          python3.14 -m ensurepip --upgrade
           sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
           sudo apt update
-          sudo apt install -y gcc-13 g++-13
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100 --slave /usr/bin/g++ g++ /usr/bin/g++-13
+          sudo apt-get install -y gcc-14 g++-14
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 14
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 14
           gcc --version
-          sudo rm /usr/bin/python3
-          sudo ln -s /usr/bin/python3.14 /usr/bin/python3
-          python3 -m pip install build pytest wheel setuptools
+          sudo apt install -y llvm-20 libmlir-20-dev mlir-20-tools llvm-20-dev llvm-20-tools
+          echo "/usr/lib/llvm-20/bin" >> $GITHUB_PATH
+          echo "/usr/lib/llvm-20/lib/cmake/mlir" >> $GITHUB_PATH
+          echo "/usr/lib/llvm-20/lib/cmake/llvm" >> $GITHUB_PATH
           mkdir logs
 
       - name: Configure CMake
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+        run: >-
+          cmake -B build
+          -DCMAKE_BUILD_TYPE=Release
+          -DPython_EXECUTABLE=/usr/bin/python3.14
+          -DMLIR_DIR=/usr/lib/llvm-20/lib/cmake/mlir
+          -DLLVM_DIR=/usr/lib/llvm-20/lib/cmake/llvm
 
       - name: Build project
         run: |

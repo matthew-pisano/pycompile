@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.1)
+cmake_minimum_required(VERSION 3.22)
 project(pycompile)
 
 set(CMAKE_CXX_STANDARD 23)
@@ -52,8 +52,12 @@ find_package(Python REQUIRED COMPONENTS Interpreter Development)
 find_package(MLIR REQUIRED CONFIG)
 
 list(APPEND CMAKE_MODULE_PATH "${MLIR_CMAKE_DIR}")
+list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
+include(TableGen)
 include(AddMLIR)
 include(AddLLVM)
+
+add_compile_options(-isystem ${MLIR_INCLUDE_DIRS} -isystem ${LLVM_INCLUDE_DIRS})
 
 # ================
 # MLIR Tablegen
@@ -88,7 +92,11 @@ add_mlir_library(pyir
         MLIRIR
         MLIRSupport
 )
-target_include_directories(pyir SYSTEM PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(pyir SYSTEM PUBLIC
+        ${CMAKE_CURRENT_BINARY_DIR}
+        ${MLIR_INCLUDE_DIRS}
+        ${LLVM_INCLUDE_DIRS}
+)
 
 # ================
 # Runtime Standard Library

@@ -14,7 +14,7 @@ PyObj* pyir_getIter(PyObj* container) { return pyir_builtinIter(&container, 1); 
 PyObj* pyir_forIter(PyObj* iterator) {
     try {
         return pyir_builtinNext(&iterator, 1);
-    } catch (std::runtime_error) {
+    } catch (const std::runtime_error&) {
         return nullptr;
     }
 }

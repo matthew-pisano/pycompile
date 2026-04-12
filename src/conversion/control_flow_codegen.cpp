@@ -111,3 +111,7 @@ void forIterCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir
     // Push the next value (block argument) onto the stack
     meta.stack.push_back(bodyBlock->getArgument(0));
 }
+
+void popIterCodegen() {
+    // Will need to decref the iterator
+}

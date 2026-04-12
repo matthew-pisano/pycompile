@@ -48,6 +48,7 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
     switch (instr.opcode) {
         case PythonOpcode::RESUME:
         case PythonOpcode::NOT_TAKEN:
+        case PythonOpcode::END_FOR:
             // Bookkeeping instructions, no MLIR equivalent needed.
             return;
         case PythonOpcode::PUSH_NULL:
@@ -106,6 +107,8 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             return getIterCodegen(builder, ctx, loc, meta);
         case PythonOpcode::FOR_ITER:
             return forIterCodegen(builder, ctx, loc, fn, instr, meta);
+        case PythonOpcode::POP_ITER:
+            return popIterCodegen();
         case PythonOpcode::LOAD_SMALL_INT:
             return loadSmallIntCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::TO_BOOL:

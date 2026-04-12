@@ -33,4 +33,7 @@ void getIterCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir
 void forIterCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc, mlir::func::FuncOp& fn,
                     const ByteCodeInstruction& instr, ConversionMeta& meta);
 
+
+void popIterCodegen();
+
 #endif // PYCOMPILE_CONTROL_FLOW_CODEGEN_H

@@ -213,6 +213,8 @@ TEST_CASE_METHOD(LLVMFixture, "Test Dict Operations LLVM") {
 }
 
 
-TEST_CASE_METHOD(LLVMFixture, "Test Hello World LLVM") {
-    const std::unique_ptr<llvm::Module> module = compile("print('Hello world!')");
+TEST_CASE_METHOD(LLVMFixture, "Test Loops LLVM") {
+    SECTION("Test While") { const std::unique_ptr<llvm::Module> module = compile("a = True\nwhile a:\n  ..."); }
+
+    SECTION("Test For") { const std::unique_ptr<llvm::Module> module = compile("for i in range(3):\n  ..."); }
 }

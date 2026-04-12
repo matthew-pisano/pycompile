@@ -59,10 +59,13 @@ jobs:
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 14
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 14
           gcc --version
-          sudo apt install -y llvm-20 libmlir-20-dev mlir-20-tools llvm-20-dev llvm-20-tools
-          echo "/usr/lib/llvm-20/bin" >> $GITHUB_PATH
-          echo "/usr/lib/llvm-20/lib/cmake/mlir" >> $GITHUB_PATH
-          echo "/usr/lib/llvm-20/lib/cmake/llvm" >> $GITHUB_PATH
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 21
+          sudo apt install -y libmlir-21-dev mlir-21-tools
+          echo "/usr/lib/llvm-21/bin" >> $GITHUB_PATH
+          echo "/usr/lib/llvm-21/lib/cmake/mlir" >> $GITHUB_PATH
+          echo "/usr/lib/llvm-21/lib/cmake/llvm" >> $GITHUB_PATH
           mkdir logs
 
       - name: Configure CMake
@@ -70,8 +73,6 @@ jobs:
           cmake -B build
           -DCMAKE_BUILD_TYPE=Release
           -DPython_EXECUTABLE=/usr/bin/python3.14
-          -DMLIR_DIR=/usr/lib/llvm-20/lib/cmake/mlir
-          -DLLVM_DIR=/usr/lib/llvm-20/lib/cmake/llvm
 
       - name: Build project
         run: |

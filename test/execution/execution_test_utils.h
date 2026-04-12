@@ -16,6 +16,7 @@
 #include "pyir_run_module.h"
 #include "pyruntime/builder_runtime.h"
 #include "pyruntime/builtin_runtime.h"
+#include "pyruntime/control_flow_runtime.h"
 #include "pyruntime/function_runtime.h"
 #include "pyruntime/logical_runtime.h"
 #include "pyruntime/memory_runtime.h"
@@ -190,6 +191,8 @@ struct JITFixture {
         addSymbol("pyir_builtinRange", reinterpret_cast<void*>(pyir_builtinRange));
         addSymbol("pyir_builtinType", reinterpret_cast<void*>(pyir_builtinType));
         addSymbol("pyir_builtinZip", reinterpret_cast<void*>(pyir_builtinZip));
+        addSymbol("pyir_getIter", reinterpret_cast<void*>(pyir_getIter));
+        addSymbol("pyir_forIter", reinterpret_cast<void*>(pyir_forIter));
 
         // Symbols for test error handling
         addSymbol("pyir_runModule", reinterpret_cast<void*>(pyir_runModule));

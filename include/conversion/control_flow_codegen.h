@@ -26,4 +26,11 @@ void popJumpIfTrueCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, m
 void popJumpIfFalseCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, mlir::func::FuncOp& fn,
                            const ByteCodeInstruction& instr, ConversionMeta& meta);
 
+
+void getIterCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc, ConversionMeta& meta);
+
+
+void forIterCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc, mlir::func::FuncOp& fn,
+                    const ByteCodeInstruction& instr, ConversionMeta& meta);
+
 #endif // PYCOMPILE_CONTROL_FLOW_CODEGEN_H

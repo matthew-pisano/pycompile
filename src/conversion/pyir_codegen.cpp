@@ -102,6 +102,10 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             return popJumpIfTrueCodegen(builder, loc, fn, instr, meta);
         case PythonOpcode::POP_JUMP_IF_FALSE:
             return popJumpIfFalseCodegen(builder, loc, fn, instr, meta);
+        case PythonOpcode::GET_ITER:
+            return getIterCodegen(builder, ctx, loc, meta);
+        case PythonOpcode::FOR_ITER:
+            return forIterCodegen(builder, ctx, loc, fn, instr, meta);
         case PythonOpcode::LOAD_SMALL_INT:
             return loadSmallIntCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::TO_BOOL:
@@ -225,6 +229,10 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
     // Pre-pass: collect all jump target offsets and create blocks for them.
     // This must happen before emission so forward jumps can reference blocks that haven't been emitted yet.
     for (const ByteCodeInstruction& instr : module.instructions) {
+        if (instr.opcode == PythonOpcode::END_FOR) {
+            meta.offsetToBlock[instr.offset] = fn.addBlock();
+            continue;
+        }
         const int64_t* target = std::get_if<int64_t>(&instr.argval);
         const bool isJumpTarget =
                 instr.opcode == PythonOpcode::JUMP_FORWARD || instr.opcode == PythonOpcode::POP_JUMP_IF_TRUE ||

@@ -120,6 +120,7 @@ add_library(stdpyir STATIC
         src/pyruntime/objects/py_none.cpp
         src/pyruntime/objects/py_function.cpp
         src/pyruntime/objects/py_method.cpp
+        src/pyruntime/control_flow_runtime.cpp
 )
 set_target_properties(stdpyir PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"

@@ -27,7 +27,14 @@ void jumpBackwardCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, co
     if (!target)
         throw PyCompileError("JUMP_BACKWARD must have an int argval", loc);
     mlir::Block* dest = meta.offsetToBlock.at(*target);
-    builder.create<mlir::cf::BranchOp>(loc, dest);
+
+    // Pass current stack values as block arguments to the target block
+    llvm::SmallVector<mlir::Value> branchArgs(meta.stack.begin(), meta.stack.end());
+    if (dest->getNumArguments() == 0)
+        for (mlir::Value v : branchArgs)
+            dest->addArgument(v.getType(), loc);
+
+    builder.create<mlir::cf::BranchOp>(loc, dest, mlir::ValueRange{branchArgs});
 }
 
 

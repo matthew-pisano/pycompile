@@ -29,6 +29,36 @@ TEST_CASE_METHOD(JITFixture, "Test JIT While") {
 
 
 TEST_CASE_METHOD(JITFixture, "Test JIT For") {
-    const std::string output = runCapture("for i in range(3):\n  print(i)");
-    REQUIRE(output == "0\n1\n2\n");
+    SECTION("Test For Range") {
+        const std::string output = runCapture("for i in range(3):\n  print(i)");
+        REQUIRE(output == "0\n1\n2\n");
+    }
+
+    SECTION("Test For List") {
+        const std::string output = runCapture("for i in [0, 1, 2]:\n  print(i)");
+        REQUIRE(output == "0\n1\n2\n");
+    }
+
+    SECTION("Test For Dict") {
+        const std::string output = runCapture("for i in {0: 'zero', 1: 'one', 2: 'two'}:\n  print(i)");
+        REQUIRE(output == "0\n1\n2\n");
+    }
+
+    SECTION("Test For Tuple") {
+        const std::string output = runCapture("for i in (0, 1, 2):\n  print(i)");
+        REQUIRE(output == "0\n1\n2\n");
+    }
+
+    SECTION("Test For Set") {
+        const std::string output = runCapture("for i in {0, 1, 2}:\n  print(i)");
+        REQUIRE(output.length() == 6);
+        REQUIRE(output.contains("0\n"));
+        REQUIRE(output.contains("1\n"));
+        REQUIRE(output.contains("2\n"));
+    }
+
+    SECTION("Test For String") {
+        const std::string output = runCapture("for i in '012':\n  print(i)");
+        REQUIRE(output == "0\n1\n2\n");
+    }
 }

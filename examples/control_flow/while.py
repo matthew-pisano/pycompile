@@ -6,8 +6,8 @@ while i < 10:
 
 print("Nested While loop:")
 i = 0
-j = 0
 while i < 3:
+    j = 0
     while j < 3:
         print("Index:", i, j)
         j += 1

@@ -23,8 +23,16 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Function With Arg") {
 }
 
 TEST_CASE_METHOD(JITFixture, "Test JIT While") {
-    const std::string output = runCapture("i = 0\nwhile i < 3:\n  print(i)\n  i += 1");
-    REQUIRE(output == "0\n1\n2\n");
+    SECTION("Test Single While") {
+        const std::string output = runCapture("i = 0\nwhile i < 3:\n  print(i)\n  i += 1");
+        REQUIRE(output == "0\n1\n2\n");
+    }
+
+    SECTION("Test Nested While") {
+        const std::string output = runCapture(
+                "i = 0\nj = 0\nwhile i < 3:\n  j = 0\n  while j < 3:\n    print(i, j)\n    j += 1\n  i += 1");
+        REQUIRE(output == "0 0\n0 1\n0 2\n1 0\n1 1\n1 2\n2 0\n2 1\n2 2\n");
+    }
 }
 
 TEST_CASE_METHOD(JITFixture, "Test JIT For") {
@@ -59,5 +67,10 @@ TEST_CASE_METHOD(JITFixture, "Test JIT For") {
     SECTION("Test For String") {
         const std::string output = runCapture("for i in '012':\n  print(i)");
         REQUIRE(output == "0\n1\n2\n");
+    }
+
+    SECTION("Test Nested For Range") {
+        const std::string output = runCapture("for i in range(3):\n  for j in range(3):\n    print(i, j)");
+        REQUIRE(output == "0 0\n0 1\n0 2\n1 0\n1 1\n1 2\n2 0\n2 1\n2 2\n");
     }
 }

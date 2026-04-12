@@ -59,9 +59,12 @@ mlir::LogicalResult BinaryOpLowering::matchAndRewrite(mlir::Operation* op, const
 
     // Map operator string to runtime function name
     static const std::unordered_map<std::string, std::string> opToFn = {
-            {"+", "pyir_add"},  {"-", "pyir_sub"},       {"*", "pyir_mul"},      {"/", "pyir_div"},
-            {"^", "pyir_xor"},  {"//", "pyir_floorDiv"}, {"**", "pyir_exp"},     {"%", "pyir_mod"},
-            {"[]", "pyir_idx"}, {"|", "pyir_pipe"},      {"&", "pyir_ampersand"}};
+            {"+", "pyir_add"},        {"-", "pyir_sub"},       {"*", "pyir_mul"},       {"/", "pyir_div"},
+            {"^", "pyir_xor"},        {"//", "pyir_floorDiv"}, {"**", "pyir_exp"},      {"%", "pyir_mod"},
+            {"[]", "pyir_idx"},       {"|", "pyir_pipe"},      {"&", "pyir_ampersand"}, {"+=", "pyir_add"},
+            {"-=", "pyir_sub"},       {"*=", "pyir_mul"},      {"/=", "pyir_div"},      {"^=", "pyir_xor"},
+            {"//=", "pyir_floorDiv"}, {"**=", "pyir_exp"},     {"%=", "pyir_mod"},      {"|=", "pyir_pipe"},
+            {"&=", "pyir_ampersand"}};
 
     const std::string opStr = binaryOp.getOp().str();
     const auto it = opToFn.find(opStr);

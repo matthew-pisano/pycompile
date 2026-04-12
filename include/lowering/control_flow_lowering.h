@@ -38,4 +38,42 @@ struct PopTopLowering : PyIROpConversion {
                                         mlir::ConversionPatternRewriter& rewriter) const override;
 };
 
+
+/**
+ * Lowers pyir.get_iter to a call to the runtime function pyir_getIter.
+ *
+ * Wraps a heap-allocated container Value* in an iterator Value* that tracks
+ * the current position for use with pyir.for_iter.
+ *
+ * pyir.get_iter %container : !pyir.object -> !pyir.object
+ *     %result = llvm.call @pyir_getIter(%container)
+ */
+struct GetIterLowering : PyIROpConversion {
+    GetIterLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::GetIter::getOperationName(), tc, ctx) {}
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override;
+};
+
+
+/**
+ * Lowers pyir.for_iter to a call to the runtime function pyir_forIter followed by a conditional branch.
+ *
+ * Advances the iterator by one step. If the iterator is not exhausted, the next value is passed
+ * as a block argument to the body block. If exhausted, branches to the exit block.
+ *
+ * pyir.for_iter %iterator -> body ^bb1, exit ^bb2 : !pyir.object
+ *     %next = llvm.call @pyir_forIter(%iterator)
+ *     %cond = llvm.icmp ne %next, null
+ *             llvm.cond_br %cond, ^bb1(%next), ^bb2()
+ */
+struct ForIterLowering : PyIROpConversion {
+    ForIterLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::ForIter::getOperationName(), tc, ctx) {}
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override;
+};
+
 #endif // PYCOMPILE_CONTROL_FLOW_LOWERING_H

@@ -48,6 +48,7 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
     switch (instr.opcode) {
         case PythonOpcode::RESUME:
         case PythonOpcode::NOT_TAKEN:
+        case PythonOpcode::END_FOR:
             // Bookkeeping instructions, no MLIR equivalent needed.
             return;
         case PythonOpcode::PUSH_NULL:
@@ -96,10 +97,18 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             return returnValueCodegen(builder, loc, meta);
         case PythonOpcode::JUMP_FORWARD:
             return jumpForwardCodegen(builder, loc, instr, meta);
+        case PythonOpcode::JUMP_BACKWARD:
+            return jumpBackwardCodegen(builder, loc, instr, meta);
         case PythonOpcode::POP_JUMP_IF_TRUE:
             return popJumpIfTrueCodegen(builder, loc, fn, instr, meta);
         case PythonOpcode::POP_JUMP_IF_FALSE:
             return popJumpIfFalseCodegen(builder, loc, fn, instr, meta);
+        case PythonOpcode::GET_ITER:
+            return getIterCodegen(builder, ctx, loc, meta);
+        case PythonOpcode::FOR_ITER:
+            return forIterCodegen(builder, ctx, loc, fn, instr, meta);
+        case PythonOpcode::POP_ITER:
+            return popIterCodegen();
         case PythonOpcode::LOAD_SMALL_INT:
             return loadSmallIntCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::TO_BOOL:
@@ -223,10 +232,14 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
     // Pre-pass: collect all jump target offsets and create blocks for them.
     // This must happen before emission so forward jumps can reference blocks that haven't been emitted yet.
     for (const ByteCodeInstruction& instr : module.instructions) {
+        if (instr.opcode == PythonOpcode::END_FOR) {
+            meta.offsetToBlock[instr.offset] = fn.addBlock();
+            continue;
+        }
         const int64_t* target = std::get_if<int64_t>(&instr.argval);
-        const bool isJumpTarget = instr.opcode == PythonOpcode::JUMP_FORWARD ||
-                                  instr.opcode == PythonOpcode::POP_JUMP_IF_TRUE ||
-                                  instr.opcode == PythonOpcode::POP_JUMP_IF_FALSE;
+        const bool isJumpTarget =
+                instr.opcode == PythonOpcode::JUMP_FORWARD || instr.opcode == PythonOpcode::POP_JUMP_IF_TRUE ||
+                instr.opcode == PythonOpcode::POP_JUMP_IF_FALSE || instr.opcode == PythonOpcode::JUMP_BACKWARD;
         if (target && isJumpTarget && !meta.offsetToBlock.contains(*target))
             meta.offsetToBlock[*target] = fn.addBlock();
     }

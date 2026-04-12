@@ -72,7 +72,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test While MLIR") {
 
 
 TEST_CASE_METHOD(MLIRFixture, "Test For MLIR") {
-    const mlir::OwningOpRef<mlir::ModuleOp> module = compile("for i in range(5):\n  ...");
+    const mlir::OwningOpRef<mlir::ModuleOp> module = compile("for i in range(3):\n  ...");
     mlir::func::FuncOp fn = *(*module).getBody()->getOps<mlir::func::FuncOp>().begin();
 
     // Verify Op types

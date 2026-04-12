@@ -62,7 +62,14 @@ mlir::LogicalResult ForIterLowering::matchAndRewrite(mlir::Operation* op, const 
         arg.setType(ptrType(ctx));
     }
 
+    // Convert exit block argument types
+    for (mlir::BlockArgument arg : exitBlock->getArguments())
+        arg.setType(ptrType(ctx));
+
+    // operands[0] is iterator, rest are exit_args
+    mlir::ValueRange exitArgOperands = operands.drop_front(1);
+
     rewriter.replaceOpWithNewOp<mlir::LLVM::CondBrOp>(op, cond, bodyBlock, mlir::ValueRange{next}, exitBlock,
-                                                      mlir::ValueRange{});
+                                                      exitArgOperands);
     return mlir::success();
 }

@@ -311,8 +311,8 @@ def PyIR_GetIter : PyIR_Op<"get_iter"> {
 
 
 def PyIR_ForIter : PyIR_Op<"for_iter", [Terminator]> {
- let summary = "Advance an iterator, branching to exit block when exhausted";
-    let arguments = (ins ByteCodeObject_Type:$iterator);
+    let summary = "Advance an iterator, branching to exit block when exhausted";
+    let arguments = (ins ByteCodeObject_Type:$iterator, Variadic<ByteCodeObject_Type>:$exit_args);
     let successors = (successor AnySuccessor:$body, AnySuccessor:$exit);
-    let assemblyFormat = "$iterator `->` `body` $body `,` `exit` $exit attr-dict `:` type($iterator)";
+    let assemblyFormat = "$iterator `(` $exit_args `)` `->` `body` $body `,` `exit` $exit attr-dict `:` type($iterator)";
 }

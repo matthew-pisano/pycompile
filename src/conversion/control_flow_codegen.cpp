@@ -110,10 +110,15 @@ void forIterCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir
     const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     bodyBlock->addArgument(pyType, loc);
 
-    // Emit for_iter op: advances iterator, branches to body with next value or to exit
-    builder.create<pyir::ForIter>(loc, iterator, bodyBlock, exitBlock);
+    // Everything on the stack except the iterator goes to the exit block
+    llvm::SmallVector<mlir::Value> exitArgs(meta.stack.begin(), meta.stack.end() - 1);
+    if (exitBlock->getNumArguments() == 0)
+        for (mlir::Value v : exitArgs)
+            exitBlock->addArgument(v.getType(), loc);
 
-    // Continue emission in body block, with next value on top of stack
+    builder.create<pyir::ForIter>(loc, iterator, exitArgs, bodyBlock, exitBlock);
+
+    // Continue in body block with next value on stack
     builder.setInsertionPointToStart(bodyBlock);
     // Push the next value (block argument) onto the stack
     meta.stack.push_back(bodyBlock->getArgument(0));

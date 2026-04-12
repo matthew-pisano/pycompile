@@ -27,7 +27,6 @@ TEST_CASE_METHOD(JITFixture, "Test JIT While") {
     REQUIRE(output == "0\n1\n2\n");
 }
 
-
 TEST_CASE_METHOD(JITFixture, "Test JIT For") {
     SECTION("Test For Range") {
         const std::string output = runCapture("for i in range(3):\n  print(i)");

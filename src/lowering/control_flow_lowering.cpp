@@ -56,6 +56,12 @@ mlir::LogicalResult ForIterLowering::matchAndRewrite(mlir::Operation* op, const 
     mlir::Block* bodyBlock = forIter.getBody();
     mlir::Block* exitBlock = forIter.getExit();
 
+    // Convert the body block argument type from !pyir.object to !llvm.ptr
+    if (bodyBlock->getNumArguments() > 0) {
+        mlir::BlockArgument arg = bodyBlock->getArgument(0);
+        arg.setType(ptrType(ctx));
+    }
+
     rewriter.replaceOpWithNewOp<mlir::LLVM::CondBrOp>(op, cond, bodyBlock, mlir::ValueRange{next}, exitBlock,
                                                       mlir::ValueRange{});
     return mlir::success();

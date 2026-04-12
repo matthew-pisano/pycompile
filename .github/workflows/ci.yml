@@ -10,6 +10,7 @@ on:
 
 env:
   CMAKE_PARALLEL: true
+  CMAKE_PARALLELISM: 8
 
 jobs:
   format:
@@ -77,7 +78,7 @@ jobs:
       - name: Build project
         run: |
           [[ "${CMAKE_PARALLEL}" == true ]] && \
-          cmake --build build --parallel || \
+          cmake --build build --parallel "${CMAKE_PARALLELISM}" || \
           cmake --build build
 
       - name: Run CTests

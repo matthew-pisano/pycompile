@@ -57,8 +57,6 @@ include(TableGen)
 include(AddMLIR)
 include(AddLLVM)
 
-add_compile_options(-isystem ${MLIR_INCLUDE_DIRS} -isystem ${LLVM_INCLUDE_DIRS})
-
 # ================
 # MLIR Tablegen
 # ================

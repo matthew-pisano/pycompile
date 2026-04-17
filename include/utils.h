@@ -44,6 +44,14 @@ private:
 
 
 /**
+ * Resolves wildcard characters in file paths to actual file names
+ * @param rawPaths A vector of file paths that may contain wildcard characters
+ * @return A vector of file paths with wildcards resolved to actual file names
+ */
+std::vector<std::string> resolveWildcards(const std::vector<std::string>& rawPaths);
+
+
+/**
  * Helper function to read the contents of a file into a string.
  * @param filename The path to the file to read.
  * @return A string containing the contents of the file.

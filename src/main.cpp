@@ -113,11 +113,20 @@ int main(const int argc, char* argv[]) {
             throw CLI::ValidationError("Cannot specify -o with -c, -S or -E with multiple files");
     });
 
+    // Set up help message
+    app.failure_message([name](const CLI::App* _app, const CLI::Error& e) -> std::string {
+        return name + ": error: " + CLI::FailureMessage::simple(_app, e);
+    });
+
     try {
         app.parse(argc, argv);
     } catch (const CLI::ParseError& e) {
         return app.exit(e);
     }
+
+    // Resolve wildcards in path names to real paths
+    inputFileNames = resolveWildcards(inputFileNames);
+
 
     // Ensure the directory of the output file exists
     if (!outputFileName.empty()) {

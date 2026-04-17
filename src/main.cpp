@@ -191,6 +191,7 @@ int main(const int argc, char* argv[]) {
 
     LLVMExportOptions llvmOptions;
     llvmOptions.optLevel = std::stoi(optimLevel);
+    llvmOptions.debugInfo = debugBuild;
 
     llvm::LLVMContext llvmCtx; // Must exit scope after all other LLVM Module instances
     std::unique_ptr<llvm::Module> llvmModule;

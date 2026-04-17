@@ -23,6 +23,9 @@ struct LLVMExportOptions {
 
     /// Optimization level: 0 = none, 1 = less, 2 = default, 3 = aggressive.
     unsigned int optLevel = 0;
+
+    /// Whether ot generate a debug build.
+    bool debugInfo = false;
 };
 
 

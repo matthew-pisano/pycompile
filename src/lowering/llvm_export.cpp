@@ -8,6 +8,7 @@
 #include <mlir/Target/LLVMIR/Dialect/LLVMIR/LLVMToLLVMIRTranslation.h>
 #include <mlir/Target/LLVMIR/Export.h>
 
+#include <llvm/IR/DebugInfo.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/Module.h>
 #include <llvm/MC/TargetRegistry.h>
@@ -60,7 +61,8 @@ static std::unique_ptr<llvm::TargetMachine> createTargetMachine(const LLVMExport
     if (!target)
         throw std::runtime_error("failed to lookup LLVM target: " + err);
 
-    const llvm::TargetOptions targetOptions;
+    llvm::TargetOptions targetOptions;
+    targetOptions.MCOptions.AsmVerbose = options.debugInfo;
     const llvm::CodeGenOptLevel optLevel = static_cast<llvm::CodeGenOptLevel>(options.optLevel);
 
     llvm::TargetMachine* tm = target->createTargetMachine(triple, cpu, /*features=*/"", targetOptions,
@@ -140,6 +142,9 @@ std::unique_ptr<llvm::Module> translateToLLVMIR(llvm::LLVMContext& llvmCtx,
                                                 const mlir::OwningOpRef<mlir::ModuleOp>& module,
                                                 const LLVMExportOptions& options) {
     std::unique_ptr<llvm::Module> llvmModule = translateToLLVM(module, llvmCtx);
+    if (!options.debugInfo)
+        llvm::StripDebugInfo(*llvmModule);
+
     const std::string moduleName = getMLIRModuleName(module);
     llvmModule->setModuleIdentifier(moduleName);
     llvmModule->setSourceFileName(moduleName);

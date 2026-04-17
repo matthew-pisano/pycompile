@@ -85,8 +85,10 @@ int main(const int argc, char* argv[]) {
     bool upToCompile = false;
     bool upToLower = false;
     bool saveAllTemps = false;
+    bool debugBuild = false;
     std::string outputFileName;
     std::string tmpFilesName;
+    std::string optimLevel = "0";
     CLI::App app{version + " - Python Compiler", name};
     app.add_option("file", inputFileNames, "A Python file")->required()->allow_extra_args();
     app.add_flag("-E", upToPreprocess, "Preprocess only; do not compile, lower, or link");
@@ -94,6 +96,8 @@ int main(const int argc, char* argv[]) {
     app.add_flag("-c", upToLower, "Compile and lower, but do not link");
     app.add_flag("--save-temps", saveAllTemps, "Do not delete intermediate files");
     app.add_option("-o", outputFileName, "The name of the output file");
+    app.add_option("-O", optimLevel, "The optimization level of the binary");
+    app.add_flag("-g", debugBuild, "Whether to generate a debug build");
     app.set_version_flag("--version", version);
 
     app.callback([&] {
@@ -185,10 +189,14 @@ int main(const int argc, char* argv[]) {
         return 1;
     }
 
+    LLVMExportOptions llvmOptions;
+    llvmOptions.optLevel = std::stoi(optimLevel);
+    llvmOptions.debugInfo = debugBuild;
+
     llvm::LLVMContext llvmCtx; // Must exit scope after all other LLVM Module instances
     std::unique_ptr<llvm::Module> llvmModule;
     try {
-        llvmModule = translateToLLVMIR(llvmCtx, mergedMlirModule);
+        llvmModule = translateToLLVMIR(llvmCtx, mergedMlirModule, llvmOptions);
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return 1;
@@ -203,7 +211,7 @@ int main(const int argc, char* argv[]) {
     std::filesystem::path modulePath(getMLIRModuleName(mergedMlirModule));
     const std::string moduleObjectPath = modulePath.replace_extension(".o");
     try {
-        exportObjectFile(llvmModule, moduleObjectPath);
+        exportObjectFile(llvmModule, moduleObjectPath, llvmOptions);
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return 1;

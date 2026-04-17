@@ -88,7 +88,7 @@ int main(const int argc, char* argv[]) {
     bool debugBuild = false;
     std::string outputFileName;
     std::string tmpFilesName;
-    std::string optimLevel;
+    std::string optimLevel = "0";
     CLI::App app{version + " - Python Compiler", name};
     app.add_option("file", inputFileNames, "A Python file")->required()->allow_extra_args();
     app.add_flag("-E", upToPreprocess, "Preprocess only; do not compile, lower, or link");

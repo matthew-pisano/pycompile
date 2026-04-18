@@ -6,7 +6,9 @@
 
 #include <format>
 
-size_t PyMethod::hash() const { throw std::runtime_error("Unhashable type " + typeName()); }
+#include "pyruntime/runtime_errors.h"
+
+size_t PyMethod::hash() const { throw PyTypeError("Unhashable type " + typeName()); }
 
 std::string PyMethod::toString() const { return std::format("<method {} of {} object>", fnName, self->typeName()); }
 

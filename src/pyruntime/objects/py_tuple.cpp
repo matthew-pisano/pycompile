@@ -8,6 +8,7 @@
 
 #include "pyruntime/objects/py_bool.h"
 #include "pyruntime/objects/py_int.h"
+#include "pyruntime/runtime_errors.h"
 #include "pyruntime/runtime_util.h"
 
 PyInt* PyTuple::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
@@ -25,11 +26,11 @@ PyObj* PyTuple::idx(const PyObj* idx) const {
         if (index < 0)
             index += static_cast<int64_t>(raw.size());
         if (index < 0 || index >= static_cast<int64_t>(raw.size()))
-            throw std::runtime_error("Tuple index out of range");
+            throw PyIndexError("tuple index out of range");
         raw[index]->incref(); // Return a new reference to the indexed value
         return raw[index];
     }
-    throw std::runtime_error("Tuple indices must be integers");
+    throw PyTypeError("tuple indices must be integers");
 }
 
 size_t PyTuple::hash() const {
@@ -79,12 +80,12 @@ bool PyTuple::operator==(const PyObj& other) const noexcept {
 
 PyObj* PyTupleIter::next(PyObj* self, PyObj**, const int64_t argc) {
     if (argc != 0)
-        throw std::runtime_error("next() takes no arguments");
+        throw PyTypeError("next() takes no arguments");
     PyTupleIter* selfIter = dynamic_cast<PyTupleIter*>(self);
     if (!selfIter)
-        throw std::runtime_error("Can only get the next value of iterator types");
+        throw PyTypeError("Can only get the next value of iterator types");
     if (selfIter->it == selfIter->tuple.end())
-        throw std::runtime_error("StopIteration()");
+        throw PyStopIteration();
 
     PyObj* obj = *selfIter->it;
     obj->incref();

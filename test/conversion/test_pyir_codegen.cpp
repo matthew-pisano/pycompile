@@ -101,3 +101,11 @@ TEST_CASE_METHOD(MLIRFixture, "Test Simple Arithmetic MLIR") {
     REQUIRE(argDef);
     REQUIRE(argDef.getVarName() == "summed");
 }
+
+
+TEST_CASE_METHOD(MLIRFixture, "Test Compile Failure MLIR") {
+    SECTION("Test Unimplemented Operation") {
+        REQUIRE_THROWS_WITH(compile("async def thread():\n  ..."),
+                            "<embedded>:1:0: error: Unsupported opcode 'RETURN_GENERATOR'");
+    }
+}

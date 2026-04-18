@@ -9,34 +9,28 @@
 
 
 std::string getPythonErrorTraceback() {
-    PyObject* exc = PyErr_GetRaisedException();
-    if (!exc)
-        throw std::runtime_error("No active Python exception");
+    if (!PyErr_Occurred())
+        return "Unknown Python error";
 
-    // Import the traceback module to format the exception
-    PyObject* tracebackModule = PyImport_ImportModule("traceback");
-    std::string msg;
+    PyObject* pType;
+    PyObject* pValue;
+    PyObject* pTraceback;
+    PyErr_Fetch(&pType, &pValue, &pTraceback);
+    PyErr_NormalizeException(&pType, &pValue, &pTraceback);
 
-    if (tracebackModule) {
-        PyObject* lines = PyObject_CallMethod(tracebackModule, "format_exception", "OOO", PyObject_Type(exc), exc,
-                                              PyException_GetTraceback(exc));
-        if (lines) {
-            PyObject* joined = PyUnicode_Join(PyUnicode_FromString(""), lines);
-            if (joined)
-                msg = PyUnicode_AsUTF8(joined);
+    std::string result;
 
-            Py_XDECREF(joined);
-            Py_DECREF(lines);
+    // Get the string representation of the exception value
+    if (pValue) {
+        if (PyObject* pStr = PyObject_Str(pValue)) {
+            result = PyUnicode_AsUTF8(pStr);
+            Py_DECREF(pStr);
         }
-        Py_DECREF(tracebackModule);
-    } else {
-        // If we can't import traceback, fall back to just the exception type and message
-        PyObject* str = PyObject_Str(exc);
-        if (str)
-            msg = PyUnicode_AsUTF8(str);
-        Py_XDECREF(str);
     }
 
-    Py_DECREF(exc);
-    return msg;
+    Py_XDECREF(pType);
+    Py_XDECREF(pValue);
+    Py_XDECREF(pTraceback);
+
+    return result.empty() ? "Unknown Python error" : result;
 }

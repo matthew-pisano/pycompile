@@ -33,7 +33,11 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Iter Tuple Creation") {
 }
 
 TEST_CASE_METHOD(JITFixture, "Test JIT Empty Iterator") {
-    REQUIRE_THROWS_WITH(runCapture("a = iter([])\nnext(a)"), "StopIteration()");
+    REQUIRE_THROWS_WITH(runCapture("a = iter([])\nnext(a)"), "StopIteration");
+}
+
+TEST_CASE_METHOD(JITFixture, "Test JIT Exhausted Iterator") {
+    REQUIRE_THROWS_WITH(runCapture("a = iter([1])\nnext(a)\nnext(a)"), "StopIteration");
 }
 
 TEST_CASE_METHOD(JITFixture, "Test JIT Str Iteration") {

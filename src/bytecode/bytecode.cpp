@@ -342,7 +342,7 @@ std::vector<ByteCodeModule> compilePython(const std::vector<std::string>& fileCo
             bytecodeModules.push_back(generatePythonByteCode(code, fileNames[i], i == 0));
             Py_DECREF(code); // Destroy object before scope ends
         } catch (const std::runtime_error& e) {
-            throw std::runtime_error(std::filesystem::path(fileNames[i]).filename().string() + ": " + e.what());
+            throw std::runtime_error("error: " + std::string{e.what()});
         }
     return bytecodeModules;
 }

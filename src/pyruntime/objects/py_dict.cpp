@@ -4,6 +4,7 @@
 
 #include "pyruntime/objects/py_dict.h"
 
+#include <format>
 #include <ranges>
 #include <stdexcept>
 
@@ -12,15 +13,16 @@
 #include "pyruntime/objects/py_list.h"
 #include "pyruntime/objects/py_none.h"
 #include "pyruntime/objects/py_tuple.h"
+#include "pyruntime/runtime_errors.h"
 #include "pyruntime/runtime_util.h"
 
 
 PyObj* PyDict::get(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
-        throw std::runtime_error("get() takes exactly one argument");
+        throw PyTypeError("get() takes exactly one argument");
     const PyDict* selfDict = dynamic_cast<PyDict*>(self);
     if (!selfDict)
-        throw std::runtime_error("Can only get from dict types");
+        throw PyTypeError("Can only get from dict types");
 
     if (!selfDict->raw.contains(args[0]))
         return new PyNone();
@@ -33,10 +35,10 @@ PyObj* PyDict::get(PyObj* self, PyObj** args, const int64_t argc) {
 
 PyObj* PyDict::keys(PyObj* self, PyObj**, const int64_t argc) {
     if (argc != 0)
-        throw std::runtime_error("keys() takes no arguments");
+        throw PyTypeError("keys() takes no arguments");
     PyDict* selfDict = dynamic_cast<PyDict*>(self);
     if (!selfDict)
-        throw std::runtime_error("Can only get keys for dict types");
+        throw PyTypeError("Can only get keys for dict types");
 
     const std::vector<PyObj*> keys = selfDict->raw | std::views::keys | std::ranges::to<std::vector>();
     return new PyTuple(keys);
@@ -45,10 +47,10 @@ PyObj* PyDict::keys(PyObj* self, PyObj**, const int64_t argc) {
 
 PyObj* PyDict::values(PyObj* self, PyObj**, const int64_t argc) {
     if (argc != 0)
-        throw std::runtime_error("values() takes no arguments");
+        throw PyTypeError("values() takes no arguments");
     PyDict* selfDict = dynamic_cast<PyDict*>(self);
     if (!selfDict)
-        throw std::runtime_error("Can only get values for dict types");
+        throw PyTypeError("Can only get values for dict types");
 
     const std::vector<PyObj*> values = selfDict->raw | std::views::values | std::ranges::to<std::vector>();
     return new PyTuple(values);
@@ -57,10 +59,10 @@ PyObj* PyDict::values(PyObj* self, PyObj**, const int64_t argc) {
 
 PyObj* PyDict::items(PyObj* self, PyObj**, const int64_t argc) {
     if (argc != 0)
-        throw std::runtime_error("items() takes no arguments");
+        throw PyTypeError("items() takes no arguments");
     PyDict* selfDict = dynamic_cast<PyDict*>(self);
     if (!selfDict)
-        throw std::runtime_error("Can only get items for dict types");
+        throw PyTypeError("Can only get items for dict types");
 
     const std::vector<PyObj*> keys = selfDict->raw | std::views::keys | std::ranges::to<std::vector>();
     const std::vector<PyObj*> values = selfDict->raw | std::views::values | std::ranges::to<std::vector>();
@@ -76,10 +78,10 @@ PyObj* PyDict::items(PyObj* self, PyObj**, const int64_t argc) {
 
 PyObj* PyDict::update(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
-        throw std::runtime_error("update() takes exactly one argument");
+        throw PyTypeError("update() takes exactly one argument");
     PyDict* selfDict = dynamic_cast<PyDict*>(self);
     if (!selfDict)
-        throw std::runtime_error("Can only update dict types");
+        throw PyTypeError("Can only update dict types");
 
     if (const PyDict* srcDict = dynamic_cast<const PyDict*>(args[0]))
         for (auto& v : srcDict->raw) {
@@ -88,7 +90,7 @@ PyObj* PyDict::update(PyObj* self, PyObj** args, const int64_t argc) {
             selfDict->raw.insert(v);
         }
     else
-        throw std::runtime_error("Can only update with dict types, got" + args[0]->typeName());
+        throw PyTypeError("Can only update with dict types, got" + args[0]->typeName());
 
     return new PyNone();
 }
@@ -104,7 +106,7 @@ PyObj* PyDict::getAttr(const std::string& name) {
         return new PyMethod("values", this, values);
     if (name == "items")
         return new PyMethod("items", this, items);
-    throw std::runtime_error(this->typeName() + " has no attribute '" + name + "'");
+    throw PyAttributeError(std::format("'{}' object has no attribute '{}'", typeName(), name));
 }
 
 PyInt* PyDict::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
@@ -118,7 +120,7 @@ PyObj* PyDict::idx(const PyObj* idx) const {
         value->incref();
         return value;
     }
-    throw std::runtime_error("Key " + idx->toString() + " not found");
+    throw PyKeyError(idx->toString());
 }
 
 void PyDict::setIdx(const PyObj* idx, PyObj* value) {
@@ -128,7 +130,7 @@ void PyDict::setIdx(const PyObj* idx, PyObj* value) {
     raw[mutIdx] = value;
 }
 
-size_t PyDict::hash() const { throw std::runtime_error("Unhashable type " + typeName()); }
+size_t PyDict::hash() const { throw PyTypeError("Unhashable type " + typeName()); }
 
 std::string PyDict::toString() const {
     if (raw.empty())
@@ -174,12 +176,12 @@ bool PyDict::operator==(const PyObj& other) const noexcept {
 
 PyObj* PyDictIter::next(PyObj* self, PyObj**, const int64_t argc) {
     if (argc != 0)
-        throw std::runtime_error("next() takes no arguments");
+        throw PyTypeError("next() takes no arguments");
     PyDictIter* selfIter = dynamic_cast<PyDictIter*>(self);
     if (!selfIter)
-        throw std::runtime_error("Can only get the next value of iterator types");
+        throw PyTypeError("Can only get the next value of iterator types");
     if (selfIter->it == selfIter->dict.end())
-        throw std::runtime_error("StopIteration()");
+        throw PyStopIteration();
 
     PyObj* obj = selfIter->it->first;
     obj->incref();

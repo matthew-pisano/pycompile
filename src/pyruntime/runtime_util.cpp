@@ -14,6 +14,12 @@
 #include "pyruntime/objects/py_set.h"
 #include "pyruntime/objects/py_str.h"
 #include "pyruntime/objects/py_tuple.h"
+#include "pyruntime/runtime_errors.h"
+
+
+std::string formatBadConversion(const std::string& valType, const std::string& type, const std::string& valRepr) {
+    return std::format("Could not convert {} to {}: '{}'", valType, type, valRepr);
+}
 
 
 double_t valueToFloat(const PyObj* val) {
@@ -21,7 +27,7 @@ double_t valueToFloat(const PyObj* val) {
         return pyFloat->data();
     if (const PyInt* pyInt = dynamic_cast<const PyInt*>(val))
         return static_cast<double_t>(pyInt->data());
-    throw std::runtime_error(std::format("Cannot convert type '{}' to float", val->typeName()));
+    throw PyTypeError(formatBadConversion(val->typeName(), "float", val->toString()));
 }
 
 
@@ -57,7 +63,7 @@ PyListData valueToList(const PyObj* val) {
     }
     if (const PyList* pyList = dynamic_cast<const PyList*>(val))
         return pyList->data();
-    throw std::runtime_error(std::format("Cannot convert type '{}' to list", val->typeName()));
+    throw PyTypeError(formatBadConversion(val->typeName(), "list", val->toString()));
 }
 
 
@@ -86,5 +92,5 @@ PySetData valueToSet(const PyObj* val) {
     }
     if (const PySet* pySet = dynamic_cast<const PySet*>(val))
         return pySet->data();
-    throw std::runtime_error(std::format("Cannot convert type '{}' to set", val->typeName()));
+    throw PyTypeError(formatBadConversion(val->typeName(), "set", val->toString()));
 }

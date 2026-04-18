@@ -16,6 +16,7 @@
 #include "pyruntime/objects/py_none.h"
 #include "pyruntime/objects/py_str.h"
 #include "pyruntime/objects/py_tuple.h"
+#include "pyruntime/runtime_errors.h"
 #include "pyruntime/runtime_state.h"
 
 
@@ -27,7 +28,7 @@ PyObj* pyir_loadFast(const char* name) {
 
     const auto it = locals.find(name);
     if (it == locals.end())
-        throw std::runtime_error(std::string("Local variable '") + name + "' referenced before assignment");
+        throw PyNameError(std::string("Local variable '") + name + "' referenced before assignment");
 
     return it->second;
 }
@@ -52,7 +53,7 @@ PyObj* pyir_loadName(const char* name) {
         it->second->incref();
         return it->second;
     }
-    throw std::runtime_error(std::string("name '") + name + "' is not defined");
+    throw PyNameError(std::string("name '") + name + "' is not defined");
 }
 
 

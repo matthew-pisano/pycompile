@@ -21,6 +21,7 @@
 #include "pyruntime/objects/py_set.h"
 #include "pyruntime/objects/py_str.h"
 #include "pyruntime/objects/py_tuple.h"
+#include "pyruntime/runtime_errors.h"
 #include "pyruntime/runtime_util.h"
 
 
@@ -53,14 +54,14 @@ PyObj* pyir_builtinPrint(PyObj** args, const int64_t argc) {
 
 PyObj* pyir_builtinLen(PyObj** args, const int64_t argc) {
     if (argc != 1)
-        throw std::runtime_error("len() takes exactly one argument");
+        throw PyTypeError("len() takes exactly one argument");
     return args[0]->len();
 }
 
 
 PyObj* pyir_builtinInt(PyObj** args, const int64_t argc) {
     if (argc != 1)
-        throw std::runtime_error("int() takes exactly one argument");
+        throw PyTypeError("int() takes exactly one argument");
 
     if (PyInt* i = dynamic_cast<PyInt*>(args[0]))
         return i;
@@ -70,13 +71,13 @@ PyObj* pyir_builtinInt(PyObj** args, const int64_t argc) {
         return new PyInt(b->data());
     if (const PyStr* s = dynamic_cast<PyStr*>(args[0]))
         return new PyInt(std::stoll(s->data()));
-    throw std::runtime_error("Cannot convert to int()");
+    throw PyTypeError(formatBadConversion(args[0]->typeName(), "int", args[0]->toString()));
 }
 
 
 PyObj* pyir_builtinFloat(PyObj** args, const int64_t argc) {
     if (argc != 1)
-        throw std::runtime_error("float() takes exactly one argument");
+        throw PyTypeError("float() takes exactly one argument");
 
     if (const PyInt* i = dynamic_cast<PyInt*>(args[0]))
         return new PyFloat(static_cast<double_t>(i->data()));
@@ -84,29 +85,34 @@ PyObj* pyir_builtinFloat(PyObj** args, const int64_t argc) {
         return f;
     if (const PyBool* b = dynamic_cast<PyBool*>(args[0]))
         return new PyFloat(b->data());
-    if (const PyStr* s = dynamic_cast<PyStr*>(args[0]))
-        return new PyFloat(std::stod(s->data()));
-    throw std::runtime_error("cannot convert to float()");
+
+    try {
+        if (const PyStr* s = dynamic_cast<PyStr*>(args[0]))
+            return new PyFloat(std::stod(s->data()));
+    } catch (...) {
+        // Consume stod error and fall through to throw
+    }
+    throw PyTypeError(formatBadConversion(args[0]->typeName(), "float", args[0]->toString()));
 }
 
 
 PyObj* pyir_builtinStr(PyObj** args, const int64_t argc) {
     if (argc != 1)
-        throw std::runtime_error("str() takes exactly one argument");
+        throw PyTypeError("str() takes exactly one argument");
     return new PyStr(valueToString(args[0]));
 }
 
 
 PyObj* pyir_builtinBool(PyObj** args, const int64_t argc) {
     if (argc != 1)
-        throw std::runtime_error("bool() takes exactly one argument");
+        throw PyTypeError("bool() takes exactly one argument");
     return new PyBool(args[0]->isTruthy());
 }
 
 
 PyObj* pyir_builtinList(PyObj** args, const int64_t argc) {
     if (argc > 1)
-        throw std::runtime_error("list() takes exactly one argument");
+        throw PyTypeError("list() takes exactly one argument");
     if (argc == 0)
         return new PyList({});
 
@@ -116,7 +122,7 @@ PyObj* pyir_builtinList(PyObj** args, const int64_t argc) {
 
 PyObj* pyir_builtinSet(PyObj** args, const int64_t argc) {
     if (argc > 1)
-        throw std::runtime_error("set() takes exactly one argument");
+        throw PyTypeError("set() takes exactly one argument");
     if (argc == 0)
         return new PySet({});
 
@@ -126,7 +132,7 @@ PyObj* pyir_builtinSet(PyObj** args, const int64_t argc) {
 
 PyObj* pyir_builtinTuple(PyObj** args, const int64_t argc) {
     if (argc > 1)
-        throw std::runtime_error("tuple() takes exactly one argument");
+        throw PyTypeError("tuple() takes exactly one argument");
     if (argc == 0)
         return new PyTuple({});
 
@@ -136,14 +142,14 @@ PyObj* pyir_builtinTuple(PyObj** args, const int64_t argc) {
 
 PyObj* pyir_builtinDict(PyObj**, const int64_t argc) {
     if (argc > 0)
-        throw std::runtime_error("set() takes no arguments");
+        throw PyTypeError("dict() takes no arguments");
     return new PyDict({});
 }
 
 
 PyObj* pyir_builtinIter(PyObj** args, const int64_t argc) {
     if (argc != 1)
-        throw std::runtime_error("iter() takes exactly one argument");
+        throw PyTypeError("iter() takes exactly one argument");
 
     if (const PyStr* str = dynamic_cast<PyStr*>(args[0]))
         return new PyStrIter(str->data());
@@ -156,13 +162,13 @@ PyObj* pyir_builtinIter(PyObj** args, const int64_t argc) {
     if (const PyDict* dict = dynamic_cast<PyDict*>(args[0]))
         return new PyDictIter(dict->data());
 
-    throw std::runtime_error("cannot convert to iter()");
+    throw PyTypeError(formatBadConversion(args[0]->typeName(), "iter", args[0]->toString()));
 }
 
 
 PyObj* pyir_builtinNext(PyObj** args, const int64_t argc) {
     if (argc != 1)
-        throw std::runtime_error("next() takes exactly one argument");
+        throw PyTypeError("next() takes exactly one argument");
 
     if (PyObj* iter = dynamic_cast<PyStrIter*>(args[0]))
         return PyStrIter::next(iter, nullptr, 0);
@@ -175,13 +181,13 @@ PyObj* pyir_builtinNext(PyObj** args, const int64_t argc) {
     if (PyObj* iter = dynamic_cast<PyDictIter*>(args[0]))
         return PyDictIter::next(iter, nullptr, 0);
 
-    throw std::runtime_error("cannot convert to iter()");
+    throw PyTypeError(formatBadConversion(args[0]->typeName(), "iter", args[0]->toString()));
 }
 
 
 PyObj* pyir_builtinEnumerate(PyObj** args, const int64_t argc) {
     if (argc == 0)
-        throw std::runtime_error("enumerate() takes one argument");
+        throw PyTypeError("enumerate() takes one argument");
     std::vector<PyObj*> result;
     // Iterate over keys for dict
     if (PyDict* dict = dynamic_cast<PyDict*>(args[0])) {
@@ -208,32 +214,32 @@ PyObj* pyir_builtinEnumerate(PyObj** args, const int64_t argc) {
 
 PyObj* pyir_builtinIsInstance(PyObj** args, const int64_t argc) {
     if (argc < 2)
-        throw std::runtime_error("enumerate() takes two arguments");
+        throw PyTypeError("enumerate() takes two arguments");
     const PyObj* instance = args[0];
     if (const PyFunction* type = dynamic_cast<PyFunction*>(args[1]))
         return new PyBool(instance->typeName() == type->funcName());
-    throw std::runtime_error("isinstance() takes a tye as the second argument");
+    throw PyTypeError("isinstance() takes a type as the second argument");
 }
 
 
 PyObj* pyir_builtinRange(PyObj** args, const int64_t argc) {
     if (argc == 0)
-        throw std::runtime_error("range() takes at least one argument");
+        throw PyTypeError("range() takes at least one argument");
     int64_t startIdx = 0;
     int64_t endIdx = 0;
     if (argc >= 1) {
         if (const PyInt* endInteger = dynamic_cast<PyInt*>(args[argc == 1 ? 0 : 1]))
             endIdx = endInteger->data();
         else
-            throw std::runtime_error("range() expects integer arguments");
+            throw PyTypeError("range() expects integer arguments");
     }
     if (argc == 2) {
         if (const PyInt* startInteger = dynamic_cast<PyInt*>(args[0]))
             startIdx = startInteger->data();
         else
-            throw std::runtime_error("range() expects integer arguments");
+            throw PyTypeError("range() expects integer arguments");
     } else if (argc > 2)
-        throw std::runtime_error("range() takes at most two arguments");
+        throw PyTypeError("range() takes at most two arguments");
 
     std::vector<PyObj*> seq;
     for (int64_t i = startIdx; i < endIdx; i++)
@@ -244,14 +250,14 @@ PyObj* pyir_builtinRange(PyObj** args, const int64_t argc) {
 
 PyObj* pyir_builtinType(PyObj** args, const int64_t argc) {
     if (argc == 0)
-        throw std::runtime_error("type() takes at least one argument");
+        throw PyTypeError("type() takes at least one argument");
     return new PyStr(std::format("<class '{}'>", args[0]->typeName()));
 }
 
 
 PyObj* getShortestContainer(PyObj** args, const int64_t argc) {
     if (argc < 1)
-        throw std::runtime_error("Expected at least one element to compare the lengths of");
+        throw PyTypeError("Expected at least one element to compare the lengths of");
     int64_t minLength = INT64_MAX;
     PyObj* shortest = nullptr;
     for (int64_t i = 0; i < argc; i++) {
@@ -269,7 +275,7 @@ PyObj* getShortestContainer(PyObj** args, const int64_t argc) {
 
 PyObj* pyir_builtinZip(PyObj** args, const int64_t argc) {
     if (argc < 1)
-        throw std::runtime_error("zip() takes at least one argument");
+        throw PyTypeError("zip() takes at least one argument");
     const PyObj* shortest = getShortestContainer(args, argc);
     const PyInt* shortestLen = shortest->len();
     std::vector<std::vector<PyObj*>> zipped(shortestLen->data());
@@ -301,6 +307,7 @@ PyObj* pyir_builtinZip(PyObj** args, const int64_t argc) {
     }
 
     std::vector<PyObj*> result;
+    result.reserve(shortestLen->data());
     for (int64_t elemIdx = 0; elemIdx < shortestLen->data(); elemIdx++)
         result.push_back(new PyTuple(zipped[elemIdx]));
     return new PyList(result);
@@ -308,7 +315,7 @@ PyObj* pyir_builtinZip(PyObj** args, const int64_t argc) {
 
 PyObj* pyir_builtinInput(PyObj** args, const int64_t argc) {
     if (argc > 1)
-        throw std::runtime_error("input() expects at most one argument");
+        throw PyTypeError("input() expects at most one argument");
 
     if (argc > 0)
         printf("%s", valueToString(args[0]).c_str());

@@ -183,3 +183,27 @@ TEST_CASE("Test Simple Arithmetic Bytecode") {
     REQUIRE(bytecodeModule.instructions[9].argrepr == "print");
     REQUIRE(bytecodeModule.instructions[11].argrepr == "summed");
 }
+
+
+TEST_CASE("Test Syntax Error") {
+    SECTION("Test Unclosed Parenthesis") {
+        const std::string source = "print(";
+        REQUIRE_THROWS_WITH(compilePython(source, "<embedded>"), "error: '(' was never closed (<embedded>, line 1)");
+    }
+
+    SECTION("Test Unclosed String") {
+        const std::string source = "a = 'hello";
+        REQUIRE_THROWS_WITH(compilePython(source, "<embedded>"),
+                            "error: unterminated string literal (detected at line 1) (<embedded>, line 1)");
+    }
+
+    SECTION("Test Missing Assignment") {
+        const std::string source = "a =";
+        REQUIRE_THROWS_WITH(compilePython(source, "<embedded>"), "error: invalid syntax (<embedded>, line 1)");
+    }
+
+    SECTION("Test Invalid Syntax") {
+        const std::string source = "a = 0\na a";
+        REQUIRE_THROWS_WITH(compilePython(source, "<embedded>"), "error: invalid syntax (<embedded>, line 2)");
+    }
+}

@@ -22,6 +22,7 @@ add_executable(pycompile-tests
         execution/test_dict_execution.cpp
         execution/test_iter_execution.cpp
         execution/test_builtin_execution.cpp
+        execution/test_error_execution.cpp
         execution/pyir_run_module.cpp
 )
 target_link_libraries(pycompile-tests PRIVATE ${PYCOMPILE_LIBS} stdpyir Catch2::Catch2WithMain)

@@ -8,6 +8,7 @@
 #include <stdexcept>
 
 #include "pyruntime/objects/py_str.h"
+#include "pyruntime/runtime_errors.h"
 
 void PyObj::incref() { refcount.fetch_add(1, std::memory_order_relaxed); }
 
@@ -18,20 +19,22 @@ void PyObj::decref() {
 
 PyStr* PyObj::name() const { return new PyStr(typeName()); }
 
-PyObj* PyObj::getAttr(const std::string& name) { throw std::runtime_error("object has no attribute '" + name + "'"); }
+PyObj* PyObj::getAttr(const std::string& name) {
+    throw PyAttributeError(std::format("'{}' object has no attribute '{}'", typeName(), name));
+}
 
-PyInt* PyObj::len() const { throw std::runtime_error(std::format("object of type '{}' has no len()", typeName())); }
+PyInt* PyObj::len() const { throw PyTypeError(std::format("object of type '{}' has no len()", typeName())); }
 
 PyStr* PyObj::str() const { return new PyStr(toString()); }
 
 PyBool* PyObj::contains(const PyObj*) const {
-    throw std::runtime_error(std::format("object of type '{}' is not iterable", typeName()));
+    throw PyTypeError(std::format("Object of type '{}' is not iterable", typeName()));
 }
 
 PyObj* PyObj::idx(const PyObj*) const {
-    throw std::runtime_error(std::format("object of type '{}' is not iterable", typeName()));
+    throw PyTypeError(std::format("Object of type '{}' is not subscriptable", typeName()));
 }
 
 void PyObj::setIdx(const PyObj*, PyObj*) {
-    throw std::runtime_error(std::format("object of type '{}' does not support item assignment", typeName()));
+    throw PyTypeError(std::format("Object of type '{}' does not support item assignment", typeName()));
 }

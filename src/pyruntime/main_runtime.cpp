@@ -16,9 +16,19 @@ void release() {
     if (!scopeStack.empty())
         throw std::runtime_error("Exiting with dangling scope");
 
-    for (PyObj*& obj : moduleScope | std::views::values)
-        if (obj->decref())
-            obj = nullptr;
+    // Clear module scope
+    for (PyObj*& obj : moduleScope | std::views::values) {
+        while (!obj->decref()) { // Decref until object is deleted
+        }
+        obj = nullptr;
+    }
+
+    // Clear builtin functions
+    for (PyFunction*& func : builtinFuncs | std::views::values) {
+        while (!func->decref()) { // Decref until object is deleted
+        }
+        func = nullptr;
+    }
 }
 
 int main() {

@@ -127,6 +127,14 @@ int main(const int argc, char* argv[]) {
     // Resolve wildcards in path names to real paths
     inputFileNames = resolveWildcards(inputFileNames);
 
+    // Resolve absolute file names
+    for (size_t i = 0; i < inputFileNames.size(); i++)
+        try {
+            inputFileNames[i] = std::filesystem::canonical(inputFileNames[i]);
+        } catch (std::filesystem::filesystem_error&) {
+            std::cerr << "error: Could not find file '" << inputFileNames[i] << "'" << std::endl;
+            return 1;
+        }
 
     // Ensure the directory of the output file exists
     if (!outputFileName.empty()) {

@@ -49,8 +49,10 @@ PyObj* pyir_loadName(const char* name) {
     if (const auto it = builtinVars.find(name); it != builtinVars.end())
         return it->second();
     // Check for names in module scope
-    if (const auto it = moduleScope.find(name); it != moduleScope.end())
+    if (const auto it = moduleScope.find(name); it != moduleScope.end()) {
+        it->second->incref();
         return it->second;
+    }
     throw PyNameError(std::string("name '") + name + "' is not defined");
 }
 

@@ -59,7 +59,7 @@ struct PyObj {
     virtual bool operator==(const PyObj& other) const noexcept = 0;
 
 private:
-    std::atomic<int32_t> refcount{0};
+    std::atomic<int32_t> refcount{1};
 };
 
 

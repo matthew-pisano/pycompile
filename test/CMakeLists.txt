@@ -30,10 +30,6 @@ target_include_directories(pycompile-tests SYSTEM PRIVATE
         ${MLIR_INCLUDE_DIRS}
         ${LLVM_INCLUDE_DIRS}
 )
-target_compile_definitions(pycompile-tests PRIVATE
-        "PYIR_RUNTIME_LIB_PATH=\"${CMAKE_BINARY_DIR}/lib/libstdpyir.a\""
-        "PYIR_RUNTIME_MAIN_PATH=\"${CMAKE_BINARY_DIR}/lib/libpyirmain.a\""
-)
 
 include(CTest)
 include(Catch)

@@ -82,8 +82,4 @@ target_include_directories(pycompile SYSTEM PRIVATE
 set_target_properties(pycompile PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
-target_compile_definitions(pycompile PRIVATE
-        "PYIR_RUNTIME_LIB_PATH=\"${CMAKE_BINARY_DIR}/lib/libstdpyir.a\""
-        "PYIR_RUNTIME_MAIN_PATH=\"${CMAKE_BINARY_DIR}/lib/libpyirmain.a\""
-)
 add_dependencies(pycompile stdpyir pyirmain)

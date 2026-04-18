@@ -66,10 +66,13 @@ void pyir_destroyModule() {
 
     // Clear module scope
     for (PyObj*& obj : moduleScope | std::views::values) {
+        if (obj)
+            continue; // Skip already nulled objects
         while (!obj->decref()) { // Decref until object is deleted
         }
         obj = nullptr;
     }
+    moduleScope.clear();
 
     // Clear builtin functions
     for (PyFunction*& func : builtinFuncs | std::views::values) {
@@ -77,6 +80,7 @@ void pyir_destroyModule() {
         }
         func = nullptr;
     }
+    builtinFuncs.clear();
 }
 
 

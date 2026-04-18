@@ -19,9 +19,12 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(cli11)
 
-find_package(Python REQUIRED COMPONENTS Interpreter Development)
+find_package(Python 3.14...<3.15 REQUIRED COMPONENTS Interpreter Development)
 
 find_package(MLIR REQUIRED CONFIG)
+if (MLIR_VERSION VERSION_LESS "21.0.0" OR MLIR_VERSION VERSION_GREATER_EQUAL "22.0.0")
+    message(FATAL_ERROR "MLIR 21 is required, found ${MLIR_VERSION}")
+endif ()
 
 list(APPEND CMAKE_MODULE_PATH "${MLIR_CMAKE_DIR}")
 list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")

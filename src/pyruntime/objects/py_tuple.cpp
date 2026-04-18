@@ -25,11 +25,11 @@ PyObj* PyTuple::idx(const PyObj* idx) const {
         if (index < 0)
             index += static_cast<int64_t>(raw.size());
         if (index < 0 || index >= static_cast<int64_t>(raw.size()))
-            throw std::runtime_error("Tuple index out of range");
+            throw std::runtime_error("tuple index out of range");
         raw[index]->incref(); // Return a new reference to the indexed value
         return raw[index];
     }
-    throw std::runtime_error("Tuple indices must be integers");
+    throw std::runtime_error("tuple indices must be integers");
 }
 
 size_t PyTuple::hash() const {

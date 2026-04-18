@@ -25,13 +25,13 @@ PyInt* PyObj::len() const { throw std::runtime_error(std::format("object of type
 PyStr* PyObj::str() const { return new PyStr(toString()); }
 
 PyBool* PyObj::contains(const PyObj*) const {
-    throw std::runtime_error(std::format("object of type '{}' is not iterable", typeName()));
+    throw std::runtime_error(std::format("Object of type '{}' is not iterable", typeName()));
 }
 
 PyObj* PyObj::idx(const PyObj*) const {
-    throw std::runtime_error(std::format("object of type '{}' is not iterable", typeName()));
+    throw std::runtime_error(std::format("Object of type '{}' is not iterable", typeName()));
 }
 
 void PyObj::setIdx(const PyObj*, PyObj*) {
-    throw std::runtime_error(std::format("object of type '{}' does not support item assignment", typeName()));
+    throw std::runtime_error(std::format("Object of type '{}' does not support item assignment", typeName()));
 }

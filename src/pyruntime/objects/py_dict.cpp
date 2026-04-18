@@ -126,7 +126,7 @@ PyObj* PyDict::idx(const PyObj* idx) const {
 void PyDict::setIdx(const PyObj* idx, PyObj* value) {
     PyObj* mutIdx = const_cast<PyObj*>(idx);
     if (raw.contains(mutIdx))
-        raw[mutIdx]->decref(); // Decref the old value
+        (void) raw[mutIdx]->decref(); // Decref the old value
     raw[mutIdx] = value;
 }
 

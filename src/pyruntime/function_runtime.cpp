@@ -5,6 +5,7 @@
 #include "pyruntime/function_runtime.h"
 
 #include <format>
+#include <ranges>
 #include <stdexcept>
 
 #include "pyruntime/runtime_errors.h"
@@ -14,8 +15,15 @@ void pyir_pushScope() { scopeStack.emplace_back(); }
 
 
 void pyir_popScope() {
-    if (!scopeStack.empty())
-        scopeStack.pop_back();
+    if (scopeStack.empty())
+        return;
+
+    std::unordered_map<std::string, PyObj*> scope = scopeStack.back();
+    for (PyObj*& obj : scope | std::views::values) {
+        if (obj->decref())
+            obj = nullptr;
+    }
+    scopeStack.pop_back();
 }
 
 
@@ -39,7 +47,7 @@ PyObj* pyir_call(const PyObj* callee, PyObj** args, const int64_t argc) {
 
 void pyir_decref(PyObj* v) {
     if (v)
-        v->decref();
+        (void) v->decref();
 }
 
 

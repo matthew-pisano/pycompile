@@ -205,7 +205,7 @@ PyObj* pyir_builtinEnumerate(PyObj** args, const int64_t argc) {
             elem->incref();
             result.push_back(new PyTuple({idx, elem}));
         }
-        length->decref();
+        (void) length->decref();
     }
 
     return new PyList(result);
@@ -266,7 +266,7 @@ PyObj* getShortestContainer(PyObj** args, const int64_t argc) {
             minLength = length->data();
             shortest = args[i];
         }
-        length->decref();
+        (void) length->decref();
     }
 
     return shortest;
@@ -302,7 +302,7 @@ PyObj* pyir_builtinZip(PyObj** args, const int64_t argc) {
                 elem->incref();
                 zipped[elemIdx][containerIdx] = elem;
             }
-            length->decref();
+            (void) length->decref();
         }
     }
 

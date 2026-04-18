@@ -92,7 +92,7 @@ void PyList::setIdx(const PyObj* idx, PyObj* value) {
             index += static_cast<int64_t>(raw.size());
         if (index < 0 || index >= static_cast<int64_t>(raw.size()))
             throw PyIndexError("list index out of range");
-        raw[index]->decref(); // Decref the old value
+        (void) raw[index]->decref(); // Decref the old value
         raw[index] = value;
         return;
     }

@@ -5,16 +5,28 @@
 #include "pyruntime/objects/py_object.h"
 
 #include <format>
+#include <iostream>
 #include <stdexcept>
 
 #include "pyruntime/objects/py_str.h"
 #include "pyruntime/runtime_errors.h"
 
-void PyObj::incref() { refcount.fetch_add(1, std::memory_order_relaxed); }
+void PyObj::incref() {
+    const void* addr = static_cast<void*>(this);
+    std::cerr << std::format("======== Incref {} '{}' ({}) to: {}", typeName(), toString(), addr, refcount + 1)
+              << std::endl;
+    refcount.fetch_add(1, std::memory_order_relaxed);
+}
 
-void PyObj::decref() {
-    if (refcount.fetch_sub(1, std::memory_order_acq_rel) == 1)
+bool PyObj::decref() {
+    const void* addr = static_cast<void*>(this);
+    std::cerr << std::format("======== Decref {} '{}' ({}) to: {}", typeName(), toString(), addr, refcount - 1)
+              << std::endl;
+    if (refcount.fetch_sub(1, std::memory_order_acq_rel) <= 1) {
         delete this;
+        return true;
+    }
+    return false;
 }
 
 PyStr* PyObj::name() const { return new PyStr(typeName()); }

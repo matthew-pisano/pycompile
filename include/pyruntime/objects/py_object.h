@@ -53,13 +53,13 @@ struct PyObj {
 
     void incref();
 
-    void decref();
+    [[nodiscard]] bool decref();
 
     virtual std::partial_ordering operator<=>(const PyObj& other) const noexcept = 0;
     virtual bool operator==(const PyObj& other) const noexcept = 0;
 
 private:
-    std::atomic<int32_t> refcount{1};
+    std::atomic<int32_t> refcount{0};
 };
 
 
@@ -71,7 +71,8 @@ struct PyObjRef {
     // Takes ownership, no incref
     ~PyObjRef() {
         if (ptr)
-            ptr->decref();
+            if (ptr->decref())
+                ptr = nullptr;
     }
 
     [[nodiscard]] PyObj* get() const { return ptr; }

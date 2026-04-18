@@ -20,6 +20,16 @@
 #include "pyruntime/runtime_util.h"
 
 
+/// Format an unsupported operands error.
+std::string formatUnsupportedOperands(const std::string& op, const std::string& lhsType, const std::string& rhsType) {
+    return std::format("Unsupported operand type(s) for {}: '{}' and '{}'", op, lhsType, rhsType);
+}
+
+std::string formatUnsupportedOperands(const std::string& op, const std::string& valType) {
+    return std::format("Bad operand type for {}: '{}'", op, valType);
+}
+
+
 bool pyir_isBool(const PyObj* val) { return dynamic_cast<const PyBool*>(val); }
 bool pyir_isInt(const PyObj* val) { return dynamic_cast<const PyInt*>(val); }
 bool pyir_isFloat(const PyObj* val) { return dynamic_cast<const PyFloat*>(val); }
@@ -56,7 +66,7 @@ PyObj* pyir_add(const PyObj* lhs, const PyObj* rhs) {
         result.insert(result.end(), rhsVal.begin(), rhsVal.end());
         return new PyTuple(result);
     }
-    throw std::runtime_error("Unsupported operand types for +");
+    throw std::runtime_error(formatUnsupportedOperands("+", lhs->typeName(), rhs->typeName()));
 }
 
 
@@ -74,7 +84,7 @@ PyObj* pyir_sub(const PyObj* lhs, const PyObj* rhs) {
 
         return new PySet(result);
     }
-    throw std::runtime_error("Unsupported operand types for -");
+    throw std::runtime_error(formatUnsupportedOperands("-", lhs->typeName(), rhs->typeName()));
 }
 
 
@@ -83,13 +93,15 @@ PyObj* pyir_mul(const PyObj* lhs, const PyObj* rhs) {
         return new PyInt(dynamic_cast<const PyInt*>(lhs)->data() * dynamic_cast<const PyInt*>(rhs)->data());
     if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
         return new PyFloat(valueToFloat(lhs) * valueToFloat(rhs));
-    throw std::runtime_error("Unsupported operand types for *");
+    throw std::runtime_error(formatUnsupportedOperands("*", lhs->typeName(), rhs->typeName()));
 }
 
 
 PyFloat* pyir_div(const PyObj* lhs, const PyObj* rhs) {
     // Python's / always returns float
-    return new PyFloat(valueToFloat(lhs) / valueToFloat(rhs));
+    if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
+        return new PyFloat(valueToFloat(lhs) / valueToFloat(rhs));
+    throw std::runtime_error(formatUnsupportedOperands("/", lhs->typeName(), rhs->typeName()));
 }
 
 
@@ -98,16 +110,20 @@ PyObj* pyir_floorDiv(const PyObj* lhs, const PyObj* rhs) {
         return new PyInt(dynamic_cast<const PyInt*>(lhs)->data() / dynamic_cast<const PyInt*>(rhs)->data());
     if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
         return new PyFloat(std::floor(valueToFloat(lhs) / valueToFloat(rhs)));
-    throw std::runtime_error("Unsupported operand types for //");
+    throw std::runtime_error(formatUnsupportedOperands("//", lhs->typeName(), rhs->typeName()));
 }
 
 
 PyObj* pyir_exp(const PyObj* lhs, const PyObj* rhs) {
-    if (pyir_isInt(lhs) && pyir_isInt(rhs))
-        return new PyInt(pow(dynamic_cast<const PyInt*>(lhs)->data(), dynamic_cast<const PyInt*>(rhs)->data()));
+    if (pyir_isInt(lhs) && pyir_isInt(rhs)) {
+        const double_t lhsFloat = static_cast<double_t>(dynamic_cast<const PyInt*>(lhs)->data());
+        const double_t rhsFloat = static_cast<double_t>(dynamic_cast<const PyInt*>(rhs)->data());
+        const double_t result = pow(lhsFloat, rhsFloat);
+        return new PyInt(static_cast<int64_t>(result));
+    }
     if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
         return new PyFloat(pow(valueToFloat(lhs), valueToFloat(rhs)));
-    throw std::runtime_error("Unsupported operand types for **");
+    throw std::runtime_error(formatUnsupportedOperands("**", lhs->typeName(), rhs->typeName()));
 }
 
 
@@ -116,7 +132,7 @@ PyObj* pyir_mod(const PyObj* lhs, const PyObj* rhs) {
         return new PyInt(dynamic_cast<const PyInt*>(lhs)->data() % dynamic_cast<const PyInt*>(rhs)->data());
     if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
         return new PyFloat(fmod(valueToFloat(lhs), valueToFloat(rhs)));
-    throw std::runtime_error("Unsupported operand types for %");
+    throw std::runtime_error(formatUnsupportedOperands("%", lhs->typeName(), rhs->typeName()));
 }
 
 
@@ -133,7 +149,7 @@ PyObj* pyir_pipe(const PyObj* lhs, const PyObj* rhs) {
         result.merge(rhsDict);
         return new PyDict(result);
     }
-    throw std::runtime_error("Unsupported operand types for |");
+    throw std::runtime_error(formatUnsupportedOperands("|", lhs->typeName(), rhs->typeName()));
 }
 
 
@@ -146,7 +162,7 @@ PyObj* pyir_ampersand(const PyObj* lhs, const PyObj* rhs) {
                 result.insert(lItem);
         return new PySet(result);
     }
-    throw std::runtime_error("Unsupported operand types for &");
+    throw std::runtime_error(formatUnsupportedOperands("&", lhs->typeName(), rhs->typeName()));
 }
 
 
@@ -167,7 +183,7 @@ PyBool* pyir_lt(const PyObj* lhs, const PyObj* rhs) {
         return new PyBool(dynamic_cast<const PyInt*>(lhs)->data() < dynamic_cast<const PyInt*>(rhs)->data());
     if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
         return new PyBool(valueToFloat(lhs) < valueToFloat(rhs));
-    throw std::runtime_error("Unsupported operand types for <");
+    throw std::runtime_error(formatUnsupportedOperands("<", lhs->typeName(), rhs->typeName()));
 }
 
 
@@ -176,7 +192,7 @@ PyBool* pyir_le(const PyObj* lhs, const PyObj* rhs) {
         return new PyBool(dynamic_cast<const PyInt*>(lhs)->data() <= dynamic_cast<const PyInt*>(rhs)->data());
     if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
         return new PyBool(valueToFloat(lhs) <= valueToFloat(rhs));
-    throw std::runtime_error("Unsupported operand types for <=");
+    throw std::runtime_error(formatUnsupportedOperands("<=", lhs->typeName(), rhs->typeName()));
 }
 
 
@@ -191,21 +207,21 @@ PyObj* pyir_unaryNegative(const PyObj* val) {
         return new PyInt(-dynamic_cast<const PyInt*>(val)->data());
     if (pyir_isFloat(val))
         return new PyFloat(-dynamic_cast<const PyFloat*>(val)->data());
-    throw std::runtime_error("Unsupported operand type for unary -");
+    throw std::runtime_error(formatUnsupportedOperands("-", val->typeName()));
 }
 
 
 PyObj* pyir_unaryNot(const PyObj* val) {
     if (pyir_isBool(val))
         return new PyBool(!dynamic_cast<const PyBool*>(val)->data());
-    throw std::runtime_error("Unsupported operand type for unary not");
+    throw std::runtime_error(formatUnsupportedOperands("not", val->typeName()));
 }
 
 
 PyInt* pyir_unaryInvert(const PyObj* val) {
     if (pyir_isInt(val))
         return new PyInt(~dynamic_cast<const PyInt*>(val)->data());
-    throw std::runtime_error("Unsupported operand type for unary ~");
+    throw std::runtime_error(formatUnsupportedOperands("~", val->typeName()));
 }
 
 
@@ -229,7 +245,7 @@ PyObj* pyir_xor(const PyObj* lhs, const PyObj* rhs) {
 
         return new PySet(result);
     }
-    throw std::runtime_error("Unsupported operand type for ^");
+    throw std::runtime_error(formatUnsupportedOperands("^", lhs->typeName(), rhs->typeName()));
 }
 
 

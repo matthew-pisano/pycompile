@@ -13,7 +13,7 @@ int main() {
     try {
         __pymodule();
         return 0;
-    } catch (std::exception& e) {
+    } catch (const std::exception& e) {
         std::cerr << "Traceback (most recent call last):" << std::endl;
         const PyStr* file = dynamic_cast<PyStr*>(pyir_builtinVarFile());
         const PyStr* name = dynamic_cast<PyStr*>(pyir_builtinVarName());

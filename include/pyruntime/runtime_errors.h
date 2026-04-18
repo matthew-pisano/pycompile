@@ -86,7 +86,7 @@ private:
 
 class PyStopIteration : public PyException {
 public:
-    PyStopIteration() : PyException("StopIteration()") { this->msg = "StopIteration()"; }
+    PyStopIteration() : PyException("StopIteration") { this->msg = "StopIteration"; }
 
     [[nodiscard]] const char* what() const noexcept override { return msg.c_str(); }
 

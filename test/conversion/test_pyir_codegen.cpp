@@ -18,7 +18,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Hello World MLIR") {
     REQUIRE(mlir::isa<pyir::PushNull>(getOp(fn, 2)));
     REQUIRE(mlir::isa<pyir::LoadConst>(getOp(fn, 3)));
     REQUIRE(mlir::isa<pyir::Call>(getOp(fn, 4)));
-    REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(fn, 5)));
+    REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(fn, 6)));
 
     // Call op with valid arguments
     pyir::Call callOp = mlir::dyn_cast<pyir::Call>(getOp(fn, 4));

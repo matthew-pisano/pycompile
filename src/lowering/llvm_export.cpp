@@ -25,6 +25,23 @@
 
 #include "utils.h"
 
+// Helper methods that return the macro if defined or fail with an error if not
+std::string pyRuntimeLib() {
+#ifndef PYIR_RUNTIME_LIB
+    throw std::runtime_error("error: macro PYIR_RUNTIME_LIB not defined");
+#else
+    return PYIR_RUNTIME_LIB;
+#endif
+}
+
+std::string pyRuntimeMain() {
+#ifndef PYIR_RUNTIME_MAIN
+    throw std::runtime_error("error: macro PYIR_RUNTIME_MAIN not defined");
+#else
+    return PYIR_RUNTIME_MAIN;
+#endif
+}
+
 /**
  * Initializes LLVM's native target, ASM printer, and ASM parser. Safe to call multiple times: LLVM initialization
  * is idempotent.
@@ -189,9 +206,9 @@ void linkObjectFile(const std::filesystem::path& obj, const std::filesystem::pat
 
     const std::string objStr = obj.string();
     const std::string outStr = output.string();
-    const std::string runtimeLib = PYIR_RUNTIME_LIB_PATH;
-    const std::string runtimeMain = PYIR_RUNTIME_MAIN_PATH;
-    const std::vector<llvm::StringRef> args = {*cppCompiler, objStr, runtimeLib, runtimeMain, "-o", outStr};
+    const std::string runtimeLib = pyRuntimeLib();
+    const std::string runtimeMain = pyRuntimeMain();
+    const std::vector<llvm::StringRef> args = {*cppCompiler, objStr, "-l", runtimeLib, "-l", runtimeMain, "-o", outStr};
 
     std::string errMsg;
     int ret = llvm::sys::ExecuteAndWait(*cppCompiler, args, std::nullopt, {}, 0, 0, &errMsg);

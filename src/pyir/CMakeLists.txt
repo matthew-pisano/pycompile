@@ -1,7 +1,6 @@
 set(LLVM_TARGET_DEFINITIONS ${CMAKE_SOURCE_DIR}/include/pyir/pyir.td)
 
-# Each of these calls mlir-tblgen with different flags and
-# creates a target you can depend on
+# Each of these calls mlir-tblgen with different flags and creates a target you can depend on
 mlir_tablegen(pyir.h.inc -gen-dialect-decls EXTRA_INCLUDES ${MLIR_INCLUDE_DIRS})
 mlir_tablegen(pyir.cpp.inc -gen-dialect-defs EXTRA_INCLUDES ${MLIR_INCLUDE_DIRS})
 mlir_tablegen(pyir_ops.h.inc -gen-op-decls EXTRA_INCLUDES ${MLIR_INCLUDE_DIRS})
@@ -21,7 +20,7 @@ add_mlir_library(pyir
         pyir_attrs.cpp
 
         DEPENDS
-        pyirIncGen   # ensures .inc files exist before compiling
+        pyirIncGen   # Ensures .inc files exist before compiling
 
         LINK_LIBS PUBLIC
         MLIRIR

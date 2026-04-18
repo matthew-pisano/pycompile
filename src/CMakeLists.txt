@@ -26,6 +26,10 @@ configure_file(
         @ONLY
 )
 
+# ================
+# Configure Dependencies
+# ================
+
 include(FetchContent)
 FetchContent_Declare(
         cli11
@@ -44,15 +48,15 @@ include(TableGen)
 include(AddMLIR)
 include(AddLLVM)
 
+# ================
+# Add Source Files
+# ================
+
 add_subdirectory(bytecode)
 add_subdirectory(conversion)
 add_subdirectory(lowering)
 add_subdirectory(pyir)
 add_subdirectory(pyruntime)
-
-# ================
-# Source Files and Libraries
-# ================
 
 set(PYCOMPILE_SOURCES
         utils.cpp

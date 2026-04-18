@@ -18,3 +18,11 @@ TEST_CASE_METHOD(JITFixture, "Test Invalid Binary Operands Error") {
 TEST_CASE_METHOD(JITFixture, "Test Invalid Unary Operands Error") {
     REQUIRE_THROWS_WITH(runCapture("a = ~'hello'"), "Bad operand type for ~: 'str'");
 }
+
+TEST_CASE_METHOD(JITFixture, "Test Bad Conversion Error") {
+    REQUIRE_THROWS_WITH(runCapture("a = float('not a number')"), "Could not convert str to float: 'not a number'");
+}
+
+TEST_CASE_METHOD(JITFixture, "Test Bad Iterable Error") {
+    REQUIRE_THROWS_WITH(runCapture("for i in 1:\n ..."), "Could not convert int to iter: '1'");
+}

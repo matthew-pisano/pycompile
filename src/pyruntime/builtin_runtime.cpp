@@ -70,7 +70,7 @@ PyObj* pyir_builtinInt(PyObj** args, const int64_t argc) {
         return new PyInt(b->data());
     if (const PyStr* s = dynamic_cast<PyStr*>(args[0]))
         return new PyInt(std::stoll(s->data()));
-    throw std::runtime_error("Cannot convert to int()");
+    throw std::runtime_error(formatBadConversion(args[0]->typeName(), "int", args[0]->toString()));
 }
 
 
@@ -84,9 +84,14 @@ PyObj* pyir_builtinFloat(PyObj** args, const int64_t argc) {
         return f;
     if (const PyBool* b = dynamic_cast<PyBool*>(args[0]))
         return new PyFloat(b->data());
-    if (const PyStr* s = dynamic_cast<PyStr*>(args[0]))
-        return new PyFloat(std::stod(s->data()));
-    throw std::runtime_error("cannot convert to float()");
+
+    try {
+        if (const PyStr* s = dynamic_cast<PyStr*>(args[0]))
+            return new PyFloat(std::stod(s->data()));
+    } catch (...) {
+        // Consume stod error and fall through to throw
+    }
+    throw std::runtime_error(formatBadConversion(args[0]->typeName(), "float", args[0]->toString()));
 }
 
 
@@ -136,7 +141,7 @@ PyObj* pyir_builtinTuple(PyObj** args, const int64_t argc) {
 
 PyObj* pyir_builtinDict(PyObj**, const int64_t argc) {
     if (argc > 0)
-        throw std::runtime_error("set() takes no arguments");
+        throw std::runtime_error("dict() takes no arguments");
     return new PyDict({});
 }
 
@@ -156,7 +161,7 @@ PyObj* pyir_builtinIter(PyObj** args, const int64_t argc) {
     if (const PyDict* dict = dynamic_cast<PyDict*>(args[0]))
         return new PyDictIter(dict->data());
 
-    throw std::runtime_error("cannot convert to iter()");
+    throw std::runtime_error(formatBadConversion(args[0]->typeName(), "iter", args[0]->toString()));
 }
 
 
@@ -175,7 +180,7 @@ PyObj* pyir_builtinNext(PyObj** args, const int64_t argc) {
     if (PyObj* iter = dynamic_cast<PyDictIter*>(args[0]))
         return PyDictIter::next(iter, nullptr, 0);
 
-    throw std::runtime_error("cannot convert to iter()");
+    throw std::runtime_error(formatBadConversion(args[0]->typeName(), "iter", args[0]->toString()));
 }
 
 
@@ -212,7 +217,7 @@ PyObj* pyir_builtinIsInstance(PyObj** args, const int64_t argc) {
     const PyObj* instance = args[0];
     if (const PyFunction* type = dynamic_cast<PyFunction*>(args[1]))
         return new PyBool(instance->typeName() == type->funcName());
-    throw std::runtime_error("isinstance() takes a tye as the second argument");
+    throw std::runtime_error("isinstance() takes a type as the second argument");
 }
 
 
@@ -301,6 +306,7 @@ PyObj* pyir_builtinZip(PyObj** args, const int64_t argc) {
     }
 
     std::vector<PyObj*> result;
+    result.reserve(shortestLen->data());
     for (int64_t elemIdx = 0; elemIdx < shortestLen->data(); elemIdx++)
         result.push_back(new PyTuple(zipped[elemIdx]));
     return new PyList(result);

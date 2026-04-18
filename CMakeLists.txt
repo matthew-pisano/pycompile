@@ -157,6 +157,7 @@ set(PYCOMPILE_SOURCES
         src/lowering/memory_lowering.cpp
         src/lowering/pyir_conversion_utils.cpp
 )
+list(TRANSFORM PYCOMPILE_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/")
 
 set(PYCOMPILE_LIBS
         Python::Python
@@ -193,48 +194,4 @@ target_compile_definitions(pycompile PRIVATE
 )
 add_dependencies(pycompile stdpyir pyirmain)
 
-
-# ================
-# Pycompile Tests
-# ================
-
-FetchContent_Declare(
-        Catch2
-        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG v3.13.0
-)
-FetchContent_MakeAvailable(Catch2)
-
-add_executable(pycompile-tests
-        ${PYCOMPILE_SOURCES}
-        test/bytecode/test_bytecode.cpp
-        test/conversion/test_pyir_codegen.cpp
-        test/lowering/test_llvm_ir_generation.cpp
-        test/execution/test_code_execution.cpp
-        test/conversion/test_logical_codegen.cpp
-        test/conversion/test_function_codegen.cpp
-        test/conversion/test_control_flow_codegen.cpp
-        test/conversion/test_builder_codegen.cpp
-        test/execution/test_str_execution.cpp
-        test/execution/test_list_execution.cpp
-        test/execution/test_set_execution.cpp
-        test/execution/test_tuple_execution.cpp
-        test/execution/test_dict_execution.cpp
-        test/execution/test_iter_execution.cpp
-        test/execution/test_builtin_execution.cpp
-        test/execution/pyir_run_module.cpp
-)
-target_link_libraries(pycompile-tests PRIVATE ${PYCOMPILE_LIBS} stdpyir Catch2::Catch2WithMain)
-target_include_directories(pycompile-tests SYSTEM PRIVATE
-        ${CMAKE_CURRENT_BINARY_DIR}
-        ${MLIR_INCLUDE_DIRS}
-        ${LLVM_INCLUDE_DIRS}
-)
-target_compile_definitions(pycompile-tests PRIVATE
-        "PYIR_RUNTIME_LIB_PATH=\"${CMAKE_BINARY_DIR}/lib/libstdpyir.a\""
-        "PYIR_RUNTIME_MAIN_PATH=\"${CMAKE_BINARY_DIR}/lib/libpyirmain.a\""
-)
-
-include(CTest)
-include(Catch)
-catch_discover_tests(pycompile-tests WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+add_subdirectory(test)

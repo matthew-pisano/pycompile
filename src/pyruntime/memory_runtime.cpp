@@ -62,7 +62,7 @@ void pyir_storeName(const char* name, PyObj* val) {
         if (it->second->decref()) // Release old value
             it->second = nullptr;
     }
-    val->incref();
+    // Val already has at least one reference, no need to incref
     moduleScope[name] = val;
 }
 

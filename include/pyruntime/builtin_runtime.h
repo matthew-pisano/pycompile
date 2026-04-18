@@ -16,6 +16,8 @@ PyObj* pyir_builtinVarFile();
 
 void pyir_initModule(const char* file, const char* name);
 
+void pyir_destroyModule();
+
 PyObj* pyir_builtinPrint(PyObj** args, int64_t argc);
 
 PyObj* pyir_builtinLen(PyObj** args, int64_t argc);

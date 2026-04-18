@@ -140,6 +140,7 @@ struct JITFixture {
 
         // Register all runtime functions
         addSymbol("pyir_initModule", reinterpret_cast<void*>(pyir_initModule));
+        addSymbol("pyir_destroyModule", reinterpret_cast<void*>(pyir_destroyModule));
         addSymbol("pyir_loadName", reinterpret_cast<void*>(pyir_loadName));
         addSymbol("pyir_storeName", reinterpret_cast<void*>(pyir_storeName));
         addSymbol("pyir_loadFast", reinterpret_cast<void*>(pyir_loadFast));

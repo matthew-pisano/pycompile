@@ -58,6 +58,9 @@ void returnValueCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, Con
     // Pop the local scope before returning from a function (not needed at module level)
     if (meta.isFunction)
         builder.create<pyir::PopScope>(loc);
+    // Emit destroy module instruction at the end of a top level module
+    else
+        builder.create<pyir::DestroyModule>(loc);
 
     if (retVal)
         builder.create<pyir::ReturnValue>(loc, retVal);

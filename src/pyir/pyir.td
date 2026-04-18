@@ -38,6 +38,12 @@ def PyIR_InitModule : PyIR_Op<"init_module"> {
 }
 
 
+def PyIR_DestroyModule : PyIR_Op<"destroy_module"> {
+    let summary = "Destroy module-level metadata";
+    let assemblyFormat = "attr-dict";
+}
+
+
 def PyIR_Resume : PyIR_Op<"resume"> {
     let summary = "Resume execution of a generator or start a module";
     let arguments = (ins SI64Attr:$arg);

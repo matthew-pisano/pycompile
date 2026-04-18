@@ -7,34 +7,12 @@
 
 #include "pyruntime/builtin_runtime.h"
 #include "pyruntime/objects/py_str.h"
-#include "pyruntime/runtime_state.h"
 
 extern "C" void __pymodule(); // Provided by the translated MLIR module
-
-void release() {
-    std::cout << "Cleaning up module" << std::endl;
-    if (!scopeStack.empty())
-        throw std::runtime_error("Exiting with dangling scope");
-
-    // Clear module scope
-    for (PyObj*& obj : moduleScope | std::views::values) {
-        while (!obj->decref()) { // Decref until object is deleted
-        }
-        obj = nullptr;
-    }
-
-    // Clear builtin functions
-    for (PyFunction*& func : builtinFuncs | std::views::values) {
-        while (!func->decref()) { // Decref until object is deleted
-        }
-        func = nullptr;
-    }
-}
 
 int main() {
     try {
         __pymodule();
-        release();
         return 0;
     } catch (const std::exception& e) {
         std::cerr << "Traceback (most recent call last):" << std::endl;
@@ -42,7 +20,6 @@ int main() {
         const PyStr* name = dynamic_cast<PyStr*>(pyir_builtinVarName());
         std::cerr << std::format("    File \"{}\", in {}", file->data(), name->data()) << std::endl;
         std::cerr << e.what() << std::endl;
-        release();
         return 1;
     }
 }

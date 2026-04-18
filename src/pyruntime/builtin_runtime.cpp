@@ -20,6 +20,7 @@
 #include "pyruntime/objects/py_str.h"
 #include "pyruntime/objects/py_tuple.h"
 #include "pyruntime/runtime_errors.h"
+#include "pyruntime/runtime_state.h"
 #include "pyruntime/runtime_util.h"
 
 
@@ -36,6 +37,46 @@ PyObj* pyir_builtinVarFile() { return new PyStr(moduleFile); }
 void pyir_initModule(const char* file, const char* name) {
     moduleFile = file;
     moduleName = name;
+
+    builtinFuncs = {{"print", new PyFunction("print", pyir_builtinPrint)},
+                    {"len", new PyFunction("len", pyir_builtinLen)},
+                    {"int", new PyFunction("int", pyir_builtinInt)},
+                    {"float", new PyFunction("float", pyir_builtinFloat)},
+                    {"str", new PyFunction("str", pyir_builtinStr)},
+                    {"bool", new PyFunction("bool", pyir_builtinBool)},
+                    {"list", new PyFunction("list", pyir_builtinList)},
+                    {"set", new PyFunction("set", pyir_builtinSet)},
+                    {"tuple", new PyFunction("tuple", pyir_builtinTuple)},
+                    {"dict", new PyFunction("dict", pyir_builtinDict)},
+                    {"iter", new PyFunction("iter", pyir_builtinIter)},
+                    {"next", new PyFunction("next", pyir_builtinNext)},
+                    {"enumerate", new PyFunction("enumerate", pyir_builtinEnumerate)},
+                    {"isinstance", new PyFunction("isinstance", pyir_builtinIsInstance)},
+                    {"range", new PyFunction("range", pyir_builtinRange)},
+                    {"type", new PyFunction("type", pyir_builtinType)},
+                    {"zip", new PyFunction("zip", pyir_builtinZip)},
+                    {"input", new PyFunction("input", pyir_builtinInput)}};
+}
+
+
+void pyir_destroyModule() {
+    std::cout << "Cleaning up module" << std::endl;
+    if (!scopeStack.empty())
+        throw std::runtime_error("Exiting with dangling scope");
+
+    // Clear module scope
+    for (PyObj*& obj : moduleScope | std::views::values) {
+        while (!obj->decref()) { // Decref until object is deleted
+        }
+        obj = nullptr;
+    }
+
+    // Clear builtin functions
+    for (PyFunction*& func : builtinFuncs | std::views::values) {
+        while (!func->decref()) { // Decref until object is deleted
+        }
+        func = nullptr;
+    }
 }
 
 

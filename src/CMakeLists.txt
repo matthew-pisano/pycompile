@@ -96,7 +96,7 @@ target_include_directories(pycompile SYSTEM PRIVATE
         ${LLVM_INCLUDE_DIRS}
 )
 set_target_properties(pycompile PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 target_compile_definitions(pycompile PRIVATE
         "PYIR_RUNTIME_LIB_PATH=\"${CMAKE_BINARY_DIR}/lib/libstdpyir.a\""

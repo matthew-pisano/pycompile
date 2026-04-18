@@ -44,6 +44,9 @@ include(TableGen)
 include(AddMLIR)
 include(AddLLVM)
 
+add_subdirectory(bytecode)
+add_subdirectory(conversion)
+add_subdirectory(lowering)
 add_subdirectory(pyir)
 add_subdirectory(pyruntime)
 
@@ -52,27 +55,16 @@ add_subdirectory(pyruntime)
 # ================
 
 set(PYCOMPILE_SOURCES
-        bytecode/bytecode.cpp
         utils.cpp
-        bytecode/python_opcodes.cpp
-        bytecode/python_error.cpp
-        conversion/pyir_codegen.cpp
-        bytecode/serialize_bytecode.cpp
-        conversion/memory_codegen.cpp
-        conversion/logical_codegen.cpp
-        conversion/function_codegen.cpp
-        conversion/control_flow_codegen.cpp
-        conversion/builder_codegen.cpp
-        lowering/pyir_lowering.cpp
-        lowering/llvm_export.cpp
-        lowering/builder_lowering.cpp
-        lowering/control_flow_lowering.cpp
-        lowering/function_lowering.cpp
-        lowering/logical_lowering.cpp
-        lowering/memory_lowering.cpp
-        lowering/pyir_conversion_utils.cpp
 )
 list(TRANSFORM PYCOMPILE_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/")
+
+set(PYCOMPILE_SOURCES
+        ${PYCOMPILE_SOURCES}
+        ${PYCOMPILE_BYTECODE_SOURCES}
+        ${PYCOMPILE_CONVERSION_SOURCES}
+        ${PYCOMPILE_LOWERING_SOURCES}
+)
 
 set(PYCOMPILE_LIBS
         Python::Python

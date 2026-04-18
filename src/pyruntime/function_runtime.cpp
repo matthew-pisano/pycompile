@@ -20,6 +20,8 @@ void pyir_popScope() {
 
     std::unordered_map<std::string, PyObj*> scope = scopeStack.back();
     for (PyObj*& obj : scope | std::views::values) {
+        if (!obj)
+            continue; // Skip already nulled objects
         if (obj->decref())
             obj = nullptr;
     }
@@ -34,6 +36,13 @@ PyFunction* pyir_makeFunction(const char* fnName, void* fn_ptr) {
 
 PyObj* pyir_call(const PyObj* callee, PyObj** args, const int64_t argc) {
     if (const PyFunction* func = dynamic_cast<const PyFunction*>(callee)) {
+        // No need to incref for arguments to builtins
+        if (!builtinFuncs.contains(func->funcName())) {
+            // Incref arguments before being passed
+            for (int64_t i = 0; i < argc; i++)
+                args[i]->incref();
+        }
+
         PyObjRef result(func->data()(args, argc));
         return result.release();
     }

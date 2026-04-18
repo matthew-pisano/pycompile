@@ -57,7 +57,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Simple Arithmetic MLIR") {
     REQUIRE(mlir::isa<pyir::PushNull>(getOp(fn, 10)));
     REQUIRE(mlir::isa<pyir::LoadName>(getOp(fn, 11)));
     REQUIRE(mlir::isa<pyir::Call>(getOp(fn, 12)));
-    REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(fn, 13)));
+    REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(fn, 14)));
 
     // The integer 1 is being loaded
     pyir::LoadConst loadOneOp = mlir::dyn_cast<pyir::LoadConst>(getOp(fn, 1));

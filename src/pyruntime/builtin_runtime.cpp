@@ -309,8 +309,7 @@ PyObj* pyir_builtinIsInstance(PyObj** args, const int64_t argc) {
         result = instanceType == type->funcName() ? PyBool::True : PyBool::False;
     if (args[0]->decref())
         args[0] = nullptr;
-    if (args[1]->decref())
-        args[1] = nullptr;
+    // Do not decref the type builtin
     if (!result)
         throw PyTypeError("isinstance() takes a type as the second argument");
     return result;

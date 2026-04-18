@@ -20,6 +20,10 @@ bool PyBool::isTruthy() const { return raw; }
 
 bool PyBool::data() const { return raw; }
 
+void PyBool::incref() {}
+
+bool PyBool::decref() { return false; }
+
 std::partial_ordering PyBool::operator<=>(const PyObj& other) const noexcept {
     if (const PyBool* b = dynamic_cast<const PyBool*>(&other))
         return raw <=> b->data();

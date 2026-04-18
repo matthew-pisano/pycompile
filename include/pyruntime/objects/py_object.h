@@ -51,9 +51,9 @@ struct PyObj {
 
     [[nodiscard]] virtual bool isTruthy() const = 0;
 
-    void incref();
+    virtual void incref();
 
-    [[nodiscard]] bool decref();
+    [[nodiscard]] virtual bool decref();
 
     virtual std::partial_ordering operator<=>(const PyObj& other) const noexcept = 0;
     virtual bool operator==(const PyObj& other) const noexcept = 0;

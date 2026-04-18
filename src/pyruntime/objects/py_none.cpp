@@ -14,6 +14,10 @@ std::string PyNone::typeName() const { return "NoneType"; }
 
 bool PyNone::isTruthy() const { return false; }
 
+void PyNone::incref() {}
+
+bool PyNone::decref() { return false; }
+
 std::partial_ordering PyNone::operator<=>(const PyObj& other) const noexcept {
     if (dynamic_cast<const PyNone*>(&other))
         return std::partial_ordering::equivalent;

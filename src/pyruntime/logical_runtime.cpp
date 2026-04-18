@@ -173,26 +173,30 @@ PyObj* pyir_idx(const PyObj* obj, const PyObj* idx) { return obj->idx(idx); }
 PyBool* pyir_in(const PyObj* container, const PyObj* element) { return container->contains(element); }
 
 
-PyBool* pyir_eq(const PyObj* lhs, const PyObj* rhs) { return new PyBool(*lhs == *rhs); }
+PyBool* pyir_eq(const PyObj* lhs, const PyObj* rhs) { return *lhs == *rhs ? PyBool::True : PyBool::False; }
 
 
-PyBool* pyir_ne(const PyObj* lhs, const PyObj* rhs) { return new PyBool(!pyir_eq(lhs, rhs)->data()); }
+PyBool* pyir_ne(const PyObj* lhs, const PyObj* rhs) {
+    return !pyir_eq(lhs, rhs)->data() ? PyBool::True : PyBool::False;
+}
 
 
 PyBool* pyir_lt(const PyObj* lhs, const PyObj* rhs) {
     if (pyir_isInt(lhs) && pyir_isInt(rhs))
-        return new PyBool(dynamic_cast<const PyInt*>(lhs)->data() < dynamic_cast<const PyInt*>(rhs)->data());
+        return dynamic_cast<const PyInt*>(lhs)->data() < dynamic_cast<const PyInt*>(rhs)->data() ? PyBool::True
+                                                                                                 : PyBool::False;
     if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
-        return new PyBool(valueToFloat(lhs) < valueToFloat(rhs));
+        return valueToFloat(lhs) < valueToFloat(rhs) ? PyBool::True : PyBool::False;
     throw PyTypeError(formatUnsupportedOperands("<", lhs->typeName(), rhs->typeName()));
 }
 
 
 PyBool* pyir_le(const PyObj* lhs, const PyObj* rhs) {
     if (pyir_isInt(lhs) && pyir_isInt(rhs))
-        return new PyBool(dynamic_cast<const PyInt*>(lhs)->data() <= dynamic_cast<const PyInt*>(rhs)->data());
+        return dynamic_cast<const PyInt*>(lhs)->data() <= dynamic_cast<const PyInt*>(rhs)->data() ? PyBool::True
+                                                                                                  : PyBool::False;
     if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
-        return new PyBool(valueToFloat(lhs) <= valueToFloat(rhs));
+        return valueToFloat(lhs) <= valueToFloat(rhs) ? PyBool::True : PyBool::False;
     throw PyTypeError(formatUnsupportedOperands("<=", lhs->typeName(), rhs->typeName()));
 }
 
@@ -214,7 +218,7 @@ PyObj* pyir_unaryNegative(const PyObj* val) {
 
 PyObj* pyir_unaryNot(const PyObj* val) {
     if (pyir_isBool(val))
-        return new PyBool(!dynamic_cast<const PyBool*>(val)->data());
+        return !dynamic_cast<const PyBool*>(val)->data() ? PyBool::True : PyBool::False;
     throw PyTypeError(formatUnsupportedOperands("not", val->typeName()));
 }
 
@@ -228,7 +232,9 @@ PyInt* pyir_unaryInvert(const PyObj* val) {
 
 PyObj* pyir_xor(const PyObj* lhs, const PyObj* rhs) {
     if (pyir_isBool(lhs) && pyir_isBool(rhs))
-        return new PyBool((dynamic_cast<const PyBool*>(lhs)->data() ^ dynamic_cast<const PyBool*>(rhs)->data()) == 1);
+        return (dynamic_cast<const PyBool*>(lhs)->data() ^ dynamic_cast<const PyBool*>(rhs)->data()) == 1
+                       ? PyBool::True
+                       : PyBool::False;
     if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
         const PySetData lSet = dynamic_cast<const PySet*>(lhs)->data();
         const PySetData rSet = dynamic_cast<const PySet*>(rhs)->data();
@@ -250,7 +256,7 @@ PyObj* pyir_xor(const PyObj* lhs, const PyObj* rhs) {
 }
 
 
-PyBool* pyir_toBool(const PyObj* val) { return new PyBool(val->isTruthy()); }
+PyBool* pyir_toBool(const PyObj* val) { return val->isTruthy() ? PyBool::True : PyBool::False; }
 
 
 PyStr* pyir_formatSimple(const PyObj* val) { return new PyStr(valueToString(val)); }

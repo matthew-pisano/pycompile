@@ -24,7 +24,7 @@ PyObj* PyList::append(PyObj* self, PyObj** args, const int64_t argc) {
 
     args[0]->incref();
     selfList->raw.push_back(args[0]);
-    return new PyNone();
+    return PyNone::None;
 }
 
 PyObj* PyList::extend(PyObj* self, PyObj** args, const int64_t argc) {
@@ -52,7 +52,7 @@ PyObj* PyList::extend(PyObj* self, PyObj** args, const int64_t argc) {
     else
         throw PyTypeError("Can only extend with iterable types, got" + args[0]->typeName());
 
-    return new PyNone();
+    return PyNone::None;
 }
 
 PyObj* PyList::getAttr(const std::string& name) {
@@ -68,8 +68,8 @@ PyInt* PyList::len() const { return new PyInt(static_cast<int64_t>(raw.size()));
 PyBool* PyList::contains(const PyObj* obj) const {
     for (const PyObj* elem : raw)
         if (*elem == *obj)
-            return new PyBool(true);
-    return new PyBool(false);
+            return PyBool::True;
+    return PyBool::False;
 }
 
 PyObj* PyList::idx(const PyObj* idx) const {

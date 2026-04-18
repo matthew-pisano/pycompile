@@ -4,6 +4,8 @@
 
 #include "pyruntime/objects/py_none.h"
 
+PyNone* PyNone::None = new PyNone;
+
 size_t PyNone::hash() const { return 0; }
 
 std::string PyNone::toString() const { return "None"; }

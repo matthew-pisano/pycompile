@@ -25,7 +25,7 @@ PyObj* PySet::add(PyObj* self, PyObj** args, const int64_t argc) {
 
     args[0]->incref();
     selfSet->raw.insert(args[0]);
-    return new PyNone();
+    return PyNone::None;
 }
 
 PyObj* PySet::update(PyObj* self, PyObj** args, const int64_t argc) {
@@ -53,7 +53,7 @@ PyObj* PySet::update(PyObj* self, PyObj** args, const int64_t argc) {
     else
         throw PyTypeError("Can only update with iterable types, got" + args[0]->typeName());
 
-    return new PyNone();
+    return PyNone::None;
 }
 
 PyObj* PySet::getAttr(const std::string& name) {
@@ -66,7 +66,9 @@ PyObj* PySet::getAttr(const std::string& name) {
 
 PyInt* PySet::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
 
-PyBool* PySet::contains(const PyObj* obj) const { return new PyBool(raw.contains(const_cast<PyObj*>(obj))); }
+PyBool* PySet::contains(const PyObj* obj) const {
+    return raw.contains(const_cast<PyObj*>(obj)) ? PyBool::True : PyBool::False;
+}
 
 size_t PySet::hash() const { throw PyTypeError("Unhashable type " + typeName()); }
 

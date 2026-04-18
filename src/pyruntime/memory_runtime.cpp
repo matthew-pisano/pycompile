@@ -74,10 +74,10 @@ PyObj* pyir_loadConstInt(const int64_t val) { return new PyInt(val); }
 PyObj* pyir_loadConstFloat(const double_t val) { return new PyFloat(val); }
 
 
-PyObj* pyir_loadConstBool(const int8_t val) { return new PyBool(val == 1); }
+PyObj* pyir_loadConstBool(const int8_t val) { return val == 1 ? PyBool::True : PyBool::False; }
 
 
-PyObj* pyir_loadConstNone() { return new PyNone(); }
+PyObj* pyir_loadConstNone() { return PyNone::None; }
 
 
 PyObj* pyir_loadConstTuple(PyObj** items, const int64_t count) {

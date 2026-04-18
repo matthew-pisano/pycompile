@@ -25,7 +25,7 @@ PyObj* PyDict::get(PyObj* self, PyObj** args, const int64_t argc) {
         throw PyTypeError("Can only get from dict types");
 
     if (!selfDict->raw.contains(args[0]))
-        return new PyNone();
+        return PyNone::None;
 
     PyObj* value = selfDict->raw.at(args[0]);
     value->incref();
@@ -92,7 +92,7 @@ PyObj* PyDict::update(PyObj* self, PyObj** args, const int64_t argc) {
     else
         throw PyTypeError("Can only update with dict types, got" + args[0]->typeName());
 
-    return new PyNone();
+    return PyNone::None;
 }
 
 PyObj* PyDict::getAttr(const std::string& name) {
@@ -111,7 +111,9 @@ PyObj* PyDict::getAttr(const std::string& name) {
 
 PyInt* PyDict::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
 
-PyBool* PyDict::contains(const PyObj* obj) const { return new PyBool(raw.contains(const_cast<PyObj*>(obj))); }
+PyBool* PyDict::contains(const PyObj* obj) const {
+    return raw.contains(const_cast<PyObj*>(obj)) ? PyBool::True : PyBool::False;
+}
 
 PyObj* PyDict::idx(const PyObj* idx) const {
     PyObj* mutIdx = const_cast<PyObj*>(idx);

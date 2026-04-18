@@ -16,8 +16,8 @@ PyInt* PyTuple::len() const { return new PyInt(static_cast<int64_t>(raw.size()))
 PyBool* PyTuple::contains(const PyObj* obj) const {
     for (const PyObj* elem : raw)
         if (*elem == *obj)
-            return new PyBool(true);
-    return new PyBool(false);
+            return PyBool::True;
+    return PyBool::False;
 }
 
 PyObj* PyTuple::idx(const PyObj* idx) const {

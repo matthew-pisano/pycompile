@@ -19,7 +19,7 @@ PyInt* PyStr::len() const { return new PyInt(static_cast<int64_t>(raw.size())); 
 
 PyBool* PyStr::contains(const PyObj* obj) const {
     if (const PyStr* str = dynamic_cast<const PyStr*>(obj))
-        return new PyBool(raw.contains(str->data()));
+        return raw.contains(str->data()) ? PyBool::True : PyBool::False;
     throw PyTypeError("str objects can only contain other str objects");
 }
 

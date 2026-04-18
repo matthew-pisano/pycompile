@@ -48,7 +48,7 @@ PyObj* pyir_builtinPrint(PyObj** args, const int64_t argc) {
         printf("%s", valueToString(args[i]).c_str());
     }
     printf("\n");
-    return new PyNone();
+    return PyNone::None;
 }
 
 
@@ -106,7 +106,7 @@ PyObj* pyir_builtinStr(PyObj** args, const int64_t argc) {
 PyObj* pyir_builtinBool(PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw PyTypeError("bool() takes exactly one argument");
-    return new PyBool(args[0]->isTruthy());
+    return args[0]->isTruthy() ? PyBool::True : PyBool::False;
 }
 
 
@@ -217,7 +217,7 @@ PyObj* pyir_builtinIsInstance(PyObj** args, const int64_t argc) {
         throw PyTypeError("enumerate() takes two arguments");
     const PyObj* instance = args[0];
     if (const PyFunction* type = dynamic_cast<PyFunction*>(args[1]))
-        return new PyBool(instance->typeName() == type->funcName());
+        return instance->typeName() == type->funcName() ? PyBool::True : PyBool::False;
     throw PyTypeError("isinstance() takes a type as the second argument");
 }
 

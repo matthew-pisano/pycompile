@@ -61,4 +61,37 @@ private:
     std::string msg;
 };
 
+
+class PyAttributeError : public PyException {
+public:
+    explicit PyAttributeError(const std::string& msg) : PyException(msg) { this->msg = "AttributeError: " + msg; }
+
+    [[nodiscard]] const char* what() const noexcept override { return msg.c_str(); }
+
+private:
+    std::string msg;
+};
+
+
+class PyNameError : public PyException {
+public:
+    explicit PyNameError(const std::string& msg) : PyException(msg) { this->msg = "NameError: " + msg; }
+
+    [[nodiscard]] const char* what() const noexcept override { return msg.c_str(); }
+
+private:
+    std::string msg;
+};
+
+
+class PyStopIteration : public PyException {
+public:
+    explicit PyStopIteration() : PyException(msg) { this->msg = "StopIteration()"; }
+
+    [[nodiscard]] const char* what() const noexcept override { return msg.c_str(); }
+
+private:
+    std::string msg;
+};
+
 #endif // PYCOMPILE_RUNTIME_ERRORS_H

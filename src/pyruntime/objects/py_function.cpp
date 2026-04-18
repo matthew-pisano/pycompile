@@ -6,7 +6,9 @@
 
 #include <format>
 
-size_t PyFunction::hash() const { throw std::runtime_error("Unhashable type " + typeName()); }
+#include "pyruntime/runtime_errors.h"
+
+size_t PyFunction::hash() const { throw PyTypeError("Unhashable type " + typeName()); }
 
 std::string PyFunction::toString() const { return std::format("<function {}>", fnName); }
 

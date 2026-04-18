@@ -12,14 +12,15 @@
 #include "pyruntime/objects/py_none.h"
 #include "pyruntime/objects/py_set.h"
 #include "pyruntime/objects/py_tuple.h"
+#include "pyruntime/runtime_errors.h"
 #include "pyruntime/runtime_util.h"
 
 PyObj* PyList::append(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
-        throw std::runtime_error("append() takes exactly one argument");
+        throw PyTypeError("append() takes exactly one argument");
     PyList* selfList = dynamic_cast<PyList*>(self);
     if (!selfList)
-        throw std::runtime_error("Can only append to list types");
+        throw PyTypeError("Can only append to list types");
 
     args[0]->incref();
     selfList->raw.push_back(args[0]);
@@ -28,10 +29,10 @@ PyObj* PyList::append(PyObj* self, PyObj** args, const int64_t argc) {
 
 PyObj* PyList::extend(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
-        throw std::runtime_error("extend() takes exactly one argument");
+        throw PyTypeError("extend() takes exactly one argument");
     PyList* selfList = dynamic_cast<PyList*>(self);
     if (!selfList)
-        throw std::runtime_error("Can only extend list types");
+        throw PyTypeError("Can only extend list types");
 
     if (const PyList* srcList = dynamic_cast<const PyList*>(args[0]))
         for (PyObj* v : srcList->raw) {
@@ -49,7 +50,7 @@ PyObj* PyList::extend(PyObj* self, PyObj** args, const int64_t argc) {
             selfList->raw.push_back(v);
         }
     else
-        throw std::runtime_error("Can only extend with iterable types, got" + args[0]->typeName());
+        throw PyTypeError("Can only extend with iterable types, got" + args[0]->typeName());
 
     return new PyNone();
 }
@@ -59,7 +60,7 @@ PyObj* PyList::getAttr(const std::string& name) {
         return new PyMethod("append", this, append);
     if (name == "extend")
         return new PyMethod("extend", this, extend);
-    throw std::runtime_error(std::format("'{}' object has no attribute '{}'", typeName(), name));
+    throw PyAttributeError(std::format("'{}' object has no attribute '{}'", typeName(), name));
 }
 
 PyInt* PyList::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
@@ -77,11 +78,11 @@ PyObj* PyList::idx(const PyObj* idx) const {
         if (index < 0)
             index += static_cast<int64_t>(raw.size());
         if (index < 0 || index >= static_cast<int64_t>(raw.size()))
-            throw std::runtime_error("list index out of range");
+            throw PyIndexError("list index out of range");
         raw[index]->incref(); // Return a new reference to the indexed value
         return raw[index];
     }
-    throw std::runtime_error("list indices must be integers");
+    throw PyTypeError("list indices must be integers, not " + idx->typeName());
 }
 
 void PyList::setIdx(const PyObj* idx, PyObj* value) {
@@ -90,15 +91,15 @@ void PyList::setIdx(const PyObj* idx, PyObj* value) {
         if (index < 0)
             index += static_cast<int64_t>(raw.size());
         if (index < 0 || index >= static_cast<int64_t>(raw.size()))
-            throw std::runtime_error("list index out of range");
+            throw PyIndexError("list index out of range");
         raw[index]->decref(); // Decref the old value
         raw[index] = value;
         return;
     }
-    throw std::runtime_error("list indices must be integers");
+    throw PyTypeError("list indices must be integers, not " + idx->typeName());
 }
 
-size_t PyList::hash() const { throw std::runtime_error("Unhashable type " + typeName()); }
+size_t PyList::hash() const { throw PyTypeError("Unhashable type " + typeName()); }
 
 std::string PyList::toString() const {
     if (raw.empty())
@@ -138,12 +139,12 @@ bool PyList::operator==(const PyObj& other) const noexcept {
 
 PyObj* PyListIter::next(PyObj* self, PyObj**, const int64_t argc) {
     if (argc != 0)
-        throw std::runtime_error("next() takes no arguments");
+        throw PyTypeError("next() takes no arguments");
     PyListIter* selfIter = dynamic_cast<PyListIter*>(self);
     if (!selfIter)
-        throw std::runtime_error("Can only get the next value of iterator types");
+        throw PyTypeError("Can only get the next value of iterator types");
     if (selfIter->it == selfIter->list.end())
-        throw std::runtime_error("StopIteration()");
+        throw PyStopIteration();
 
     PyObj* obj = *selfIter->it;
     obj->incref();

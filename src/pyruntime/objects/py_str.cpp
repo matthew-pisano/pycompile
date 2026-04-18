@@ -8,6 +8,7 @@
 
 #include "pyruntime/objects/py_bool.h"
 #include "pyruntime/objects/py_int.h"
+#include "pyruntime/runtime_errors.h"
 
 size_t PyStr::hash() const {
     constexpr std::hash<std::string> hasher;
@@ -19,7 +20,7 @@ PyInt* PyStr::len() const { return new PyInt(static_cast<int64_t>(raw.size())); 
 PyBool* PyStr::contains(const PyObj* obj) const {
     if (const PyStr* str = dynamic_cast<const PyStr*>(obj))
         return new PyBool(raw.contains(str->data()));
-    throw std::runtime_error("str objects can only contain other str objects");
+    throw PyTypeError("str objects can only contain other str objects");
 }
 
 PyObj* PyStr::idx(const PyObj* idx) const {
@@ -28,10 +29,10 @@ PyObj* PyStr::idx(const PyObj* idx) const {
         if (index < 0)
             index += static_cast<int64_t>(raw.size());
         if (index < 0 || index >= static_cast<int64_t>(raw.size()))
-            throw std::runtime_error("str index out of range");
+            throw PyIndexError("str index out of range");
         return new PyStr(raw[index]);
     }
-    throw std::runtime_error("str indices must be integers");
+    throw PyTypeError("str indices must be integers");
 }
 
 std::string PyStr::toString() const { return raw; }
@@ -54,12 +55,12 @@ bool PyStr::operator==(const PyObj& other) const noexcept {
 
 PyObj* PyStrIter::next(PyObj* self, PyObj**, const int64_t argc) {
     if (argc != 0)
-        throw std::runtime_error("next() takes no arguments");
+        throw PyTypeError("next() takes no arguments");
     PyStrIter* selfIter = dynamic_cast<PyStrIter*>(self);
     if (!selfIter)
-        throw std::runtime_error("Can only get the next value of iterator types");
+        throw PyTypeError("Can only get the next value of iterator types");
     if (selfIter->it == selfIter->str.end())
-        throw std::runtime_error("StopIteration()");
+        throw PyStopIteration();
 
     const char c = *selfIter->it;
     ++selfIter->it;

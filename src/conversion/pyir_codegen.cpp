@@ -177,7 +177,7 @@ void switchToOffsetBlock(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const
  * @param ctx The MLIR Context
  * @param module The original ByteCodeModule
  * @param moduleName The name to give the MLIR module
- * @throw PyCompileError For unknown or malformed ops
+ * @throw PyCompaileError For unknown or malformed ops
  */
 void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ByteCodeModule& module,
                      const std::string& moduleName) {

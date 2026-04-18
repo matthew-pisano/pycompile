@@ -26,3 +26,29 @@ TEST_CASE_METHOD(JITFixture, "Test Bad Conversion Error") {
 TEST_CASE_METHOD(JITFixture, "Test Bad Iterable Error") {
     REQUIRE_THROWS_WITH(runCapture("for i in 1:\n ..."), "Could not convert int to iter: '1'");
 }
+
+TEST_CASE_METHOD(JITFixture, "Test Invalid Arguments Error") {
+    REQUIRE_THROWS_WITH(runCapture("a = int(1, 1)"), "int() takes exactly one argument");
+}
+
+TEST_CASE_METHOD(JITFixture, "Test Non Callable Object Error") {
+    REQUIRE_THROWS_WITH(runCapture("a = 1()"), "'int' object is not callable");
+}
+
+TEST_CASE_METHOD(JITFixture, "Test Unknown Attribute Error") {
+    REQUIRE_THROWS_WITH(runCapture("a = 'str'.attr()"), "'str' object has no attribute 'attr'");
+}
+
+TEST_CASE_METHOD(JITFixture, "Test Index Out of Range Error") {
+    REQUIRE_THROWS_WITH(runCapture("a = [1, 2][3]"), "list index out of range");
+
+    REQUIRE_THROWS_WITH(runCapture("a = [1, 2][-3]"), "list index out of range");
+}
+
+TEST_CASE_METHOD(JITFixture, "Test Bad Index Type Error") {
+    REQUIRE_THROWS_WITH(runCapture("a = [1, 2]['bad_idx']"), "list indices must be integers");
+}
+
+TEST_CASE_METHOD(JITFixture, "Test Bad Next Type Error") {
+    REQUIRE_THROWS_WITH(runCapture("a = next(1)"), "Could not convert int to iter: '1'");
+}

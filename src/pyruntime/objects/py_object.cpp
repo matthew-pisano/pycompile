@@ -18,7 +18,9 @@ void PyObj::decref() {
 
 PyStr* PyObj::name() const { return new PyStr(typeName()); }
 
-PyObj* PyObj::getAttr(const std::string& name) { throw std::runtime_error("object has no attribute '" + name + "'"); }
+PyObj* PyObj::getAttr(const std::string& name) {
+    throw std::runtime_error(std::format("'{}' object has no attribute '{}'", typeName(), name));
+}
 
 PyInt* PyObj::len() const { throw std::runtime_error(std::format("object of type '{}' has no len()", typeName())); }
 

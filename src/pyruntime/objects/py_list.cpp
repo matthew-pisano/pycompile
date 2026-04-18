@@ -4,6 +4,7 @@
 
 #include "pyruntime/objects/py_list.h"
 
+#include <format>
 #include <stdexcept>
 
 #include "pyruntime/objects/py_bool.h"
@@ -58,7 +59,7 @@ PyObj* PyList::getAttr(const std::string& name) {
         return new PyMethod("append", this, append);
     if (name == "extend")
         return new PyMethod("extend", this, extend);
-    throw std::runtime_error(this->typeName() + " has no attribute '" + name + "'");
+    throw std::runtime_error(std::format("'{}' object has no attribute '{}'", typeName(), name));
 }
 
 PyInt* PyList::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }

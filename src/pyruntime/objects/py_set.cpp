@@ -5,6 +5,7 @@
 #include "pyruntime/objects/py_set.h"
 
 #include <algorithm>
+#include <format>
 #include <stdexcept>
 
 #include "pyruntime/objects/py_bool.h"
@@ -59,7 +60,7 @@ PyObj* PySet::getAttr(const std::string& name) {
         return new PyMethod("update", this, update);
     if (name == "add")
         return new PyMethod("add", this, add);
-    throw std::runtime_error(this->typeName() + " has no attribute '" + name + "'");
+    throw std::runtime_error(std::format("'{}' object has no attribute '{}'", typeName(), name));
 }
 
 PyInt* PySet::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }

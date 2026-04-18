@@ -4,6 +4,7 @@
 
 #include "pyruntime/function_runtime.h"
 
+#include <format>
 #include <stdexcept>
 
 #include "pyruntime/runtime_state.h"
@@ -31,7 +32,7 @@ PyObj* pyir_call(const PyObj* callee, PyObj** args, const int64_t argc) {
         PyObjRef result(method->data()(method->selfObj(), args, argc));
         return result.release();
     }
-    throw std::runtime_error("Object is not callable");
+    throw std::runtime_error(std::format("'{}' object is not callable", callee->typeName()));
 }
 
 

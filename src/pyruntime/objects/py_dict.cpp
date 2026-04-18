@@ -4,6 +4,7 @@
 
 #include "pyruntime/objects/py_dict.h"
 
+#include <format>
 #include <ranges>
 #include <stdexcept>
 
@@ -104,7 +105,7 @@ PyObj* PyDict::getAttr(const std::string& name) {
         return new PyMethod("values", this, values);
     if (name == "items")
         return new PyMethod("items", this, items);
-    throw std::runtime_error(this->typeName() + " has no attribute '" + name + "'");
+    throw std::runtime_error(std::format("'{}' object has no attribute '{}'", typeName(), name));
 }
 
 PyInt* PyDict::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }

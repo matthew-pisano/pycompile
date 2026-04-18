@@ -1,4 +1,4 @@
-set(LLVM_TARGET_DEFINITIONS ${CMAKE_SOURCE_DIR}/include/pyir/pyir.td)
+set(LLVM_TARGET_DEFINITIONS pyir.td)
 
 # Each of these calls mlir-tblgen with different flags and creates a target you can depend on
 mlir_tablegen(pyir.h.inc -gen-dialect-decls EXTRA_INCLUDES ${MLIR_INCLUDE_DIRS})

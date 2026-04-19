@@ -8,6 +8,8 @@
 #include <ranges>
 #include <stdexcept>
 
+#include "pyruntime/objects/py_bool.h"
+#include "pyruntime/objects/py_none.h"
 #include "pyruntime/runtime_errors.h"
 #include "pyruntime/runtime_state.h"
 
@@ -22,6 +24,8 @@ void pyir_popScope() {
     for (PyObj*& obj : scope | std::views::values) {
         if (!obj)
             continue; // Skip already nulled objects
+        if (dynamic_cast<PyNone*>(obj) || dynamic_cast<PyBool*>(obj))
+            continue; // Skip immortal objects
         if (obj->decref())
             obj = nullptr;
     }

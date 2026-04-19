@@ -68,6 +68,8 @@ void pyir_destroyModule() {
     for (PyObj*& obj : moduleScope | std::views::values) {
         if (!obj)
             continue; // Skip already nulled objects
+        if (dynamic_cast<PyNone*>(obj) || dynamic_cast<PyBool*>(obj))
+            continue; // Skip immortal objects
         while (!obj->decref()) { // Decref until object is deleted
         }
         obj = nullptr;

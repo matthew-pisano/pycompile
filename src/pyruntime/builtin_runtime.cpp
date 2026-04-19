@@ -66,7 +66,7 @@ void pyir_destroyModule() {
 
     // Clear module scope
     for (PyObj*& obj : moduleScope | std::views::values) {
-        if (obj)
+        if (!obj)
             continue; // Skip already nulled objects
         while (!obj->decref()) { // Decref until object is deleted
         }

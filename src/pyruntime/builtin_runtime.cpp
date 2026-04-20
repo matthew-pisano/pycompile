@@ -237,8 +237,8 @@ PyObj* pyir_builtinIter(PyObj** args, const int64_t argc) {
         result = new PyListIter(list->data());
     else if (const PySet* set = dynamic_cast<PySet*>(args[0]))
         result = new PySetIter(set->data());
-    else if (const PyTuple* tuple = dynamic_cast<PyTuple*>(args[0]))
-        result = new PyTupleIter(tuple->data());
+    else if (PyTuple* tuple = dynamic_cast<PyTuple*>(args[0]))
+        result = new PyTupleIter(tuple);
     else if (const PyDict* dict = dynamic_cast<PyDict*>(args[0]))
         result = new PyDictIter(dict->data());
 

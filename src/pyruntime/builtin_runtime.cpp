@@ -70,17 +70,15 @@ void pyir_destroyModule() {
             continue; // Skip already nulled objects
         if (dynamic_cast<PyNone*>(obj) || dynamic_cast<PyBool*>(obj))
             continue; // Skip immortal objects
-        while (!obj->decref()) { // Decref until object is deleted
-        }
-        obj = nullptr;
+        if (obj->decref())
+            obj = nullptr;
     }
     moduleScope.clear();
 
     // Clear builtin functions
     for (PyFunction*& func : builtinFuncs | std::views::values) {
-        while (!func->decref()) { // Decref until object is deleted
-        }
-        func = nullptr;
+        if (func->decref())
+            func = nullptr;
     }
     builtinFuncs.clear();
 }

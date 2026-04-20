@@ -11,6 +11,11 @@
 #include "pyruntime/runtime_errors.h"
 #include "pyruntime/runtime_util.h"
 
+PyTuple::~PyTuple() {
+    for (PyObj* elem : raw)
+        (void) elem->decref();
+}
+
 PyInt* PyTuple::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
 
 PyBool* PyTuple::contains(const PyObj* obj) const {

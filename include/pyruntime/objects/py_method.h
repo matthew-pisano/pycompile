@@ -14,6 +14,7 @@ using PyMethodData = PyObj* (*) (PyObj*, PyObj**, int64_t);
 struct PyMethod : PyObj {
     explicit PyMethod(std::string fnName, PyObj* self, const PyMethodData& func) :
         fnName(std::move(fnName)), self(self), fn(func) {}
+    ~PyMethod() override;
 
     [[nodiscard]] size_t hash() const override;
 

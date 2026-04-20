@@ -91,11 +91,7 @@ PyObj* pyir_loadConstTuple(PyObj** items, const int64_t count) {
 }
 
 
-PyObj* pyir_loadAttr(PyObj* obj, const char* name) {
-    PyObj* result = obj->getAttr(name);
-    (void) obj->decref();
-    return result;
-}
+PyObj* pyir_loadAttr(PyObj* obj, const char* name) { return obj->getAttr(name); }
 
 
 void pyir_storeSubscr(PyObj* container, const PyObj* idx, PyObj* value) { container->setIdx(idx, value); }

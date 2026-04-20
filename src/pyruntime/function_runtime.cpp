@@ -38,7 +38,7 @@ PyFunction* pyir_makeFunction(const char* fnName, void* fn_ptr) {
 }
 
 
-PyObj* pyir_call(const PyObj* callee, PyObj** args, const int64_t argc) {
+PyObj* pyir_call(PyObj* callee, PyObj** args, const int64_t argc) {
     if (const PyFunction* func = dynamic_cast<const PyFunction*>(callee)) {
         // No need to incref for arguments to builtins
         if (!builtinFuncs.contains(func->funcName())) {
@@ -55,6 +55,7 @@ PyObj* pyir_call(const PyObj* callee, PyObj** args, const int64_t argc) {
         for (int64_t i = 0; i < argc; i++)
             if (args[i]->decref())
                 args[i] = nullptr;
+        (void) callee->decref();
         return result.release();
     }
     throw PyTypeError(std::format("'{}' object is not callable", callee->typeName()));

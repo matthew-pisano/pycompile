@@ -8,6 +8,11 @@
 
 #include "pyruntime/runtime_errors.h"
 
+PyMethod::~PyMethod() {
+    if (self->decref())
+        self = nullptr;
+}
+
 size_t PyMethod::hash() const { throw PyTypeError("Unhashable type " + typeName()); }
 
 std::string PyMethod::toString() const { return std::format("<method {} of {} object>", fnName, self->typeName()); }

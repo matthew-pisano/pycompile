@@ -20,6 +20,7 @@ PyObj* pyir_buildString(PyObj** parts, const int64_t count) {
         if (!pyStr)
             throw std::runtime_error("BUILD_STRING: expected string part");
         result += pyStr->data();
+        (void) parts[i]->decref();
     }
     return new PyStr(result);
 }

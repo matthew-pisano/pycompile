@@ -28,18 +28,22 @@ PyObj* pyir_buildString(PyObj** parts, const int64_t count) {
 
 PyObj* pyir_buildList(PyObj** parts, const int64_t count) {
     PyListData result;
-    for (int64_t i = 0; i < count; i++) {
-        parts[i]->incref();
+    for (int64_t i = 0; i < count; i++)
         result.push_back(parts[i]);
-    }
     return new PyList(result);
 }
 
 
-void pyir_listExtend(PyObj* list, PyObj* items) { PyList::extend(list, &items, 1); }
+void pyir_listExtend(PyObj* list, PyObj* items) {
+    PyList::extend(list, &items, 1);
+    (void) items->decref();
+}
 
 
-void pyir_listAppend(PyObj* list, PyObj* item) { PyList::append(list, &item, 1); }
+void pyir_listAppend(PyObj* list, PyObj* item) {
+    PyList::append(list, &item, 1);
+    (void) item->decref();
+}
 
 
 PyObj* pyir_buildSet(PyObj** parts, const int64_t count) {

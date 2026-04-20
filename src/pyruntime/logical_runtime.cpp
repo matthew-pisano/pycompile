@@ -57,12 +57,9 @@ PyObj* pyir_add(PyObj* lhs, PyObj* rhs) {
     else if (pyir_isStr(lhs) && pyir_isStr(rhs))
         result = new PyStr(dynamic_cast<PyStr*>(lhs)->data() + dynamic_cast<PyStr*>(rhs)->data());
     else if (pyir_isList(lhs) && pyir_isList(rhs)) {
-        PyListData lhsVal = dynamic_cast<PyList*>(lhs)->data();
-        PyListData rhsVal = dynamic_cast<PyList*>(rhs)->data();
-        PyListData combined;
-        combined.insert(combined.end(), lhsVal.begin(), lhsVal.end());
-        combined.insert(combined.end(), rhsVal.begin(), rhsVal.end());
-        result = new PyList(combined);
+        result = new PyList({});
+        PyList::extend(result, &lhs, 1);
+        PyList::extend(result, &rhs, 1);
     } else if (pyir_isTuple(lhs) && pyir_isTuple(rhs)) {
         PyListData lhsVal = dynamic_cast<PyTuple*>(lhs)->data();
         PyListData rhsVal = dynamic_cast<PyTuple*>(rhs)->data();

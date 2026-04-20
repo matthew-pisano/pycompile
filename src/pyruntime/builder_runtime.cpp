@@ -44,18 +44,22 @@ void pyir_listAppend(PyObj* list, PyObj* item) { PyList::append(list, &item, 1);
 
 PyObj* pyir_buildSet(PyObj** parts, const int64_t count) {
     PySetData result;
-    for (int64_t i = 0; i < count; i++) {
-        parts[i]->incref();
+    for (int64_t i = 0; i < count; i++)
         result.insert(parts[i]);
-    }
     return new PySet(result);
 }
 
 
-void pyir_setUpdate(PyObj* set, PyObj* items) { PySet::update(set, &items, 1); }
+void pyir_setUpdate(PyObj* set, PyObj* items) {
+    PySet::update(set, &items, 1);
+    (void) items->decref();
+}
 
 
-void pyir_setAdd(PyObj* set, PyObj* item) { PySet::add(set, &item, 1); }
+void pyir_setAdd(PyObj* set, PyObj* item) {
+    PySet::add(set, &item, 1);
+    (void) item->decref();
+}
 
 
 PyObj* pyir_buildMap(PyObj** parts, const int64_t count) {

@@ -92,9 +92,12 @@ PyObj* pyir_sub(PyObj* lhs, PyObj* rhs) {
     else if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
         PySetData res = dynamic_cast<PySet*>(lhs)->data();
         const PySetData rSet = dynamic_cast<PySet*>(rhs)->data();
-        for (PyObj* lItem : dynamic_cast<PySet*>(lhs)->data())
+        for (PyObj* lItem : dynamic_cast<PySet*>(lhs)->data()) {
             if (rSet.contains(lItem))
                 res.erase(lItem);
+            else
+                lItem->incref();
+        }
         result = new PySet(res);
     }
 
@@ -203,10 +206,9 @@ PyObj* pyir_mod(PyObj* lhs, PyObj* rhs) {
 PyObj* pyir_pipe(PyObj* lhs, PyObj* rhs) {
     PyObj* result = nullptr;
     if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
-        PySetData res = dynamic_cast<PySet*>(lhs)->data();
-        const PySetData rhsSet = dynamic_cast<PySet*>(rhs)->data();
-        res.insert(rhsSet.begin(), rhsSet.end());
-        result = new PySet(res);
+        result = new PySet({});
+        PySet::update(result, &lhs, 1);
+        PySet::update(result, &rhs, 1);
     } else if (pyir_isDict(lhs) && pyir_isDict(rhs)) {
         PyDictData res = dynamic_cast<PyDict*>(lhs)->data();
         PyDictData rhsDict = dynamic_cast<PyDict*>(rhs)->data();
@@ -228,12 +230,11 @@ PyObj* pyir_pipe(PyObj* lhs, PyObj* rhs) {
 PyObj* pyir_ampersand(PyObj* lhs, PyObj* rhs) {
     PyObj* result = nullptr;
     if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
-        PySetData res;
+        result = new PySet({});
         const PySetData rSet = dynamic_cast<PySet*>(rhs)->data();
         for (PyObj* lItem : dynamic_cast<PySet*>(lhs)->data())
             if (rSet.contains(lItem))
-                res.insert(lItem);
-        result = new PySet(res);
+                PySet::add(result, &lItem, 1);
     }
 
     const std::string lhsType = lhs->typeName();
@@ -377,13 +378,17 @@ PyObj* pyir_xor(PyObj* lhs, PyObj* rhs) {
 
         // Elements in lSet not in rSet
         for (PyObj* elem : lSet)
-            if (!rSet.contains(elem))
+            if (!rSet.contains(elem)) {
                 res.insert(elem);
+                elem->incref();
+            }
 
         // Elements in rSet not in lSet
         for (PyObj* elem : rSet)
-            if (!lSet.contains(elem))
+            if (!lSet.contains(elem)) {
                 res.insert(elem);
+                elem->incref();
+            }
         result = new PySet(res);
     }
 

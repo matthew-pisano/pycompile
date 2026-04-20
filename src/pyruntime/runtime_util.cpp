@@ -71,7 +71,8 @@ PySetData valueToSet(const PyObj* val) {
     if (const PyStr* pyString = dynamic_cast<const PyStr*>(val)) {
         PySetData result;
         for (const char c : pyString->data())
-            result.insert(new PyStr(c));
+            if (PyStr* charStr = new PyStr(c); !result.insert(charStr).second)
+                (void) charStr->decref(); // Decref string if it is not added to the set
         return result;
     }
     if (const PyList* pyList = dynamic_cast<const PyList*>(val)) {

@@ -52,6 +52,9 @@ PyObj* pyir_call(const PyObj* callee, PyObj** args, const int64_t argc) {
     }
     if (const PyMethod* method = dynamic_cast<const PyMethod*>(callee)) {
         PyObjRef result(method->data()(method->selfObj(), args, argc));
+        for (int64_t i = 0; i < argc; i++)
+            if (args[i]->decref())
+                args[i] = nullptr;
         return result.release();
     }
     throw PyTypeError(std::format("'{}' object is not callable", callee->typeName()));

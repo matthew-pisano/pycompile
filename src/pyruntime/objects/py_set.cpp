@@ -28,8 +28,8 @@ PyObj* PySet::add(PyObj* self, PyObj** args, const int64_t argc) {
     if (!selfSet)
         throw PyTypeError("Can only add to set types");
 
-    args[0]->incref();
-    selfSet->raw.insert(args[0]);
+    if (selfSet->raw.insert(args[0]).second)
+        args[0]->incref();
     return PyNone::None;
 }
 
@@ -42,18 +42,18 @@ PyObj* PySet::update(PyObj* self, PyObj** args, const int64_t argc) {
 
     if (const PySet* srcSet = dynamic_cast<const PySet*>(args[0]))
         for (PyObj* v : srcSet->raw) {
-            v->incref();
-            selfSet->raw.insert(v);
+            if (selfSet->raw.insert(v).second)
+                v->incref();
         }
     else if (const PyList* srcList = dynamic_cast<const PyList*>(args[0]))
         for (PyObj* v : srcList->data()) {
-            v->incref();
-            selfSet->raw.insert(v);
+            if (selfSet->raw.insert(v).second)
+                v->incref();
         }
     else if (const PyTuple* srcTuple = dynamic_cast<const PyTuple*>(args[0]))
         for (PyObj* v : srcTuple->data()) {
-            v->incref();
-            selfSet->raw.insert(v);
+            if (selfSet->raw.insert(v).second)
+                v->incref();
         }
     else
         throw PyTypeError("Can only update with iterable types, got" + args[0]->typeName());

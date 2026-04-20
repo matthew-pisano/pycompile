@@ -16,6 +16,11 @@
 #include "pyruntime/runtime_errors.h"
 #include "pyruntime/runtime_util.h"
 
+PySet::~PySet() {
+    for (PyObj* elem : raw)
+        (void) elem->decref();
+}
+
 PyObj* PySet::add(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw PyTypeError("add() takes exactly one argument");
@@ -111,13 +116,15 @@ bool PySet::operator==(const PyObj& other) const noexcept {
     return *this <=> other == std::partial_ordering::equivalent;
 }
 
+PySetIter::~PySetIter() { (void) set->decref(); }
+
 PyObj* PySetIter::next(PyObj* self, PyObj**, const int64_t argc) {
     if (argc != 0)
         throw PyTypeError("next() takes no arguments");
     PySetIter* selfIter = dynamic_cast<PySetIter*>(self);
     if (!selfIter)
         throw PyTypeError("Can only get the next value of iterator types");
-    if (selfIter->it == selfIter->set.end())
+    if (selfIter->it == selfIter->end)
         throw PyStopIteration();
 
     PyObj* obj = *selfIter->it;

@@ -15,6 +15,11 @@
 #include "pyruntime/runtime_errors.h"
 #include "pyruntime/runtime_util.h"
 
+PyList::~PyList() {
+    for (PyObj* elem : raw)
+        (void) elem->decref();
+}
+
 PyObj* PyList::append(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw PyTypeError("append() takes exactly one argument");
@@ -137,13 +142,15 @@ bool PyList::operator==(const PyObj& other) const noexcept {
     return *this <=> other == std::partial_ordering::equivalent;
 }
 
+PyListIter::~PyListIter() { (void) list->decref(); }
+
 PyObj* PyListIter::next(PyObj* self, PyObj**, const int64_t argc) {
     if (argc != 0)
         throw PyTypeError("next() takes no arguments");
     PyListIter* selfIter = dynamic_cast<PyListIter*>(self);
     if (!selfIter)
         throw PyTypeError("Can only get the next value of iterator types");
-    if (selfIter->it == selfIter->list.end())
+    if (selfIter->it == selfIter->end)
         throw PyStopIteration();
 
     PyObj* obj = *selfIter->it;

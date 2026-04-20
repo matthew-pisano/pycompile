@@ -17,6 +17,14 @@
 #include "pyruntime/runtime_util.h"
 
 
+PyDict::~PyDict() {
+    for (auto& [key, value] : raw) {
+        (void) key->decref();
+        (void) value->decref();
+    }
+}
+
+
 PyObj* PyDict::get(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw PyTypeError("get() takes exactly one argument");
@@ -176,13 +184,15 @@ bool PyDict::operator==(const PyObj& other) const noexcept {
     return *this <=> other == std::partial_ordering::equivalent;
 }
 
+PyDictIter::~PyDictIter() { (void) dict->decref(); }
+
 PyObj* PyDictIter::next(PyObj* self, PyObj**, const int64_t argc) {
     if (argc != 0)
         throw PyTypeError("next() takes no arguments");
     PyDictIter* selfIter = dynamic_cast<PyDictIter*>(self);
     if (!selfIter)
         throw PyTypeError("Can only get the next value of iterator types");
-    if (selfIter->it == selfIter->dict.end())
+    if (selfIter->it == selfIter->end)
         throw PyStopIteration();
 
     PyObj* obj = selfIter->it->first;

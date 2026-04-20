@@ -231,16 +231,16 @@ PyObj* pyir_builtinIter(PyObj** args, const int64_t argc) {
         throw PyTypeError("iter() takes exactly one argument");
 
     PyObj* result = nullptr;
-    if (const PyStr* str = dynamic_cast<PyStr*>(args[0]))
-        result = new PyStrIter(str->data());
-    else if (const PyList* list = dynamic_cast<PyList*>(args[0]))
-        result = new PyListIter(list->data());
-    else if (const PySet* set = dynamic_cast<PySet*>(args[0]))
-        result = new PySetIter(set->data());
+    if (PyStr* str = dynamic_cast<PyStr*>(args[0]))
+        result = new PyStrIter(str);
+    else if (PyList* list = dynamic_cast<PyList*>(args[0]))
+        result = new PyListIter(list);
+    else if (PySet* set = dynamic_cast<PySet*>(args[0]))
+        result = new PySetIter(set);
     else if (PyTuple* tuple = dynamic_cast<PyTuple*>(args[0]))
         result = new PyTupleIter(tuple);
-    else if (const PyDict* dict = dynamic_cast<PyDict*>(args[0]))
-        result = new PyDictIter(dict->data());
+    else if (PyDict* dict = dynamic_cast<PyDict*>(args[0]))
+        result = new PyDictIter(dict);
 
     const std::string typeName = args[0]->typeName();
     const std::string strVal = args[0]->toString();

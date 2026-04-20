@@ -108,7 +108,7 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
         case PythonOpcode::FOR_ITER:
             return forIterCodegen(builder, ctx, loc, fn, instr, meta);
         case PythonOpcode::POP_ITER:
-            return popIterCodegen();
+            return popIterCodegen(builder, loc);
         case PythonOpcode::LOAD_SMALL_INT:
             return loadSmallIntCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::TO_BOOL:

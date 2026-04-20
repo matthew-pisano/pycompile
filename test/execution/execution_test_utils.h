@@ -194,6 +194,7 @@ struct JITFixture {
         addSymbol("pyir_builtinZip", reinterpret_cast<void*>(pyir_builtinZip));
         addSymbol("pyir_getIter", reinterpret_cast<void*>(pyir_getIter));
         addSymbol("pyir_forIter", reinterpret_cast<void*>(pyir_forIter));
+        addSymbol("pyir_popIter", reinterpret_cast<void*>(pyir_popIter));
 
         // Symbols for test error handling
         addSymbol("pyir_runModule", reinterpret_cast<void*>(pyir_runModule));

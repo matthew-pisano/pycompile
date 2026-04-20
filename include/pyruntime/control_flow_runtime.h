@@ -12,6 +12,8 @@ struct PyObj;
 PyObj* pyir_getIter(PyObj* container);
 
 PyObj* pyir_forIter(PyObj* iterator);
+
+PyObj* pyir_popIter();
 }
 
 #endif // PYCOMPILE_CONTROL_FLOW_RUNTIME_H

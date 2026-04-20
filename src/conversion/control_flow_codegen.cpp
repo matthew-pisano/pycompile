@@ -124,6 +124,4 @@ void forIterCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir
     meta.stack.push_back(bodyBlock->getArgument(0));
 }
 
-void popIterCodegen() {
-    // Will need to decref the iterator
-}
+void popIterCodegen(mlir::OpBuilder& builder, const mlir::Location& loc) { builder.create<pyir::PopIter>(loc); }

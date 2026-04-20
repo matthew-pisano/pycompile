@@ -76,4 +76,18 @@ struct ForIterLowering : PyIROpConversion {
                                         mlir::ConversionPatternRewriter& rewriter) const override;
 };
 
+
+/**
+ * Lowers pyir.pop_iter to a call to the runtime function pyir_popIter.
+ *
+ * pyir.pop_iter
+ */
+struct PopIterLowering : PyIROpConversion {
+    PopIterLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::PopIter::getOperationName(), tc, ctx) {}
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override;
+};
+
 #endif // PYCOMPILE_CONTROL_FLOW_LOWERING_H

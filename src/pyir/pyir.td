@@ -322,3 +322,9 @@ def PyIR_ForIter : PyIR_Op<"for_iter", [Terminator]> {
     let successors = (successor AnySuccessor:$body, AnySuccessor:$exit);
     let assemblyFormat = "$iterator `(` $exit_args `)` `->` `body` $body `,` `exit` $exit attr-dict `:` type($iterator)";
 }
+
+
+def PyIR_PopIter : PyIR_Op<"pop_iter"> {
+    let summary = "Pops the more cecent iterator";
+    let assemblyFormat = "attr-dict";
+}

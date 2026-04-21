@@ -61,7 +61,7 @@ void pyir_initModule(const char* file, const char* name) {
 
 
 void pyir_destroyModule() {
-    std::cout << "Cleaning up module" << std::endl;
+    std::cerr << ">>>>>>>>>>>>>>> Cleaning up module" << std::endl;
     if (scopeStack.size() > 1)
         throw std::runtime_error("Exiting with dangling scope");
 

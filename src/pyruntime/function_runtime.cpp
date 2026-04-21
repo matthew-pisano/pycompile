@@ -45,6 +45,7 @@ PyObj* pyir_call(PyObj* callee, PyObj** args, const int64_t argc) {
             // Incref arguments before being passed
             for (int64_t i = 0; i < argc; i++)
                 args[i]->incref();
+            (void) callee->decref();
         }
 
         PyObjRef result(func->data()(args, argc));

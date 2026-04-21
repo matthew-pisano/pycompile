@@ -19,9 +19,11 @@ PyObj* pyir_getIter(PyObj* container) {
 }
 
 PyObj* pyir_forIter(PyObj* iterator) {
+    iterator->incref();
     try {
         return pyir_builtinNext(&iterator, 1);
     } catch (const PyStopIteration&) {
+        (void) iterator->decref();
         return nullptr;
     }
 }

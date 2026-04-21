@@ -68,10 +68,7 @@ void pyir_setAdd(PyObj* set, PyObj* item) {
 
 PyObj* pyir_buildMap(PyObj** parts, const int64_t count) {
     PyDictData result;
-    for (int64_t i = count - 1; i > 0; i -= 2) {
-        parts[i - 1]->incref();
-        parts[i]->incref();
+    for (int64_t i = count - 1; i > 0; i -= 2)
         result.insert({parts[i - 1], parts[i]});
-    }
     return new PyDict(result);
 }

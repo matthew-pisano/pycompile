@@ -48,7 +48,11 @@ PyObj* PyDict::keys(PyObj* self, PyObj**, const int64_t argc) {
     if (!selfDict)
         throw PyTypeError("Can only get keys for dict types");
 
-    const std::vector<PyObj*> keys = selfDict->raw | std::views::keys | std::ranges::to<std::vector>();
+    std::vector<PyObj*> keys;
+    for (PyObj* key : selfDict->raw | std::views::keys) {
+        key->incref();
+        keys.push_back(key);
+    }
     return new PyTuple(keys);
 }
 
@@ -60,7 +64,11 @@ PyObj* PyDict::values(PyObj* self, PyObj**, const int64_t argc) {
     if (!selfDict)
         throw PyTypeError("Can only get values for dict types");
 
-    const std::vector<PyObj*> values = selfDict->raw | std::views::values | std::ranges::to<std::vector>();
+    std::vector<PyObj*> values;
+    for (PyObj* value : selfDict->raw | std::views::values) {
+        value->incref();
+        values.push_back(value);
+    }
     return new PyTuple(values);
 }
 
@@ -77,9 +85,11 @@ PyObj* PyDict::items(PyObj* self, PyObj**, const int64_t argc) {
     std::vector<PyObj*> items;
     items.reserve(keys.size());
 
-    for (size_t i = 0; i < keys.size(); i++)
+    for (size_t i = 0; i < keys.size(); i++) {
+        keys[i]->incref();
+        values[i]->incref();
         items.push_back(new PyTuple({keys[i], values[i]}));
-
+    }
     return new PyList(items);
 }
 

@@ -207,10 +207,9 @@ PyObj* pyir_pipe(PyObj* lhs, PyObj* rhs) {
         PySet::update(result, &lhs, 1);
         PySet::update(result, &rhs, 1);
     } else if (pyir_isDict(lhs) && pyir_isDict(rhs)) {
-        PyDictData res = dynamic_cast<PyDict*>(lhs)->data();
-        PyDictData rhsDict = dynamic_cast<PyDict*>(rhs)->data();
-        res.merge(rhsDict);
-        result = new PyDict(res);
+        result = new PyDict({});
+        PyDict::update(result, &lhs, 1);
+        PyDict::update(result, &rhs, 1);
     }
 
     const std::string lhsType = lhs->typeName();

@@ -61,8 +61,14 @@ PyListData valueToList(const PyObj* val) {
         }
         return result;
     }
-    if (const PyList* pyList = dynamic_cast<const PyList*>(val))
-        return pyList->data();
+    if (const PyList* pyList = dynamic_cast<const PyList*>(val)) {
+        PyListData result;
+        for (PyObj* obj : pyList->data()) {
+            obj->incref();
+            result.push_back(obj);
+        }
+        return result;
+    }
     throw PyTypeError(formatBadConversion(val->typeName(), "list", val->toString()));
 }
 
@@ -78,20 +84,26 @@ PySetData valueToSet(const PyObj* val) {
     if (const PyList* pyList = dynamic_cast<const PyList*>(val)) {
         PySetData result;
         for (PyObj* obj : pyList->data()) {
-            obj->incref();
-            result.insert(obj);
+            if (result.insert(obj).second)
+                obj->incref();
         }
         return result;
     }
     if (const PyTuple* pyTuple = dynamic_cast<const PyTuple*>(val)) {
         PySetData result;
         for (PyObj* obj : pyTuple->data()) {
-            obj->incref();
-            result.insert(obj);
+            if (result.insert(obj).second)
+                obj->incref();
         }
         return result;
     }
-    if (const PySet* pySet = dynamic_cast<const PySet*>(val))
-        return pySet->data();
+    if (const PySet* pySet = dynamic_cast<const PySet*>(val)) {
+        PySetData result;
+        for (PyObj* obj : pySet->data()) {
+            if (result.insert(obj).second)
+                obj->incref();
+        }
+        return result;
+    }
     throw PyTypeError(formatBadConversion(val->typeName(), "set", val->toString()));
 }

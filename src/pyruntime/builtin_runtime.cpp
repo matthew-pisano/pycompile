@@ -64,23 +64,24 @@ void pyir_destroyModule() {
     if (!scopeStack.empty())
         throw std::runtime_error("Exiting with dangling scope");
 
+    // Delete immortal objects
+    delete PyNone::None;
+    delete PyBool::True;
+    delete PyBool::False;
+
     // Clear module scope
     for (PyObj*& obj : moduleScope | std::views::values) {
         if (!obj)
             continue; // Skip already nulled objects
-        if (dynamic_cast<PyNone*>(obj) || dynamic_cast<PyBool*>(obj))
-            continue; // Skip immortal objects
         if (obj->decref())
             obj = nullptr;
     }
-    moduleScope.clear();
 
     // Clear builtin functions
     for (PyFunction*& func : builtinFuncs | std::views::values) {
         if (func->decref())
             func = nullptr;
     }
-    builtinFuncs.clear();
 }
 
 
@@ -255,19 +256,23 @@ PyObj* pyir_builtinNext(PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw PyTypeError("next() takes exactly one argument");
 
-    // Note: do not decref the iterator, it must remain alive across calls
+    PyObj* result = nullptr;
     if (PyObj* iter = dynamic_cast<PyStrIter*>(args[0]))
-        return PyStrIter::next(iter, nullptr, 0);
+        result = PyStrIter::next(iter, nullptr, 0);
     if (PyObj* iter = dynamic_cast<PyListIter*>(args[0]))
-        return PyListIter::next(iter, nullptr, 0);
+        result = PyListIter::next(iter, nullptr, 0);
     if (PyObj* iter = dynamic_cast<PySetIter*>(args[0]))
-        return PySetIter::next(iter, nullptr, 0);
+        result = PySetIter::next(iter, nullptr, 0);
     if (PyObj* iter = dynamic_cast<PyTupleIter*>(args[0]))
-        return PyTupleIter::next(iter, nullptr, 0);
+        result = PyTupleIter::next(iter, nullptr, 0);
     if (PyObj* iter = dynamic_cast<PyDictIter*>(args[0]))
-        return PyDictIter::next(iter, nullptr, 0);
+        result = PyDictIter::next(iter, nullptr, 0);
+    if (args[0]->decref())
+        args[0] = nullptr;
 
-    throw PyTypeError(formatBadConversion(args[0]->typeName(), "iter", args[0]->toString()));
+    if (!result)
+        throw PyTypeError(formatBadConversion(args[0]->typeName(), "iter", args[0]->toString()));
+    return result;
 }
 
 

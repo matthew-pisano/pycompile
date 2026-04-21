@@ -9,24 +9,36 @@
 #include "pyruntime/objects/py_bool.h"
 #include "pyruntime/objects/py_none.h"
 #include "pyruntime/objects/py_str.h"
+#include "pyruntime/runtime_state.h"
 
 extern "C" void __pymodule(); // Provided by the translated MLIR module
+
+void destroyExceptionModule() {
+    pyir_destroyModule();
+
+    // Clear dangling references in module scope
+    for (PyObj*& obj : moduleScope | std::views::values) {
+        if (!obj)
+            continue; // Skip already nulled objects
+        while (!obj->decref()) {
+        }
+        obj = nullptr;
+    }
+}
 
 int main() {
     try {
         __pymodule();
-        
-        // Delete immortal objects
-        delete PyNone::None;
-        delete PyBool::True;
-        delete PyBool::False;
         return 0;
     } catch (const std::exception& e) {
         std::cerr << "Traceback (most recent call last):" << std::endl;
-        const PyStr* file = dynamic_cast<PyStr*>(pyir_builtinVarFile());
-        const PyStr* name = dynamic_cast<PyStr*>(pyir_builtinVarName());
+        PyStr* file = dynamic_cast<PyStr*>(pyir_builtinVarFile());
+        PyStr* name = dynamic_cast<PyStr*>(pyir_builtinVarName());
         std::cerr << std::format("    File \"{}\", in {}", file->data(), name->data()) << std::endl;
         std::cerr << e.what() << std::endl;
+        (void) file->decref();
+        (void) name->decref();
+        destroyExceptionModule();
         return 1;
     }
 }

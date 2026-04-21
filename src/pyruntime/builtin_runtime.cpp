@@ -61,7 +61,6 @@ void pyir_initModule(const char* file, const char* name) {
 
 
 void pyir_destroyModule() {
-    std::cerr << ">>>>>>>>>>>>>>> Cleaning up module" << std::endl;
     if (scopeStack.size() > 1)
         throw std::runtime_error("Exiting with dangling scope");
 
@@ -77,6 +76,18 @@ void pyir_destroyModule() {
     for (PyFunction*& func : builtinFuncs | std::views::values) {
         if (func->decref())
             func = nullptr;
+    }
+}
+
+
+void pyir_clearDanglingScope() {
+    // Clear dangling references in module scope
+    for (PyObj*& obj : scopeStack.back() | std::views::values) {
+        if (!obj)
+            continue; // Skip already nulled objects
+        while (!obj->decref()) {
+        }
+        obj = nullptr;
     }
 }
 

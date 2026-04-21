@@ -12,7 +12,7 @@ int pyir_runModule(void (*moduleFn)()) {
     try {
         moduleFn();
         return 0;
-    } catch (const std::runtime_error& e) {
+    } catch (const std::exception& e) {
         // Avoid throwing errors over JIT boundary
         lastRuntimeError = e.what();
         return 1;

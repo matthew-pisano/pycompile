@@ -12,18 +12,12 @@
 #include "pyruntime/runtime_errors.h"
 
 void PyObj::incref() {
-    const void* addr = static_cast<void*>(this);
-    std::cerr << std::format("======== Incref {} '{}' ({}) to: {}", typeName(), toString(), addr, refcount + 1)
-              << std::endl;
     refcount.fetch_add(1, std::memory_order_relaxed);
 }
 
 bool PyObj::decref() {
     if (refcount == 0)
         throw std::runtime_error("Invalid decref");
-    const void* addr = static_cast<void*>(this);
-    std::cerr << std::format("======== Decref {} '{}' ({}) to: {}", typeName(), toString(), addr, refcount - 1)
-              << std::endl;
     if (refcount.fetch_sub(1, std::memory_order_acq_rel) <= 1) {
         delete this;
         return true;

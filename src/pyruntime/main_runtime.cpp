@@ -13,19 +13,6 @@
 
 extern "C" void __pymodule(); // Provided by the translated MLIR module
 
-void destroyExceptionModule() {
-    pyir_destroyModule();
-
-    // Clear dangling references in module scope
-    for (PyObj*& obj : scopeStack.back() | std::views::values) {
-        if (!obj)
-            continue; // Skip already nulled objects
-        while (!obj->decref()) {
-        }
-        obj = nullptr;
-    }
-}
-
 void destroyImmortals() {
     delete PyNone::None;
     delete PyBool::True;
@@ -45,7 +32,8 @@ int main() {
         std::cerr << e.what() << std::endl;
         (void) file->decref();
         (void) name->decref();
-        destroyExceptionModule();
+        pyir_destroyModule();
+        pyir_clearDanglingScope();
         destroyImmortals();
         return 1;
     }

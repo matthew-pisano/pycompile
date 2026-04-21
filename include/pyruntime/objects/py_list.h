@@ -32,7 +32,7 @@ struct PyList : PyObj {
 
     PyObj* idx(const PyObj* idx) const override;
 
-    void setIdx(const PyObj* idx, PyObj* value) override;
+    void setIdx(PyObj* idx, PyObj* value) override;
 
     [[nodiscard]] size_t hash() const override;
 

@@ -90,7 +90,7 @@ PyObj* PyList::idx(const PyObj* idx) const {
     throw PyTypeError("list indices must be integers, not " + idx->typeName());
 }
 
-void PyList::setIdx(const PyObj* idx, PyObj* value) {
+void PyList::setIdx(PyObj* idx, PyObj* value) {
     if (const PyInt* idxVal = dynamic_cast<const PyInt*>(idx)) {
         int64_t index = idxVal->data();
         if (index < 0)

@@ -47,6 +47,6 @@ PyObj* PyObj::idx(const PyObj*) const {
     throw PyTypeError(std::format("Object of type '{}' is not subscriptable", typeName()));
 }
 
-void PyObj::setIdx(const PyObj*, PyObj*) {
+void PyObj::setIdx(PyObj*, PyObj*) {
     throw PyTypeError(std::format("Object of type '{}' does not support item assignment", typeName()));
 }

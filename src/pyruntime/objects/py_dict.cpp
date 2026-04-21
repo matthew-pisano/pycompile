@@ -22,7 +22,6 @@ PyDict::~PyDict() {
         (void) key->decref();
         (void) value->decref();
     }
-
 }
 
 
@@ -134,11 +133,24 @@ PyObj* PyDict::idx(const PyObj* idx) const {
     throw PyKeyError(idx->toString());
 }
 
-void PyDict::setIdx(const PyObj* idx, PyObj* value) {
-    PyObj* mutIdx = const_cast<PyObj*>(idx);
-    if (raw.contains(mutIdx))
-        (void) raw[mutIdx]->decref(); // Decref the old value
-    raw[mutIdx] = value;
+void PyDict::setIdx(PyObj* idx, PyObj* value) {
+    PyObj* foundKey = nullptr;
+    // Find existing key in map to use as index
+    for (PyObj* key : std::views::keys(raw)) {
+        if (key == idx) {
+            (void) raw[key]->decref(); // Decref the old value because it is about to be replaced
+            foundKey = key;
+            break;
+        }
+    }
+    // If not found, use the index as the new key
+    if (foundKey == nullptr) {
+        idx->incref(); // Incref because it is now referenced as a key
+        foundKey = idx;
+    }
+
+    value->incref();
+    raw[foundKey] = value;
 }
 
 size_t PyDict::hash() const { throw PyTypeError("Unhashable type " + typeName()); }

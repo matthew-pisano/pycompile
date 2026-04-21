@@ -38,7 +38,7 @@ void pyir_initModule(const char* file, const char* name) {
     moduleFile = file;
     moduleName = name;
 
-    scopeStack.emplace_back();
+    scopeStack = {{}};
     builtinFuncs = {{"print", new PyFunction("print", pyir_builtinPrint)},
                     {"len", new PyFunction("len", pyir_builtinLen)},
                     {"int", new PyFunction("int", pyir_builtinInt)},

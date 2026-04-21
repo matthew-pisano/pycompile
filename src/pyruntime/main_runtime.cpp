@@ -26,9 +26,16 @@ void destroyExceptionModule() {
     }
 }
 
+void destroyImmortals() {
+    delete PyNone::None;
+    delete PyBool::True;
+    delete PyBool::False;
+}
+
 int main() {
     try {
         __pymodule();
+        destroyImmortals();
         return 0;
     } catch (const std::exception& e) {
         std::cerr << "Traceback (most recent call last):" << std::endl;
@@ -39,6 +46,7 @@ int main() {
         (void) file->decref();
         (void) name->decref();
         destroyExceptionModule();
+        destroyImmortals();
         return 1;
     }
 }

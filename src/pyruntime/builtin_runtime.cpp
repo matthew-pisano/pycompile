@@ -38,6 +38,7 @@ void pyir_initModule(const char* file, const char* name) {
     moduleFile = file;
     moduleName = name;
 
+    moduleScope = {};
     builtinFuncs = {{"print", new PyFunction("print", pyir_builtinPrint)},
                     {"len", new PyFunction("len", pyir_builtinLen)},
                     {"int", new PyFunction("int", pyir_builtinInt)},
@@ -63,11 +64,6 @@ void pyir_destroyModule() {
     std::cout << "Cleaning up module" << std::endl;
     if (!scopeStack.empty())
         throw std::runtime_error("Exiting with dangling scope");
-
-    // Delete immortal objects
-    delete PyNone::None;
-    delete PyBool::True;
-    delete PyBool::False;
 
     // Clear module scope
     for (PyObj*& obj : moduleScope | std::views::values) {
@@ -267,24 +263,26 @@ PyObj* pyir_builtinNext(PyObj** args, const int64_t argc) {
         result = PyTupleIter::next(iter, nullptr, 0);
     if (PyObj* iter = dynamic_cast<PyDictIter*>(args[0]))
         result = PyDictIter::next(iter, nullptr, 0);
+
+    const std::string typeName = args[0]->typeName();
+    const std::string strVal = args[0]->toString();
     if (args[0]->decref())
         args[0] = nullptr;
 
     if (!result)
-        throw PyTypeError(formatBadConversion(args[0]->typeName(), "iter", args[0]->toString()));
+        throw PyTypeError(formatBadConversion(typeName, "iter", strVal));
     return result;
 }
 
 
 PyObj* pyir_builtinEnumerate(PyObj** args, const int64_t argc) {
-    if (argc == 0)
-        throw PyTypeError("enumerate() takes one argument");
+    if (argc != 1)
+        throw PyTypeError("enumerate() takes exactly one argument");
     std::vector<PyObj*> result;
     // Iterate over keys for dict
     if (PyDict* dict = dynamic_cast<PyDict*>(args[0])) {
         size_t i = 0;
         for (const auto& key : dict->data() | std::views::keys) {
-            key->incref();
             result.push_back(new PyTuple({new PyInt(static_cast<int64_t>(i)), key}));
             i++;
         }
@@ -293,7 +291,6 @@ PyObj* pyir_builtinEnumerate(PyObj** args, const int64_t argc) {
         for (int64_t i = 0; i < length->data(); i++) {
             PyInt* idx = new PyInt(i);
             PyObj* elem = args[0]->idx(idx);
-            elem->incref();
             result.push_back(new PyTuple({idx, elem}));
         }
         (void) length->decref();

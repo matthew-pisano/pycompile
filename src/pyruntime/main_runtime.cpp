@@ -17,7 +17,7 @@ void destroyExceptionModule() {
     pyir_destroyModule();
 
     // Clear dangling references in module scope
-    for (PyObj*& obj : moduleScope | std::views::values) {
+    for (PyObj*& obj : scopeStack.back() | std::views::values) {
         if (!obj)
             continue; // Skip already nulled objects
         while (!obj->decref()) {

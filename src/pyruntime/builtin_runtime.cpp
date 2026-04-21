@@ -38,7 +38,7 @@ void pyir_initModule(const char* file, const char* name) {
     moduleFile = file;
     moduleName = name;
 
-    moduleScope = {};
+    scopeStack.emplace_back();
     builtinFuncs = {{"print", new PyFunction("print", pyir_builtinPrint)},
                     {"len", new PyFunction("len", pyir_builtinLen)},
                     {"int", new PyFunction("int", pyir_builtinInt)},
@@ -62,11 +62,11 @@ void pyir_initModule(const char* file, const char* name) {
 
 void pyir_destroyModule() {
     std::cout << "Cleaning up module" << std::endl;
-    if (!scopeStack.empty())
+    if (scopeStack.size() > 1)
         throw std::runtime_error("Exiting with dangling scope");
 
     // Clear module scope
-    for (PyObj*& obj : moduleScope | std::views::values) {
+    for (PyObj*& obj : scopeStack.back() | std::views::values) {
         if (!obj)
             continue; // Skip already nulled objects
         if (obj->decref())

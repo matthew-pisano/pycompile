@@ -16,7 +16,6 @@ using PyBuiltinVarFunction = PyObj* (*) ();
 const std::unordered_map<std::string, PyBuiltinVarFunction> builtinVars = {{"__file__", pyir_builtinVarFile},
                                                                            {"__name__", pyir_builtinVarName}};
 
-inline std::unordered_map<std::string, PyObj*> moduleScope;
 inline std::vector<std::unordered_map<std::string, PyObj*>> scopeStack;
 
 

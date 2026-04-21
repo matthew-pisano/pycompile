@@ -30,6 +30,7 @@ PyObj* pyir_loadFast(const char* name) {
     if (it == locals.end())
         throw PyNameError(std::string("Local variable '") + name + "' referenced before assignment");
 
+    it->second->incref();
     return it->second;
 }
 
@@ -49,7 +50,7 @@ PyObj* pyir_loadName(const char* name) {
     if (const auto it = builtinVars.find(name); it != builtinVars.end())
         return it->second();
     // Check for names in module scope
-    if (const auto it = moduleScope.find(name); it != moduleScope.end()) {
+    if (const auto it = scopeStack.back().find(name); it != scopeStack.back().end()) {
         it->second->incref();
         return it->second;
     }
@@ -58,12 +59,12 @@ PyObj* pyir_loadName(const char* name) {
 
 
 void pyir_storeName(const char* name, PyObj* val) {
-    if (const auto it = moduleScope.find(name); it != moduleScope.end()) {
+    if (const auto it = scopeStack.back().find(name); it != scopeStack.back().end()) {
         if (it->second->decref()) // Release old value
             it->second = nullptr;
     }
     // Val already has at least one reference, no need to incref
-    moduleScope[name] = val;
+    scopeStack.back()[name] = val;
 }
 
 

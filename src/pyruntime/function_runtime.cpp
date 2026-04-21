@@ -13,22 +13,15 @@
 #include "pyruntime/runtime_errors.h"
 #include "pyruntime/runtime_state.h"
 
-void pyir_pushScope() { scopeStack.emplace_back(); }
+void pyir_pushScope() {
+    // Init new scope with global symbols from the module scope
+    scopeStack.emplace_back(scopeStack[0].begin(), scopeStack[0].end());
+}
 
 
 void pyir_popScope() {
     if (scopeStack.empty())
-        return;
-
-    std::unordered_map<std::string, PyObj*> scope = scopeStack.back();
-    for (PyObj*& obj : scope | std::views::values) {
-        if (!obj)
-            continue; // Skip already nulled objects
-        if (dynamic_cast<PyNone*>(obj) || dynamic_cast<PyBool*>(obj))
-            continue; // Skip immortal objects
-        if (obj->decref())
-            obj = nullptr;
-    }
+        throw std::runtime_error("Attempting to pop from empty scope stack");
     scopeStack.pop_back();
 }
 
@@ -40,15 +33,13 @@ PyFunction* pyir_makeFunction(const char* fnName, void* fn_ptr) {
 
 PyObj* pyir_call(PyObj* callee, PyObj** args, const int64_t argc) {
     if (const PyFunction* func = dynamic_cast<const PyFunction*>(callee)) {
-        // No need to incref for arguments to builtins
+        PyObjRef result(func->data()(args, argc));
         if (!builtinFuncs.contains(func->funcName())) {
-            // Incref arguments before being passed
             for (int64_t i = 0; i < argc; i++)
-                args[i]->incref();
+                if (args[i]->decref())
+                    args[i] = nullptr;
             (void) callee->decref();
         }
-
-        PyObjRef result(func->data()(args, argc));
         return result.release();
     }
     if (const PyMethod* method = dynamic_cast<const PyMethod*>(callee)) {

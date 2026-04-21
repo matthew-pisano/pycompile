@@ -147,7 +147,7 @@ void PyDict::setIdx(PyObj* idx, PyObj* value) {
     PyObj* foundKey = nullptr;
     // Find existing key in map to use as index
     for (PyObj* key : std::views::keys(raw)) {
-        if (key == idx) {
+        if (*key == *idx) {
             (void) raw[key]->decref(); // Decref the old value because it is about to be replaced
             foundKey = key;
             break;
@@ -159,7 +159,6 @@ void PyDict::setIdx(PyObj* idx, PyObj* value) {
         foundKey = idx;
     }
 
-    value->incref();
     raw[foundKey] = value;
 }
 

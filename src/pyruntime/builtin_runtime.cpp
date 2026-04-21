@@ -394,6 +394,7 @@ PyObj* pyir_builtinZip(PyObj** args, const int64_t argc) {
                 if (elemIdx >= shortestLen->data())
                     break;
 
+                key->incref();
                 zipped[elemIdx][containerIdx] = key;
                 elemIdx++;
             }

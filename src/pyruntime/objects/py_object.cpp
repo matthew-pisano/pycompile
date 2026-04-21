@@ -19,6 +19,8 @@ void PyObj::incref() {
 }
 
 bool PyObj::decref() {
+    if (refcount == 0)
+        throw std::runtime_error("Invalid decref");
     const void* addr = static_cast<void*>(this);
     std::cerr << std::format("======== Decref {} '{}' ({}) to: {}", typeName(), toString(), addr, refcount - 1)
               << std::endl;

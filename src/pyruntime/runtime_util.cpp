@@ -17,6 +17,14 @@
 #include "pyruntime/runtime_errors.h"
 
 
+void decrefArgs(PyObj** args, const int64_t argc) {
+    for (int64_t i = 0; i < argc; i++) {
+        if (args[i]->decref())
+            args[i] = nullptr;
+    }
+}
+
+
 std::string formatBadConversion(const std::string& valType, const std::string& type, const std::string& valRepr) {
     return std::format("Could not convert {} to {}: '{}'", valType, type, valRepr);
 }

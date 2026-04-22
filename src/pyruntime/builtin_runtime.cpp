@@ -24,14 +24,6 @@
 #include "pyruntime/runtime_util.h"
 
 
-void decrefArgs(PyObj** args, const int64_t argc) {
-    for (int64_t i = 0; i < argc; i++) {
-        if (args[i]->decref())
-            args[i] = nullptr;
-    }
-}
-
-
 static std::string moduleFile;
 static std::string moduleName;
 

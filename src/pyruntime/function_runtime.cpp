@@ -12,6 +12,7 @@
 #include "pyruntime/objects/py_none.h"
 #include "pyruntime/runtime_errors.h"
 #include "pyruntime/runtime_state.h"
+#include "pyruntime/runtime_util.h"
 
 void pyir_pushScope() {
     // Init new scope with global symbols from the module scope
@@ -50,7 +51,12 @@ PyObj* pyir_call(PyObj* callee, PyObj** args, const int64_t argc) {
         (void) callee->decref();
         return result.release();
     }
-    throw PyTypeError(std::format("'{}' object is not callable", callee->typeName()));
+
+    const std::string typeName = callee->typeName();
+    decrefArgs(args, argc);
+    (void) callee->decref();
+
+    throw PyTypeError(std::format("'{}' object is not callable", typeName));
 }
 
 

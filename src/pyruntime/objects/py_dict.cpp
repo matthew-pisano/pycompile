@@ -114,19 +114,22 @@ PyObj* PyDict::update(PyObj* self, PyObj** args, const int64_t argc) {
 }
 
 PyObj* PyDict::getAttr(const std::string& name) {
+    PyObj* result = nullptr;
     if (name == "update")
-        return new PyMethod("update", this, update);
+        result = new PyMethod("update", this, update);
     if (name == "get")
-        return new PyMethod("get", this, get);
+        result = new PyMethod("get", this, get);
     if (name == "keys")
-        return new PyMethod("keys", this, keys);
+        result = new PyMethod("keys", this, keys);
     if (name == "values")
-        return new PyMethod("values", this, values);
+        result = new PyMethod("values", this, values);
     if (name == "items")
-        return new PyMethod("items", this, items);
-    const std::string selfTypeName = typeName();
-    (void) decref();
-    throw PyAttributeError(std::format("'{}' object has no attribute '{}'", selfTypeName, name));
+        result = new PyMethod("items", this, items);
+
+    if (!result)
+        throw PyAttributeError(std::format("'{}' object has no attribute '{}'", typeName(), name));
+    incref();
+    return result;
 }
 
 PyInt* PyDict::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }

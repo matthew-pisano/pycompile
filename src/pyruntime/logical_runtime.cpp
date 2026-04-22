@@ -245,10 +245,16 @@ PyObj* pyir_ampersand(PyObj* lhs, PyObj* rhs) {
 
 
 PyObj* pyir_idx(PyObj* obj, PyObj* idx) {
-    PyObj* result = obj->idx(idx);
-    (void) idx->decref();
-    (void) obj->decref();
-    return result;
+    try {
+        PyObj* result = obj->idx(idx);
+        (void) idx->decref();
+        (void) obj->decref();
+        return result;
+    } catch (...) {
+        (void) idx->decref();
+        (void) obj->decref();
+        throw;
+    }
 }
 
 

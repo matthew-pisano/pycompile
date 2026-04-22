@@ -61,13 +61,16 @@ PyObj* PyList::extend(PyObj* self, PyObj** args, const int64_t argc) {
 }
 
 PyObj* PyList::getAttr(const std::string& name) {
+    PyObj* result = nullptr;
     if (name == "append")
-        return new PyMethod("append", this, append);
+        result = new PyMethod("append", this, append);
     if (name == "extend")
-        return new PyMethod("extend", this, extend);
-    const std::string selfTypeName = typeName();
-    (void) decref();
-    throw PyAttributeError(std::format("'{}' object has no attribute '{}'", selfTypeName, name));
+        result = new PyMethod("extend", this, extend);
+
+    if (!result)
+        throw PyAttributeError(std::format("'{}' object has no attribute '{}'", typeName(), name));
+    incref();
+    return result;
 }
 
 PyInt* PyList::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }

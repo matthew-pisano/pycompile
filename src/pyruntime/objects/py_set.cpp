@@ -62,13 +62,16 @@ PyObj* PySet::update(PyObj* self, PyObj** args, const int64_t argc) {
 }
 
 PyObj* PySet::getAttr(const std::string& name) {
+    PyObj* result = nullptr;
     if (name == "update")
-        return new PyMethod("update", this, update);
+        result = new PyMethod("update", this, update);
     if (name == "add")
-        return new PyMethod("add", this, add);
-    const std::string selfTypeName = typeName();
-    (void) decref();
-    throw PyAttributeError(std::format("'{}' object has no attribute '{}'", selfTypeName, name));
+        result = new PyMethod("add", this, add);
+
+    if (!result)
+        throw PyAttributeError(std::format("'{}' object has no attribute '{}'", typeName(), name));
+    incref();
+    return result;
 }
 
 PyInt* PySet::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }

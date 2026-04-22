@@ -46,6 +46,8 @@ TEST_CASE_METHOD(JITFixture, "Test Index Out of Range Error") {
     REQUIRE_THROWS_WITH(runCapture("a = [1, 2][3]"), "IndexError: list index out of range");
 
     REQUIRE_THROWS_WITH(runCapture("a = [1, 2][-3]"), "IndexError: list index out of range");
+
+    REQUIRE_THROWS_WITH(runCapture("a = [1, 2]\na[3] = 0"), "IndexError: list index out of range");
 }
 
 TEST_CASE_METHOD(JITFixture, "Test Bad Index Type Error") {

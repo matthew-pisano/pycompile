@@ -92,11 +92,26 @@ PyObj* pyir_loadConstTuple(PyObj** items, const int64_t count) {
 }
 
 
-PyObj* pyir_loadAttr(PyObj* obj, const char* name) { return obj->getAttr(name); }
+PyObj* pyir_loadAttr(PyObj* obj, const char* name) {
+    try {
+        PyObj* result = obj->getAttr(name);
+        (void) obj->decref();
+        return result;
+    } catch (...) {
+        (void) obj->decref();
+        throw;
+    }
+}
 
 
 void pyir_storeSubscr(PyObj* container, PyObj* idx, PyObj* value) {
-    container->setIdx(idx, value);
-    (void) container->decref();
-    (void) idx->decref();
+    try {
+        container->setIdx(idx, value);
+        (void) idx->decref();
+        (void) container->decref();
+    } catch (...) {
+        (void) idx->decref();
+        (void) container->decref();
+        throw;
+    }
 }

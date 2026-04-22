@@ -112,6 +112,7 @@ void pyir_storeSubscr(PyObj* container, PyObj* idx, PyObj* value) {
     } catch (...) {
         (void) idx->decref();
         (void) container->decref();
+        (void) value->decref();
         throw;
     }
 }

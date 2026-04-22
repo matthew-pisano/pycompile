@@ -11,9 +11,7 @@
 #include "pyruntime/objects/py_str.h"
 #include "pyruntime/runtime_errors.h"
 
-void PyObj::incref() {
-    refcount.fetch_add(1, std::memory_order_relaxed);
-}
+void PyObj::incref() { refcount.fetch_add(1, std::memory_order_relaxed); }
 
 bool PyObj::decref() {
     if (refcount == 0)
@@ -28,7 +26,9 @@ bool PyObj::decref() {
 PyStr* PyObj::name() const { return new PyStr(typeName()); }
 
 PyObj* PyObj::getAttr(const std::string& name) {
-    throw PyAttributeError(std::format("'{}' object has no attribute '{}'", typeName(), name));
+    const std::string selfTypeName = typeName();
+    (void) decref();
+    throw PyAttributeError(std::format("'{}' object has no attribute '{}'", selfTypeName, name));
 }
 
 PyInt* PyObj::len() const { throw PyTypeError(std::format("object of type '{}' has no len()", typeName())); }

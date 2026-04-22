@@ -65,7 +65,9 @@ PyObj* PyList::getAttr(const std::string& name) {
         return new PyMethod("append", this, append);
     if (name == "extend")
         return new PyMethod("extend", this, extend);
-    throw PyAttributeError(std::format("'{}' object has no attribute '{}'", typeName(), name));
+    const std::string selfTypeName = typeName();
+    (void) decref();
+    throw PyAttributeError(std::format("'{}' object has no attribute '{}'", selfTypeName, name));
 }
 
 PyInt* PyList::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }

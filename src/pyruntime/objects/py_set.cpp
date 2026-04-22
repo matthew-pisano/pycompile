@@ -66,7 +66,9 @@ PyObj* PySet::getAttr(const std::string& name) {
         return new PyMethod("update", this, update);
     if (name == "add")
         return new PyMethod("add", this, add);
-    throw PyAttributeError(std::format("'{}' object has no attribute '{}'", typeName(), name));
+    const std::string selfTypeName = typeName();
+    (void) decref();
+    throw PyAttributeError(std::format("'{}' object has no attribute '{}'", selfTypeName, name));
 }
 
 PyInt* PySet::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }

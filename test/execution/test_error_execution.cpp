@@ -38,6 +38,8 @@ TEST_CASE_METHOD(JITFixture, "Test Non Callable Object Error") {
 
 TEST_CASE_METHOD(JITFixture, "Test Unknown Attribute Error") {
     REQUIRE_THROWS_WITH(runCapture("a = 'str'.attr()"), "AttributeError: 'str' object has no attribute 'attr'");
+
+    REQUIRE_THROWS_WITH(runCapture("a = {}.attr()"), "AttributeError: 'dict' object has no attribute 'attr'");
 }
 
 TEST_CASE_METHOD(JITFixture, "Test Index Out of Range Error") {

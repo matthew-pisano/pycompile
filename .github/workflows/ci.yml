@@ -39,7 +39,7 @@ jobs:
           sed -i '/InsertNewlineAtEOF: true/d' .clang-format
           ./run-clang-format/run-clang-format.py -r src include test
 
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -52,10 +52,9 @@ jobs:
           sudo apt-get install -y cmake build-essential
           sudo apt install software-properties-common
           sudo add-apt-repository -y ppa:deadsnakes/ppa
-          sudo apt update
-          sudo apt-get install -y python3.14 python3.14-venv python3.14-dev
           sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
           sudo apt update
+          sudo apt-get install -y python3.14 python3.14-venv python3.14-dev
           sudo apt-get install -y gcc-14 g++-14
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 14
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 14
@@ -67,7 +66,6 @@ jobs:
           echo "/usr/lib/llvm-21/bin" >> $GITHUB_PATH
           echo "/usr/lib/llvm-21/lib/cmake/mlir" >> $GITHUB_PATH
           echo "/usr/lib/llvm-21/lib/cmake/llvm" >> $GITHUB_PATH
-          mkdir logs
 
       - name: Configure CMake
         run: >-
@@ -80,13 +78,45 @@ jobs:
           [[ "${CMAKE_PARALLEL}" == true ]] && \
           cmake --build build --parallel "${CMAKE_PARALLELISM}" || \
           cmake --build build
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: build/
+          retention-days: 1
 
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential
+          sudo apt install software-properties-common
+          sudo add-apt-repository -y ppa:deadsnakes/ppa
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          sudo apt update
+          sudo apt-get install -y python3.14 python3.14-venv python3.14-dev
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 21
+          sudo apt install -y libmlir-21-dev mlir-21-tools
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: build/
+      - name: Fix permissions
+        run: |
+          chmod +x build/test/pycompile-tests
       - name: Run CTests
         run: |
+          mkdir -p logs
           cd build/test
-          ctest --output-on-failure --verbose --output-junit ../../logs/ctest-results.xml
-          cd -
-
+          ctest --output-on-failure --verbose --output-junit ${{ github.workspace }}/logs/ctest-results.xml
       - name: Publish test results
         uses: dorny/test-reporter@v2.1.1
         if: always()
@@ -95,3 +125,38 @@ jobs:
           path: logs/*.xml
           reporter: java-junit
           fail-on-error: true
+
+  memcheck:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential valgrind
+          sudo apt install software-properties-common
+          sudo add-apt-repository -y ppa:deadsnakes/ppa
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          sudo apt update
+          sudo apt-get install -y python3.14 python3.14-venv python3.14-dev
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 21
+          sudo apt install -y libmlir-21-dev mlir-21-tools
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: build/
+      - name: Fix permissions
+        run: chmod +x build/test/pycompile-tests
+      - name: Run Valgrind memcheck
+        run: |
+          valgrind \
+          --leak-check=full \
+          --error-exitcode=1 \
+          --track-origins=yes \
+          --show-leak-kinds=definite,indirect \
+          build/test/pycompile-tests

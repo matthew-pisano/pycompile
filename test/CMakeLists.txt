@@ -32,23 +32,6 @@ target_include_directories(pycompile-tests SYSTEM PRIVATE
         ${LLVM_INCLUDE_DIRS}
 )
 
-find_program(VALGRIND valgrind)
-if (VALGRIND)
-    add_custom_target(memcheck
-            COMMAND ${VALGRIND}
-            --leak-check=full
-            --error-exitcode=1
-            --track-origins=yes
-            --show-leak-kinds=definite,indirect
-            $<TARGET_FILE:pycompile-tests>
-            DEPENDS pycompile-tests
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-            COMMENT "Running Valgrind memcheck on test suite"
-    )
-else ()
-    message(WARNING "Valgrind not found, memcheck disabled")
-endif ()
-
 include(CTest)
 include(Catch)
 catch_discover_tests(pycompile-tests WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")

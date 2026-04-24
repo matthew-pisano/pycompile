@@ -90,13 +90,14 @@ protected:
 
 void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns, mlir::LLVMTypeConverter& typeConverter) {
     mlir::MLIRContext* ctx = patterns.getContext();
-    patterns.add<InitModuleLowering, IsTruthyLowering, ToBoolLowering, UnaryNegativeLowering, UnaryNotLowering,
-                 UnaryInvertLowering, BinaryOpLowering, CompareOpLowering, LoadFastLowering, StoreFastLowering,
-                 LoadNameLowering, StoreNameLowering, LoadConstLowering, PushNullLowering, CallLowering, PopTopLowering,
-                 FormatSimpleLowering, BuildStringLowering, PushScopeLowering, PopScopeLowering, LoadArgLowering,
-                 MakeFunctionLowering, ReturnValueLowering, BuildListLowering, ListExtendLowering, ListAppendLowering,
-                 LoadAttrLowering, ContainsOpLowering, BuildSetLowering, SetUpdateLowering, SetAddLowering,
-                 BuildMapLowering, StoreSubscrLowering, GetIterLowering, ForIterLowering>(typeConverter, ctx);
+    patterns.add<InitModuleLowering, DestroyModuleLowering, IsTruthyLowering, ToBoolLowering, UnaryNegativeLowering,
+                 UnaryNotLowering, UnaryInvertLowering, BinaryOpLowering, CompareOpLowering, LoadFastLowering,
+                 StoreFastLowering, LoadNameLowering, StoreNameLowering, LoadConstLowering, PushNullLowering,
+                 CallLowering, PopTopLowering, FormatSimpleLowering, BuildStringLowering, PushScopeLowering,
+                 PopScopeLowering, LoadArgLowering, MakeFunctionLowering, ReturnValueLowering, BuildListLowering,
+                 ListExtendLowering, ListAppendLowering, LoadAttrLowering, ContainsOpLowering, BuildSetLowering,
+                 SetUpdateLowering, SetAddLowering, BuildMapLowering, StoreSubscrLowering, GetIterLowering,
+                 ForIterLowering, PopIterLowering>(typeConverter, ctx);
 }
 
 

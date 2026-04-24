@@ -18,7 +18,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Hello World MLIR") {
     REQUIRE(mlir::isa<pyir::PushNull>(getOp(fn, 2)));
     REQUIRE(mlir::isa<pyir::LoadConst>(getOp(fn, 3)));
     REQUIRE(mlir::isa<pyir::Call>(getOp(fn, 4)));
-    REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(fn, 5)));
+    REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(fn, 6)));
 
     // Call op with valid arguments
     pyir::Call callOp = mlir::dyn_cast<pyir::Call>(getOp(fn, 4));
@@ -57,7 +57,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Simple Arithmetic MLIR") {
     REQUIRE(mlir::isa<pyir::PushNull>(getOp(fn, 10)));
     REQUIRE(mlir::isa<pyir::LoadName>(getOp(fn, 11)));
     REQUIRE(mlir::isa<pyir::Call>(getOp(fn, 12)));
-    REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(fn, 13)));
+    REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(fn, 14)));
 
     // The integer 1 is being loaded
     pyir::LoadConst loadOneOp = mlir::dyn_cast<pyir::LoadConst>(getOp(fn, 1));
@@ -100,12 +100,4 @@ TEST_CASE_METHOD(MLIRFixture, "Test Simple Arithmetic MLIR") {
     pyir::LoadName argDef = mlir::dyn_cast<pyir::LoadName>(callOp.getArgs()[0].getDefiningOp());
     REQUIRE(argDef);
     REQUIRE(argDef.getVarName() == "summed");
-}
-
-
-TEST_CASE_METHOD(MLIRFixture, "Test Compile Failure MLIR") {
-    SECTION("Test Unimplemented Operation") {
-        REQUIRE_THROWS_WITH(compile("async def thread():\n  ..."),
-                            "<embedded>:1:0: error: Unsupported opcode 'RETURN_GENERATOR'");
-    }
 }

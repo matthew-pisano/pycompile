@@ -30,6 +30,20 @@ struct InitModuleLowering : PyIROpConversion {
 
 
 /**
+ * Lowers pyir.destroy_module to a call to the runtime function pyir_destroyModule.
+ *
+ * pyir.destroy_module
+ */
+struct DestroyModuleLowering : PyIROpConversion {
+    DestroyModuleLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::DestroyModule::getOperationName(), tc, ctx) {}
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
+                                        mlir::ConversionPatternRewriter& rewriter) const override;
+};
+
+
+/**
  * Lowers pyir.load_fast to a call to the runtime function pyir_loadFast.
  *
  * The name string is stored as a constant and passed as a const char* pointer. The runtime resolves the name

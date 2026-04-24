@@ -17,6 +17,14 @@
 #include "pyruntime/runtime_util.h"
 
 
+PyDict::~PyDict() {
+    for (auto& [key, value] : raw) {
+        (void) key->decref();
+        (void) value->decref();
+    }
+}
+
+
 PyObj* PyDict::get(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw PyTypeError("get() takes exactly one argument");
@@ -25,7 +33,7 @@ PyObj* PyDict::get(PyObj* self, PyObj** args, const int64_t argc) {
         throw PyTypeError("Can only get from dict types");
 
     if (!selfDict->raw.contains(args[0]))
-        return new PyNone();
+        return PyNone::None;
 
     PyObj* value = selfDict->raw.at(args[0]);
     value->incref();
@@ -40,7 +48,11 @@ PyObj* PyDict::keys(PyObj* self, PyObj**, const int64_t argc) {
     if (!selfDict)
         throw PyTypeError("Can only get keys for dict types");
 
-    const std::vector<PyObj*> keys = selfDict->raw | std::views::keys | std::ranges::to<std::vector>();
+    std::vector<PyObj*> keys;
+    for (PyObj* key : selfDict->raw | std::views::keys) {
+        key->incref();
+        keys.push_back(key);
+    }
     return new PyTuple(keys);
 }
 
@@ -52,7 +64,11 @@ PyObj* PyDict::values(PyObj* self, PyObj**, const int64_t argc) {
     if (!selfDict)
         throw PyTypeError("Can only get values for dict types");
 
-    const std::vector<PyObj*> values = selfDict->raw | std::views::values | std::ranges::to<std::vector>();
+    std::vector<PyObj*> values;
+    for (PyObj* value : selfDict->raw | std::views::values) {
+        value->incref();
+        values.push_back(value);
+    }
     return new PyTuple(values);
 }
 
@@ -69,9 +85,11 @@ PyObj* PyDict::items(PyObj* self, PyObj**, const int64_t argc) {
     std::vector<PyObj*> items;
     items.reserve(keys.size());
 
-    for (size_t i = 0; i < keys.size(); i++)
+    for (size_t i = 0; i < keys.size(); i++) {
+        keys[i]->incref();
+        values[i]->incref();
         items.push_back(new PyTuple({keys[i], values[i]}));
-
+    }
     return new PyList(items);
 }
 
@@ -92,26 +110,33 @@ PyObj* PyDict::update(PyObj* self, PyObj** args, const int64_t argc) {
     else
         throw PyTypeError("Can only update with dict types, got" + args[0]->typeName());
 
-    return new PyNone();
+    return PyNone::None;
 }
 
 PyObj* PyDict::getAttr(const std::string& name) {
+    PyObj* result = nullptr;
     if (name == "update")
-        return new PyMethod("update", this, update);
+        result = new PyMethod("update", this, update);
     if (name == "get")
-        return new PyMethod("get", this, get);
+        result = new PyMethod("get", this, get);
     if (name == "keys")
-        return new PyMethod("keys", this, keys);
+        result = new PyMethod("keys", this, keys);
     if (name == "values")
-        return new PyMethod("values", this, values);
+        result = new PyMethod("values", this, values);
     if (name == "items")
-        return new PyMethod("items", this, items);
-    throw PyAttributeError(std::format("'{}' object has no attribute '{}'", typeName(), name));
+        result = new PyMethod("items", this, items);
+
+    if (!result)
+        throw PyAttributeError(std::format("'{}' object has no attribute '{}'", typeName(), name));
+    incref();
+    return result;
 }
 
 PyInt* PyDict::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
 
-PyBool* PyDict::contains(const PyObj* obj) const { return new PyBool(raw.contains(const_cast<PyObj*>(obj))); }
+PyBool* PyDict::contains(const PyObj* obj) const {
+    return raw.contains(const_cast<PyObj*>(obj)) ? PyBool::True : PyBool::False;
+}
 
 PyObj* PyDict::idx(const PyObj* idx) const {
     PyObj* mutIdx = const_cast<PyObj*>(idx);
@@ -123,11 +148,23 @@ PyObj* PyDict::idx(const PyObj* idx) const {
     throw PyKeyError(idx->toString());
 }
 
-void PyDict::setIdx(const PyObj* idx, PyObj* value) {
-    PyObj* mutIdx = const_cast<PyObj*>(idx);
-    if (raw.contains(mutIdx))
-        raw[mutIdx]->decref(); // Decref the old value
-    raw[mutIdx] = value;
+void PyDict::setIdx(PyObj* idx, PyObj* value) {
+    PyObj* foundKey = nullptr;
+    // Find existing key in map to use as index
+    for (PyObj* key : std::views::keys(raw)) {
+        if (*key == *idx) {
+            (void) raw[key]->decref(); // Decref the old value because it is about to be replaced
+            foundKey = key;
+            break;
+        }
+    }
+    // If not found, use the index as the new key
+    if (foundKey == nullptr) {
+        idx->incref(); // Incref because it is now referenced as a key
+        foundKey = idx;
+    }
+
+    raw[foundKey] = value;
 }
 
 size_t PyDict::hash() const { throw PyTypeError("Unhashable type " + typeName()); }
@@ -174,13 +211,15 @@ bool PyDict::operator==(const PyObj& other) const noexcept {
     return *this <=> other == std::partial_ordering::equivalent;
 }
 
+PyDictIter::~PyDictIter() { (void) dict->decref(); }
+
 PyObj* PyDictIter::next(PyObj* self, PyObj**, const int64_t argc) {
     if (argc != 0)
         throw PyTypeError("next() takes no arguments");
     PyDictIter* selfIter = dynamic_cast<PyDictIter*>(self);
     if (!selfIter)
         throw PyTypeError("Can only get the next value of iterator types");
-    if (selfIter->it == selfIter->dict.end())
+    if (selfIter->it == selfIter->end)
         throw PyStopIteration();
 
     PyObj* obj = selfIter->it->first;

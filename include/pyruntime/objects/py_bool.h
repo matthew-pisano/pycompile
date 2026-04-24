@@ -9,8 +9,6 @@
 #include "py_object.h"
 
 struct PyBool : PyObj {
-    explicit PyBool(const bool boolean) : raw(boolean) {}
-
     [[nodiscard]] size_t hash() const override;
 
     [[nodiscard]] std::string toString() const override;
@@ -21,12 +19,21 @@ struct PyBool : PyObj {
 
     [[nodiscard]] bool data() const;
 
+    void incref() override;
+
+    [[nodiscard]] bool decref() override;
+
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
 
     bool operator==(const PyObj&) const noexcept override;
 
+    static PyBool* True;
+    static PyBool* False;
+
 private:
     bool raw;
+
+    explicit PyBool(const bool boolean) : raw(boolean) {}
 };
 
 #endif // PYCOMPILE_PY_BOOL_H

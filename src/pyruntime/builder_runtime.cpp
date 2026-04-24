@@ -20,6 +20,7 @@ PyObj* pyir_buildString(PyObj** parts, const int64_t count) {
         if (!pyStr)
             throw std::runtime_error("BUILD_STRING: expected string part");
         result += pyStr->data();
+        (void) parts[i]->decref();
     }
     return new PyStr(result);
 }
@@ -27,42 +28,47 @@ PyObj* pyir_buildString(PyObj** parts, const int64_t count) {
 
 PyObj* pyir_buildList(PyObj** parts, const int64_t count) {
     PyListData result;
-    for (int64_t i = 0; i < count; i++) {
-        parts[i]->incref();
+    for (int64_t i = 0; i < count; i++)
         result.push_back(parts[i]);
-    }
     return new PyList(result);
 }
 
 
-void pyir_listExtend(PyObj* list, PyObj* items) { PyList::extend(list, &items, 1); }
+void pyir_listExtend(PyObj* list, PyObj* items) {
+    PyList::extend(list, &items, 1);
+    (void) items->decref();
+}
 
 
-void pyir_listAppend(PyObj* list, PyObj* item) { PyList::append(list, &item, 1); }
+void pyir_listAppend(PyObj* list, PyObj* item) {
+    PyList::append(list, &item, 1);
+    (void) item->decref();
+}
 
 
 PyObj* pyir_buildSet(PyObj** parts, const int64_t count) {
     PySetData result;
-    for (int64_t i = 0; i < count; i++) {
-        parts[i]->incref();
+    for (int64_t i = 0; i < count; i++)
         result.insert(parts[i]);
-    }
     return new PySet(result);
 }
 
 
-void pyir_setUpdate(PyObj* set, PyObj* items) { PySet::update(set, &items, 1); }
+void pyir_setUpdate(PyObj* set, PyObj* items) {
+    PySet::update(set, &items, 1);
+    (void) items->decref();
+}
 
 
-void pyir_setAdd(PyObj* set, PyObj* item) { PySet::add(set, &item, 1); }
+void pyir_setAdd(PyObj* set, PyObj* item) {
+    PySet::add(set, &item, 1);
+    (void) item->decref();
+}
 
 
 PyObj* pyir_buildMap(PyObj** parts, const int64_t count) {
     PyDictData result;
-    for (int64_t i = count - 1; i > 0; i -= 2) {
-        parts[i - 1]->incref();
-        parts[i]->incref();
+    for (int64_t i = count - 1; i > 0; i -= 2)
         result.insert({parts[i - 1], parts[i]});
-    }
     return new PyDict(result);
 }

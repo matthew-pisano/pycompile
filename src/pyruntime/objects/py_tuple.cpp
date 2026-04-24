@@ -11,13 +11,18 @@
 #include "pyruntime/runtime_errors.h"
 #include "pyruntime/runtime_util.h"
 
+PyTuple::~PyTuple() {
+    for (PyObj* elem : raw)
+        (void) elem->decref();
+}
+
 PyInt* PyTuple::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
 
 PyBool* PyTuple::contains(const PyObj* obj) const {
     for (const PyObj* elem : raw)
         if (*elem == *obj)
-            return new PyBool(true);
-    return new PyBool(false);
+            return PyBool::True;
+    return PyBool::False;
 }
 
 PyObj* PyTuple::idx(const PyObj* idx) const {
@@ -78,13 +83,15 @@ bool PyTuple::operator==(const PyObj& other) const noexcept {
     return *this <=> other == std::partial_ordering::equivalent;
 }
 
+PyTupleIter::~PyTupleIter() { (void) tuple->decref(); }
+
 PyObj* PyTupleIter::next(PyObj* self, PyObj**, const int64_t argc) {
     if (argc != 0)
         throw PyTypeError("next() takes no arguments");
     PyTupleIter* selfIter = dynamic_cast<PyTupleIter*>(self);
     if (!selfIter)
         throw PyTypeError("Can only get the next value of iterator types");
-    if (selfIter->it == selfIter->tuple.end())
+    if (selfIter->it == selfIter->end)
         throw PyStopIteration();
 
     PyObj* obj = *selfIter->it;

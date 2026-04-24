@@ -140,6 +140,8 @@ struct JITFixture {
 
         // Register all runtime functions
         addSymbol("pyir_initModule", reinterpret_cast<void*>(pyir_initModule));
+        addSymbol("pyir_destroyModule", reinterpret_cast<void*>(pyir_destroyModule));
+        addSymbol("pyir_clearDanglingScope", reinterpret_cast<void*>(pyir_clearDanglingScope));
         addSymbol("pyir_loadName", reinterpret_cast<void*>(pyir_loadName));
         addSymbol("pyir_storeName", reinterpret_cast<void*>(pyir_storeName));
         addSymbol("pyir_loadFast", reinterpret_cast<void*>(pyir_loadFast));
@@ -193,6 +195,7 @@ struct JITFixture {
         addSymbol("pyir_builtinZip", reinterpret_cast<void*>(pyir_builtinZip));
         addSymbol("pyir_getIter", reinterpret_cast<void*>(pyir_getIter));
         addSymbol("pyir_forIter", reinterpret_cast<void*>(pyir_forIter));
+        addSymbol("pyir_popIter", reinterpret_cast<void*>(pyir_popIter));
 
         // Symbols for test error handling
         addSymbol("pyir_runModule", reinterpret_cast<void*>(pyir_runModule));
@@ -207,8 +210,12 @@ struct JITFixture {
         auto* moduleFn = moduleSym->toPtr<void()>();
 
         const int result = pyir_runModule(moduleFn);
-        if (result != 0)
+        if (result != 0) {
+            // Clean up if an exception occurred
+            pyir_destroyModule();
+            pyir_clearDanglingScope();
             throw std::runtime_error(pyir_getLastError());
+        }
         return result;
     }
 

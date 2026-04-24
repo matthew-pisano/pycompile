@@ -18,6 +18,7 @@ using PyListData = std::vector<PyObj*>;
 
 struct PyList : PyObj {
     explicit PyList(PyListData list) : raw(std::move(list)) {}
+    ~PyList() override;
 
     static PyObj* append(PyObj* self, PyObj** args, int64_t argc);
 
@@ -31,7 +32,7 @@ struct PyList : PyObj {
 
     PyObj* idx(const PyObj* idx) const override;
 
-    void setIdx(const PyObj* idx, PyObj* value) override;
+    void setIdx(PyObj* idx, PyObj* value) override;
 
     [[nodiscard]] size_t hash() const override;
 
@@ -51,11 +52,18 @@ struct PyList : PyObj {
 
 private:
     PyListData raw;
+
+    friend struct PyListIter;
 };
 
 
 struct PyListIter : PyIter {
-    explicit PyListIter(PyListData list) : list(std::move(list)) { it = this->list.begin(); }
+    explicit PyListIter(PyList* list) : list(list) {
+        this->list->incref();
+        it = this->list->raw.begin();
+        end = this->list->raw.end();
+    }
+    ~PyListIter() override;
 
     static PyObj* next(PyObj* self, PyObj**, int64_t argc);
 
@@ -67,7 +75,8 @@ struct PyListIter : PyIter {
 
 private:
     PyListData::iterator it;
-    PyListData list;
+    PyListData::iterator end;
+    PyList* list;
 };
 
 #endif // PYCOMPILE_PY_LIST_H

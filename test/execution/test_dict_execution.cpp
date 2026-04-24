@@ -49,12 +49,17 @@ TEST_CASE_METHOD(JITFixture, "Test JIT Dict Index") {
     REQUIRE(output == "two\n");
 }
 
-TEST_CASE_METHOD(JITFixture, "Test JIT Dict Set Index") {
-    std::string output = runCapture("a = {2: 'two', 3: 'three'}\na[1] = 'oneagain'\nprint(a)");
-    REQUIRE(output == "{1: 'oneagain', 2: 'two', 3: 'three'}\n");
+TEST_CASE_METHOD(JITFixture, "Test JIT Dict Set Absent Index") {
+    std::string output = runCapture("a = {2: 'two', 3: 'three'}\na[1] = 'one'\nprint(a)");
+    REQUIRE(output == "{1: 'one', 2: 'two', 3: 'three'}\n");
 
     output = runCapture("a = {2: 'two', 3: 'three'}\na['one'] = 1\nprint(a)");
     REQUIRE(output == "{2: 'two', 3: 'three', 'one': 1}\n");
+}
+
+TEST_CASE_METHOD(JITFixture, "Test JIT Dict Set Existing Index") {
+    const std::string output = runCapture("a = {1: 'one', 2: 'two', 3: 'three'}\na[1] = 'oneagain'\nprint(a)");
+    REQUIRE(output == "{1: 'oneagain', 2: 'two', 3: 'three'}\n");
 }
 
 TEST_CASE_METHOD(JITFixture, "Test JIT Dict Get") {

@@ -13,6 +13,8 @@
 #include "objects/py_object.h"
 #include "objects/py_set.h"
 
+void decrefArgs(PyObj** args, int64_t argc);
+
 std::string formatBadConversion(const std::string& valType, const std::string& type, const std::string& valRepr);
 
 double_t valueToFloat(const PyObj* val);

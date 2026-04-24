@@ -30,6 +30,7 @@ PyObj* pyir_loadFast(const char* name) {
     if (it == locals.end())
         throw PyNameError(std::string("Local variable '") + name + "' referenced before assignment");
 
+    it->second->incref();
     return it->second;
 }
 
@@ -44,12 +45,12 @@ void pyir_storeFast(const char* name, PyObj* val) {
 PyObj* pyir_loadName(const char* name) {
     // Check for builtin functions
     if (const auto it = builtinFuncs.find(name); it != builtinFuncs.end())
-        return new PyFunction(it->first, it->second);
+        return it->second;
     // Check for builtin variables
     if (const auto it = builtinVars.find(name); it != builtinVars.end())
         return it->second();
     // Check for names in module scope
-    if (const auto it = moduleScope.find(name); it != moduleScope.end()) {
+    if (const auto it = scopeStack.back().find(name); it != scopeStack.back().end()) {
         it->second->incref();
         return it->second;
     }
@@ -58,10 +59,12 @@ PyObj* pyir_loadName(const char* name) {
 
 
 void pyir_storeName(const char* name, PyObj* val) {
-    if (const auto it = moduleScope.find(name); it != moduleScope.end())
-        it->second->decref(); // Release old value
-    val->incref();
-    moduleScope[name] = val;
+    if (const auto it = scopeStack.back().find(name); it != scopeStack.back().end()) {
+        if (it->second->decref()) // Release old value
+            it->second = nullptr;
+    }
+    // Val already has at least one reference, no need to incref
+    scopeStack.back()[name] = val;
 }
 
 
@@ -74,10 +77,10 @@ PyObj* pyir_loadConstInt(const int64_t val) { return new PyInt(val); }
 PyObj* pyir_loadConstFloat(const double_t val) { return new PyFloat(val); }
 
 
-PyObj* pyir_loadConstBool(const int8_t val) { return new PyBool(val == 1); }
+PyObj* pyir_loadConstBool(const int8_t val) { return val == 1 ? PyBool::True : PyBool::False; }
 
 
-PyObj* pyir_loadConstNone() { return new PyNone(); }
+PyObj* pyir_loadConstNone() { return PyNone::None; }
 
 
 PyObj* pyir_loadConstTuple(PyObj** items, const int64_t count) {
@@ -89,7 +92,27 @@ PyObj* pyir_loadConstTuple(PyObj** items, const int64_t count) {
 }
 
 
-PyObj* pyir_loadAttr(PyObj* obj, const char* name) { return obj->getAttr(name); }
+PyObj* pyir_loadAttr(PyObj* obj, const char* name) {
+    try {
+        PyObj* result = obj->getAttr(name);
+        (void) obj->decref();
+        return result;
+    } catch (...) {
+        (void) obj->decref();
+        throw;
+    }
+}
 
 
-void pyir_storeSubscr(PyObj* container, const PyObj* idx, PyObj* value) { container->setIdx(idx, value); }
+void pyir_storeSubscr(PyObj* container, PyObj* idx, PyObj* value) {
+    try {
+        container->setIdx(idx, value);
+        (void) idx->decref();
+        (void) container->decref();
+    } catch (...) {
+        (void) idx->decref();
+        (void) container->decref();
+        (void) value->decref();
+        throw;
+    }
+}

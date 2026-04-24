@@ -15,6 +15,11 @@
 #include "pyruntime/runtime_errors.h"
 #include "pyruntime/runtime_util.h"
 
+PyList::~PyList() {
+    for (PyObj* elem : raw)
+        (void) elem->decref();
+}
+
 PyObj* PyList::append(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw PyTypeError("append() takes exactly one argument");
@@ -24,7 +29,7 @@ PyObj* PyList::append(PyObj* self, PyObj** args, const int64_t argc) {
 
     args[0]->incref();
     selfList->raw.push_back(args[0]);
-    return new PyNone();
+    return PyNone::None;
 }
 
 PyObj* PyList::extend(PyObj* self, PyObj** args, const int64_t argc) {
@@ -52,15 +57,20 @@ PyObj* PyList::extend(PyObj* self, PyObj** args, const int64_t argc) {
     else
         throw PyTypeError("Can only extend with iterable types, got" + args[0]->typeName());
 
-    return new PyNone();
+    return PyNone::None;
 }
 
 PyObj* PyList::getAttr(const std::string& name) {
+    PyObj* result = nullptr;
     if (name == "append")
-        return new PyMethod("append", this, append);
+        result = new PyMethod("append", this, append);
     if (name == "extend")
-        return new PyMethod("extend", this, extend);
-    throw PyAttributeError(std::format("'{}' object has no attribute '{}'", typeName(), name));
+        result = new PyMethod("extend", this, extend);
+
+    if (!result)
+        throw PyAttributeError(std::format("'{}' object has no attribute '{}'", typeName(), name));
+    incref();
+    return result;
 }
 
 PyInt* PyList::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
@@ -68,8 +78,8 @@ PyInt* PyList::len() const { return new PyInt(static_cast<int64_t>(raw.size()));
 PyBool* PyList::contains(const PyObj* obj) const {
     for (const PyObj* elem : raw)
         if (*elem == *obj)
-            return new PyBool(true);
-    return new PyBool(false);
+            return PyBool::True;
+    return PyBool::False;
 }
 
 PyObj* PyList::idx(const PyObj* idx) const {
@@ -85,14 +95,14 @@ PyObj* PyList::idx(const PyObj* idx) const {
     throw PyTypeError("list indices must be integers, not " + idx->typeName());
 }
 
-void PyList::setIdx(const PyObj* idx, PyObj* value) {
+void PyList::setIdx(PyObj* idx, PyObj* value) {
     if (const PyInt* idxVal = dynamic_cast<const PyInt*>(idx)) {
         int64_t index = idxVal->data();
         if (index < 0)
             index += static_cast<int64_t>(raw.size());
         if (index < 0 || index >= static_cast<int64_t>(raw.size()))
             throw PyIndexError("list index out of range");
-        raw[index]->decref(); // Decref the old value
+        (void) raw[index]->decref(); // Decref the old value
         raw[index] = value;
         return;
     }
@@ -137,13 +147,15 @@ bool PyList::operator==(const PyObj& other) const noexcept {
     return *this <=> other == std::partial_ordering::equivalent;
 }
 
+PyListIter::~PyListIter() { (void) list->decref(); }
+
 PyObj* PyListIter::next(PyObj* self, PyObj**, const int64_t argc) {
     if (argc != 0)
         throw PyTypeError("next() takes no arguments");
     PyListIter* selfIter = dynamic_cast<PyListIter*>(self);
     if (!selfIter)
         throw PyTypeError("Can only get the next value of iterator types");
-    if (selfIter->it == selfIter->list.end())
+    if (selfIter->it == selfIter->end)
         throw PyStopIteration();
 
     PyObj* obj = *selfIter->it;

@@ -41,216 +41,379 @@ bool pyir_isDict(const PyObj* val) { return dynamic_cast<const PyDict*>(val); }
 bool pyir_isTuple(const PyObj* val) { return dynamic_cast<const PyTuple*>(val); }
 
 
-int8_t pyir_isTruthy(const PyObj* val) { return val->isTruthy(); }
-
-
-PyObj* pyir_add(const PyObj* lhs, const PyObj* rhs) {
-    if (pyir_isInt(lhs) && pyir_isInt(rhs))
-        return new PyInt(dynamic_cast<const PyInt*>(lhs)->data() + dynamic_cast<const PyInt*>(rhs)->data());
-    if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
-        return new PyFloat(valueToFloat(lhs) + valueToFloat(rhs));
-    if (pyir_isStr(lhs) && pyir_isStr(rhs))
-        return new PyStr(dynamic_cast<const PyStr*>(lhs)->data() + dynamic_cast<const PyStr*>(rhs)->data());
-    if (pyir_isList(lhs) && pyir_isList(rhs)) {
-        PyListData lhsVal = dynamic_cast<const PyList*>(lhs)->data();
-        PyListData rhsVal = dynamic_cast<const PyList*>(rhs)->data();
-        PyListData result;
-        result.insert(result.end(), lhsVal.begin(), lhsVal.end());
-        result.insert(result.end(), rhsVal.begin(), rhsVal.end());
-        return new PyList(result);
-    }
-    if (pyir_isTuple(lhs) && pyir_isTuple(rhs)) {
-        PyListData lhsVal = dynamic_cast<const PyTuple*>(lhs)->data();
-        PyListData rhsVal = dynamic_cast<const PyTuple*>(rhs)->data();
-        PyListData result;
-        result.insert(result.end(), lhsVal.begin(), lhsVal.end());
-        result.insert(result.end(), rhsVal.begin(), rhsVal.end());
-        return new PyTuple(result);
-    }
-    throw PyTypeError(formatUnsupportedOperands("+", lhs->typeName(), rhs->typeName()));
+int8_t pyir_isTruthy(PyObj* val) {
+    const int8_t result = val->isTruthy();
+    (void) val->decref();
+    return result;
 }
 
 
-PyObj* pyir_sub(const PyObj* lhs, const PyObj* rhs) {
+PyObj* pyir_add(PyObj* lhs, PyObj* rhs) {
+    PyObj* result = nullptr;
     if (pyir_isInt(lhs) && pyir_isInt(rhs))
-        return new PyInt(dynamic_cast<const PyInt*>(lhs)->data() - dynamic_cast<const PyInt*>(rhs)->data());
-    if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
-        return new PyFloat(valueToFloat(lhs) - valueToFloat(rhs));
-    if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
-        PySetData result = dynamic_cast<const PySet*>(lhs)->data();
-        const PySetData rSet = dynamic_cast<const PySet*>(rhs)->data();
-        for (PyObj* lItem : dynamic_cast<const PySet*>(lhs)->data())
+        result = new PyInt(dynamic_cast<PyInt*>(lhs)->data() + dynamic_cast<PyInt*>(rhs)->data());
+    else if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
+        result = new PyFloat(valueToFloat(lhs) + valueToFloat(rhs));
+    else if (pyir_isStr(lhs) && pyir_isStr(rhs))
+        result = new PyStr(dynamic_cast<PyStr*>(lhs)->data() + dynamic_cast<PyStr*>(rhs)->data());
+    else if (pyir_isList(lhs) && pyir_isList(rhs)) {
+        result = new PyList({});
+        PyList::extend(result, &lhs, 1);
+        PyList::extend(result, &rhs, 1);
+    } else if (pyir_isTuple(lhs) && pyir_isTuple(rhs)) {
+        PyListData lhsVal = dynamic_cast<PyTuple*>(lhs)->data();
+        PyListData rhsVal = dynamic_cast<PyTuple*>(rhs)->data();
+        PyListData combined;
+        combined.insert(combined.end(), lhsVal.begin(), lhsVal.end());
+        combined.insert(combined.end(), rhsVal.begin(), rhsVal.end());
+        result = new PyTuple(combined);
+    }
+
+    const std::string lhsType = lhs->typeName();
+    const std::string rhsType = rhs->typeName();
+    (void) lhs->decref();
+    (void) rhs->decref();
+
+    if (!result)
+        throw PyTypeError(formatUnsupportedOperands("+", lhsType, rhsType));
+    return result;
+}
+
+
+PyObj* pyir_sub(PyObj* lhs, PyObj* rhs) {
+    PyObj* result = nullptr;
+    if (pyir_isInt(lhs) && pyir_isInt(rhs))
+        result = new PyInt(dynamic_cast<PyInt*>(lhs)->data() - dynamic_cast<PyInt*>(rhs)->data());
+    else if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
+        result = new PyFloat(valueToFloat(lhs) - valueToFloat(rhs));
+    else if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
+        PySetData res = dynamic_cast<PySet*>(lhs)->data();
+        const PySetData rSet = dynamic_cast<PySet*>(rhs)->data();
+        for (PyObj* lItem : dynamic_cast<PySet*>(lhs)->data()) {
             if (rSet.contains(lItem))
-                result.erase(lItem);
-
-        return new PySet(result);
+                res.erase(lItem);
+            else
+                lItem->incref();
+        }
+        result = new PySet(res);
     }
-    throw PyTypeError(formatUnsupportedOperands("-", lhs->typeName(), rhs->typeName()));
+
+    const std::string lhsType = lhs->typeName();
+    const std::string rhsType = rhs->typeName();
+    (void) lhs->decref();
+    (void) rhs->decref();
+
+    if (!result)
+        throw PyTypeError(formatUnsupportedOperands("-", lhsType, rhsType));
+    return result;
 }
 
 
-PyObj* pyir_mul(const PyObj* lhs, const PyObj* rhs) {
+PyObj* pyir_mul(PyObj* lhs, PyObj* rhs) {
+    PyObj* result = nullptr;
     if (pyir_isInt(lhs) && pyir_isInt(rhs))
-        return new PyInt(dynamic_cast<const PyInt*>(lhs)->data() * dynamic_cast<const PyInt*>(rhs)->data());
-    if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
-        return new PyFloat(valueToFloat(lhs) * valueToFloat(rhs));
-    throw PyTypeError(formatUnsupportedOperands("*", lhs->typeName(), rhs->typeName()));
+        result = new PyInt(dynamic_cast<PyInt*>(lhs)->data() * dynamic_cast<PyInt*>(rhs)->data());
+    else if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
+        result = new PyFloat(valueToFloat(lhs) * valueToFloat(rhs));
+
+    const std::string lhsType = lhs->typeName();
+    const std::string rhsType = rhs->typeName();
+    (void) lhs->decref();
+    (void) rhs->decref();
+
+    if (!result)
+        throw PyTypeError(formatUnsupportedOperands("*", lhsType, rhsType));
+    return result;
 }
 
 
-PyFloat* pyir_div(const PyObj* lhs, const PyObj* rhs) {
+PyFloat* pyir_div(PyObj* lhs, PyObj* rhs) {
     // Python's / always returns float
+    PyFloat* result = nullptr;
     if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
-        return new PyFloat(valueToFloat(lhs) / valueToFloat(rhs));
-    throw PyTypeError(formatUnsupportedOperands("/", lhs->typeName(), rhs->typeName()));
+        result = new PyFloat(valueToFloat(lhs) / valueToFloat(rhs));
+
+    const std::string lhsType = lhs->typeName();
+    const std::string rhsType = rhs->typeName();
+    (void) lhs->decref();
+    (void) rhs->decref();
+
+    if (!result)
+        throw PyTypeError(formatUnsupportedOperands("/", lhsType, rhsType));
+    return result;
 }
 
 
-PyObj* pyir_floorDiv(const PyObj* lhs, const PyObj* rhs) {
+PyObj* pyir_floorDiv(PyObj* lhs, PyObj* rhs) {
+    PyObj* result = nullptr;
     if (pyir_isInt(lhs) && pyir_isInt(rhs))
-        return new PyInt(dynamic_cast<const PyInt*>(lhs)->data() / dynamic_cast<const PyInt*>(rhs)->data());
-    if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
-        return new PyFloat(std::floor(valueToFloat(lhs) / valueToFloat(rhs)));
-    throw PyTypeError(formatUnsupportedOperands("//", lhs->typeName(), rhs->typeName()));
+        result = new PyInt(dynamic_cast<PyInt*>(lhs)->data() / dynamic_cast<PyInt*>(rhs)->data());
+    else if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
+        result = new PyFloat(std::floor(valueToFloat(lhs) / valueToFloat(rhs)));
+
+    const std::string lhsType = lhs->typeName();
+    const std::string rhsType = rhs->typeName();
+    (void) lhs->decref();
+    (void) rhs->decref();
+
+    if (!result)
+        throw PyTypeError(formatUnsupportedOperands("//", lhsType, rhsType));
+    return result;
 }
 
 
-PyObj* pyir_exp(const PyObj* lhs, const PyObj* rhs) {
+PyObj* pyir_exp(PyObj* lhs, PyObj* rhs) {
+    PyObj* result = nullptr;
     if (pyir_isInt(lhs) && pyir_isInt(rhs)) {
-        const double_t lhsFloat = static_cast<double_t>(dynamic_cast<const PyInt*>(lhs)->data());
-        const double_t rhsFloat = static_cast<double_t>(dynamic_cast<const PyInt*>(rhs)->data());
-        const double_t result = pow(lhsFloat, rhsFloat);
-        return new PyInt(static_cast<int64_t>(result));
-    }
-    if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
-        return new PyFloat(pow(valueToFloat(lhs), valueToFloat(rhs)));
-    throw PyTypeError(formatUnsupportedOperands("**", lhs->typeName(), rhs->typeName()));
+        const double_t lhsFloat = static_cast<double_t>(dynamic_cast<PyInt*>(lhs)->data());
+        const double_t rhsFloat = static_cast<double_t>(dynamic_cast<PyInt*>(rhs)->data());
+        result = new PyInt(static_cast<int64_t>(pow(lhsFloat, rhsFloat)));
+    } else if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
+        result = new PyFloat(pow(valueToFloat(lhs), valueToFloat(rhs)));
+
+    const std::string lhsType = lhs->typeName();
+    const std::string rhsType = rhs->typeName();
+    (void) lhs->decref();
+    (void) rhs->decref();
+
+    if (!result)
+        throw PyTypeError(formatUnsupportedOperands("**", lhsType, rhsType));
+    return result;
 }
 
 
-PyObj* pyir_mod(const PyObj* lhs, const PyObj* rhs) {
+PyObj* pyir_mod(PyObj* lhs, PyObj* rhs) {
+    PyObj* result = nullptr;
     if (pyir_isInt(lhs) && pyir_isInt(rhs))
-        return new PyInt(dynamic_cast<const PyInt*>(lhs)->data() % dynamic_cast<const PyInt*>(rhs)->data());
-    if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
-        return new PyFloat(fmod(valueToFloat(lhs), valueToFloat(rhs)));
-    throw PyTypeError(formatUnsupportedOperands("%", lhs->typeName(), rhs->typeName()));
+        result = new PyInt(dynamic_cast<PyInt*>(lhs)->data() % dynamic_cast<PyInt*>(rhs)->data());
+    else if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
+        result = new PyFloat(fmod(valueToFloat(lhs), valueToFloat(rhs)));
+
+    const std::string lhsType = lhs->typeName();
+    const std::string rhsType = rhs->typeName();
+    (void) lhs->decref();
+    (void) rhs->decref();
+
+    if (!result)
+        throw PyTypeError(formatUnsupportedOperands("%", lhsType, rhsType));
+    return result;
 }
 
 
-PyObj* pyir_pipe(const PyObj* lhs, const PyObj* rhs) {
+PyObj* pyir_pipe(PyObj* lhs, PyObj* rhs) {
+    PyObj* result = nullptr;
     if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
-        PySetData result = dynamic_cast<const PySet*>(lhs)->data();
-        const PySetData rhsSet = dynamic_cast<const PySet*>(rhs)->data();
-        result.insert(rhsSet.begin(), rhsSet.end());
-        return new PySet(result);
+        result = new PySet({});
+        PySet::update(result, &lhs, 1);
+        PySet::update(result, &rhs, 1);
+    } else if (pyir_isDict(lhs) && pyir_isDict(rhs)) {
+        result = new PyDict({});
+        PyDict::update(result, &lhs, 1);
+        PyDict::update(result, &rhs, 1);
     }
-    if (pyir_isDict(lhs) && pyir_isDict(rhs)) {
-        PyDictData result = dynamic_cast<const PyDict*>(lhs)->data();
-        PyDictData rhsDict = dynamic_cast<const PyDict*>(rhs)->data();
-        result.merge(rhsDict);
-        return new PyDict(result);
-    }
-    throw PyTypeError(formatUnsupportedOperands("|", lhs->typeName(), rhs->typeName()));
+
+    const std::string lhsType = lhs->typeName();
+    const std::string rhsType = rhs->typeName();
+    (void) lhs->decref();
+    (void) rhs->decref();
+
+    if (!result)
+        throw PyTypeError(formatUnsupportedOperands("|", lhsType, rhsType));
+    return result;
 }
 
 
-PyObj* pyir_ampersand(const PyObj* lhs, const PyObj* rhs) {
+PyObj* pyir_ampersand(PyObj* lhs, PyObj* rhs) {
+    PyObj* result = nullptr;
     if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
-        PySetData result;
-        const PySetData rSet = dynamic_cast<const PySet*>(rhs)->data();
-        for (PyObj* lItem : dynamic_cast<const PySet*>(lhs)->data())
+        result = new PySet({});
+        const PySetData rSet = dynamic_cast<PySet*>(rhs)->data();
+        for (PyObj* lItem : dynamic_cast<PySet*>(lhs)->data())
             if (rSet.contains(lItem))
-                result.insert(lItem);
-        return new PySet(result);
+                PySet::add(result, &lItem, 1);
     }
-    throw PyTypeError(formatUnsupportedOperands("&", lhs->typeName(), rhs->typeName()));
+
+    const std::string lhsType = lhs->typeName();
+    const std::string rhsType = rhs->typeName();
+    (void) lhs->decref();
+    (void) rhs->decref();
+
+    if (!result)
+        throw PyTypeError(formatUnsupportedOperands("&", lhsType, rhsType));
+    return result;
 }
 
 
-PyObj* pyir_idx(const PyObj* obj, const PyObj* idx) { return obj->idx(idx); }
+PyObj* pyir_idx(PyObj* obj, PyObj* idx) {
+    try {
+        PyObj* result = obj->idx(idx);
+        (void) idx->decref();
+        (void) obj->decref();
+        return result;
+    } catch (...) {
+        (void) idx->decref();
+        (void) obj->decref();
+        throw;
+    }
+}
 
 
-PyBool* pyir_in(const PyObj* container, const PyObj* element) { return container->contains(element); }
+PyBool* pyir_in(PyObj* container, PyObj* element) {
+    PyBool* result = container->contains(element);
+    (void) element->decref();
+    (void) container->decref();
+    return result;
+}
 
 
-PyBool* pyir_eq(const PyObj* lhs, const PyObj* rhs) { return new PyBool(*lhs == *rhs); }
+PyBool* pyir_eq(PyObj* lhs, PyObj* rhs) {
+    PyBool* result = *lhs == *rhs ? PyBool::True : PyBool::False;
+    (void) lhs->decref();
+    (void) rhs->decref();
+    return result;
+}
 
 
-PyBool* pyir_ne(const PyObj* lhs, const PyObj* rhs) { return new PyBool(!pyir_eq(lhs, rhs)->data()); }
+PyBool* pyir_ne(PyObj* lhs, PyObj* rhs) {
+    PyBool* result = *lhs != *rhs ? PyBool::True : PyBool::False;
+    (void) lhs->decref();
+    (void) rhs->decref();
+    return result;
+}
 
 
-PyBool* pyir_lt(const PyObj* lhs, const PyObj* rhs) {
+PyBool* pyir_lt(PyObj* lhs, PyObj* rhs) {
+    PyBool* result = nullptr;
     if (pyir_isInt(lhs) && pyir_isInt(rhs))
-        return new PyBool(dynamic_cast<const PyInt*>(lhs)->data() < dynamic_cast<const PyInt*>(rhs)->data());
-    if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
-        return new PyBool(valueToFloat(lhs) < valueToFloat(rhs));
-    throw PyTypeError(formatUnsupportedOperands("<", lhs->typeName(), rhs->typeName()));
+        result = dynamic_cast<PyInt*>(lhs)->data() < dynamic_cast<PyInt*>(rhs)->data() ? PyBool::True : PyBool::False;
+    else if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
+        result = valueToFloat(lhs) < valueToFloat(rhs) ? PyBool::True : PyBool::False;
+
+    const std::string lhsType = lhs->typeName();
+    const std::string rhsType = rhs->typeName();
+    (void) lhs->decref();
+    (void) rhs->decref();
+
+    if (!result)
+        throw PyTypeError(formatUnsupportedOperands("<", lhsType, rhsType));
+    return result;
 }
 
 
-PyBool* pyir_le(const PyObj* lhs, const PyObj* rhs) {
+PyBool* pyir_le(PyObj* lhs, PyObj* rhs) {
+    PyBool* result = nullptr;
     if (pyir_isInt(lhs) && pyir_isInt(rhs))
-        return new PyBool(dynamic_cast<const PyInt*>(lhs)->data() <= dynamic_cast<const PyInt*>(rhs)->data());
-    if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
-        return new PyBool(valueToFloat(lhs) <= valueToFloat(rhs));
-    throw PyTypeError(formatUnsupportedOperands("<=", lhs->typeName(), rhs->typeName()));
+        result = dynamic_cast<PyInt*>(lhs)->data() <= dynamic_cast<PyInt*>(rhs)->data() ? PyBool::True : PyBool::False;
+    else if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
+        result = valueToFloat(lhs) <= valueToFloat(rhs) ? PyBool::True : PyBool::False;
+
+    const std::string lhsType = lhs->typeName();
+    const std::string rhsType = rhs->typeName();
+    (void) lhs->decref();
+    (void) rhs->decref();
+
+    if (!result)
+        throw PyTypeError(formatUnsupportedOperands("<=", lhsType, rhsType));
+    return result;
 }
 
 
-PyBool* pyir_gt(const PyObj* lhs, const PyObj* rhs) { return pyir_lt(rhs, lhs); }
+PyBool* pyir_gt(PyObj* lhs, PyObj* rhs) { return pyir_lt(rhs, lhs); }
 
 
-PyBool* pyir_ge(const PyObj* lhs, const PyObj* rhs) { return pyir_le(rhs, lhs); }
+PyBool* pyir_ge(PyObj* lhs, PyObj* rhs) { return pyir_le(rhs, lhs); }
 
 
-PyObj* pyir_unaryNegative(const PyObj* val) {
+PyObj* pyir_unaryNegative(PyObj* val) {
+    PyObj* result = nullptr;
     if (pyir_isInt(val))
-        return new PyInt(-dynamic_cast<const PyInt*>(val)->data());
-    if (pyir_isFloat(val))
-        return new PyFloat(-dynamic_cast<const PyFloat*>(val)->data());
-    throw PyTypeError(formatUnsupportedOperands("-", val->typeName()));
+        result = new PyInt(-dynamic_cast<PyInt*>(val)->data());
+    else if (pyir_isFloat(val))
+        result = new PyFloat(-dynamic_cast<PyFloat*>(val)->data());
+
+    const std::string valType = val->typeName();
+    (void) val->decref();
+
+    if (!result)
+        throw PyTypeError(formatUnsupportedOperands("-", valType));
+    return result;
 }
 
 
-PyObj* pyir_unaryNot(const PyObj* val) {
+PyObj* pyir_unaryNot(PyObj* val) {
+    PyObj* result = nullptr;
     if (pyir_isBool(val))
-        return new PyBool(!dynamic_cast<const PyBool*>(val)->data());
-    throw PyTypeError(formatUnsupportedOperands("not", val->typeName()));
+        result = !dynamic_cast<PyBool*>(val)->data() ? PyBool::True : PyBool::False;
+
+    const std::string valType = val->typeName();
+    (void) val->decref();
+
+    if (!result)
+        throw PyTypeError(formatUnsupportedOperands("not", valType));
+    return result;
 }
 
 
-PyInt* pyir_unaryInvert(const PyObj* val) {
+PyInt* pyir_unaryInvert(PyObj* val) {
+    PyInt* result = nullptr;
     if (pyir_isInt(val))
-        return new PyInt(~dynamic_cast<const PyInt*>(val)->data());
-    throw PyTypeError(formatUnsupportedOperands("~", val->typeName()));
+        result = new PyInt(~dynamic_cast<PyInt*>(val)->data());
+
+    const std::string valType = val->typeName();
+    (void) val->decref();
+
+    if (!result)
+        throw PyTypeError(formatUnsupportedOperands("~", valType));
+    return result;
 }
 
 
-PyObj* pyir_xor(const PyObj* lhs, const PyObj* rhs) {
+PyObj* pyir_xor(PyObj* lhs, PyObj* rhs) {
+    PyObj* result = nullptr;
     if (pyir_isBool(lhs) && pyir_isBool(rhs))
-        return new PyBool((dynamic_cast<const PyBool*>(lhs)->data() ^ dynamic_cast<const PyBool*>(rhs)->data()) == 1);
-    if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
-        const PySetData lSet = dynamic_cast<const PySet*>(lhs)->data();
-        const PySetData rSet = dynamic_cast<const PySet*>(rhs)->data();
-        PySetData result;
+        result = (dynamic_cast<PyBool*>(lhs)->data() ^ dynamic_cast<PyBool*>(rhs)->data()) == 1 ? PyBool::True
+                                                                                                : PyBool::False;
+    else if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
+        const PySetData lSet = dynamic_cast<PySet*>(lhs)->data();
+        const PySetData rSet = dynamic_cast<PySet*>(rhs)->data();
+        PySetData res;
 
         // Elements in lSet not in rSet
         for (PyObj* elem : lSet)
-            if (!rSet.contains(elem))
-                result.insert(elem);
+            if (!rSet.contains(elem)) {
+                res.insert(elem);
+                elem->incref();
+            }
 
         // Elements in rSet not in lSet
         for (PyObj* elem : rSet)
-            if (!lSet.contains(elem))
-                result.insert(elem);
-
-        return new PySet(result);
+            if (!lSet.contains(elem)) {
+                res.insert(elem);
+                elem->incref();
+            }
+        result = new PySet(res);
     }
-    throw PyTypeError(formatUnsupportedOperands("^", lhs->typeName(), rhs->typeName()));
+
+    const std::string lhsType = lhs->typeName();
+    const std::string rhsType = rhs->typeName();
+    (void) lhs->decref();
+    (void) rhs->decref();
+
+    if (!result)
+        throw PyTypeError(formatUnsupportedOperands("^", lhsType, rhsType));
+    return result;
 }
 
 
-PyBool* pyir_toBool(const PyObj* val) { return new PyBool(val->isTruthy()); }
+PyBool* pyir_toBool(PyObj* val) {
+    PyBool* result = val->isTruthy() ? PyBool::True : PyBool::False;
+    (void) val->decref();
+    return result;
+}
 
 
-PyStr* pyir_formatSimple(const PyObj* val) { return new PyStr(valueToString(val)); }
+PyStr* pyir_formatSimple(PyObj* val) {
+    PyStr* result = new PyStr(valueToString(val));
+    (void) val->decref();
+    return result;
+}

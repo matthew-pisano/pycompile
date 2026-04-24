@@ -18,6 +18,7 @@ using PyDictData = std::map<PyObj*, PyObj*, PyObjPtrCompare>;
 
 struct PyDict : PyObj {
     explicit PyDict(PyDictData dict) : raw(std::move(dict)) {}
+    ~PyDict() override;
 
     static PyObj* get(PyObj* self, PyObj** args, int64_t argc);
 
@@ -37,7 +38,7 @@ struct PyDict : PyObj {
 
     PyObj* idx(const PyObj* idx) const override;
 
-    void setIdx(const PyObj* idx, PyObj* value) override;
+    void setIdx(PyObj* idx, PyObj* value) override;
 
     [[nodiscard]] size_t hash() const override;
 
@@ -57,11 +58,18 @@ struct PyDict : PyObj {
 
 private:
     PyDictData raw;
+
+    friend struct PyDictIter;
 };
 
 
 struct PyDictIter : PyIter {
-    explicit PyDictIter(PyDictData dict) : dict(std::move(dict)) { it = this->dict.begin(); }
+    explicit PyDictIter(PyDict* dict) : dict(dict) {
+        this->dict->incref();
+        it = this->dict->raw.begin();
+        end = this->dict->raw.end();
+    }
+    ~PyDictIter() override;
 
     static PyObj* next(PyObj* self, PyObj**, int64_t argc);
 
@@ -73,7 +81,8 @@ struct PyDictIter : PyIter {
 
 private:
     PyDictData::iterator it;
-    PyDictData dict;
+    PyDictData::iterator end;
+    PyDict* dict;
 };
 
 #endif // PYCOMPILE_PY_DICT_H

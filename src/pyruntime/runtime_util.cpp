@@ -17,6 +17,14 @@
 #include "pyruntime/runtime_errors.h"
 
 
+void decrefArgs(PyObj** args, const int64_t argc) {
+    for (int64_t i = 0; i < argc; i++) {
+        if (args[i]->decref())
+            args[i] = nullptr;
+    }
+}
+
+
 std::string formatBadConversion(const std::string& valType, const std::string& type, const std::string& valRepr) {
     return std::format("Could not convert {} to {}: '{}'", valType, type, valRepr);
 }
@@ -61,8 +69,14 @@ PyListData valueToList(const PyObj* val) {
         }
         return result;
     }
-    if (const PyList* pyList = dynamic_cast<const PyList*>(val))
-        return pyList->data();
+    if (const PyList* pyList = dynamic_cast<const PyList*>(val)) {
+        PyListData result;
+        for (PyObj* obj : pyList->data()) {
+            obj->incref();
+            result.push_back(obj);
+        }
+        return result;
+    }
     throw PyTypeError(formatBadConversion(val->typeName(), "list", val->toString()));
 }
 
@@ -71,26 +85,33 @@ PySetData valueToSet(const PyObj* val) {
     if (const PyStr* pyString = dynamic_cast<const PyStr*>(val)) {
         PySetData result;
         for (const char c : pyString->data())
-            result.insert(new PyStr(c));
+            if (PyStr* charStr = new PyStr(c); !result.insert(charStr).second)
+                (void) charStr->decref(); // Decref string if it is not added to the set
         return result;
     }
     if (const PyList* pyList = dynamic_cast<const PyList*>(val)) {
         PySetData result;
         for (PyObj* obj : pyList->data()) {
-            obj->incref();
-            result.insert(obj);
+            if (result.insert(obj).second)
+                obj->incref();
         }
         return result;
     }
     if (const PyTuple* pyTuple = dynamic_cast<const PyTuple*>(val)) {
         PySetData result;
         for (PyObj* obj : pyTuple->data()) {
-            obj->incref();
-            result.insert(obj);
+            if (result.insert(obj).second)
+                obj->incref();
         }
         return result;
     }
-    if (const PySet* pySet = dynamic_cast<const PySet*>(val))
-        return pySet->data();
+    if (const PySet* pySet = dynamic_cast<const PySet*>(val)) {
+        PySetData result;
+        for (PyObj* obj : pySet->data()) {
+            if (result.insert(obj).second)
+                obj->incref();
+        }
+        return result;
+    }
     throw PyTypeError(formatBadConversion(val->typeName(), "set", val->toString()));
 }

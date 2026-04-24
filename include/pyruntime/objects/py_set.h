@@ -18,6 +18,7 @@ using PySetData = std::unordered_set<PyObj*, PyObjPtrHash, PyObjPtrEqual>;
 
 struct PySet : PyObj {
     explicit PySet(PySetData set) : raw(std::move(set)) {}
+    ~PySet() override;
 
     static PyObj* add(PyObj* self, PyObj** args, int64_t argc);
 
@@ -47,11 +48,18 @@ struct PySet : PyObj {
 
 private:
     PySetData raw;
+
+    friend struct PySetIter;
 };
 
 
 struct PySetIter : PyIter {
-    explicit PySetIter(PySetData set) : set(std::move(set)) { it = this->set.begin(); }
+    explicit PySetIter(PySet* set) : set(set) {
+        this->set->incref();
+        it = this->set->raw.begin();
+        end = this->set->raw.end();
+    }
+    ~PySetIter() override;
 
     static PyObj* next(PyObj* self, PyObj**, int64_t argc);
 
@@ -63,7 +71,8 @@ struct PySetIter : PyIter {
 
 private:
     PySetData::iterator it;
-    PySetData set;
+    PySetData::iterator end;
+    PySet* set;
 };
 
 #endif // PYCOMPILE_PY_SET_H

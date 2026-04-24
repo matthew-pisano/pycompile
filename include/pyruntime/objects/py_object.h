@@ -41,7 +41,7 @@ struct PyObj {
 
     [[nodiscard]] virtual PyObj* idx(const PyObj* idx) const;
 
-    virtual void setIdx(const PyObj* idx, PyObj* value);
+    virtual void setIdx(PyObj* idx, PyObj* value);
 
     [[nodiscard]] virtual size_t hash() const = 0;
 
@@ -51,9 +51,9 @@ struct PyObj {
 
     [[nodiscard]] virtual bool isTruthy() const = 0;
 
-    void incref();
+    virtual void incref();
 
-    void decref();
+    [[nodiscard]] virtual bool decref();
 
     virtual std::partial_ordering operator<=>(const PyObj& other) const noexcept = 0;
     virtual bool operator==(const PyObj& other) const noexcept = 0;
@@ -71,7 +71,8 @@ struct PyObjRef {
     // Takes ownership, no incref
     ~PyObjRef() {
         if (ptr)
-            ptr->decref();
+            if (ptr->decref())
+                ptr = nullptr;
     }
 
     [[nodiscard]] PyObj* get() const { return ptr; }

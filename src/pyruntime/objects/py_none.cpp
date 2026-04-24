@@ -4,6 +4,8 @@
 
 #include "pyruntime/objects/py_none.h"
 
+PyNone* PyNone::None = new PyNone;
+
 size_t PyNone::hash() const { return 0; }
 
 std::string PyNone::toString() const { return "None"; }
@@ -11,6 +13,10 @@ std::string PyNone::toString() const { return "None"; }
 std::string PyNone::typeName() const { return "NoneType"; }
 
 bool PyNone::isTruthy() const { return false; }
+
+void PyNone::incref() {}
+
+bool PyNone::decref() { return false; }
 
 std::partial_ordering PyNone::operator<=>(const PyObj& other) const noexcept {
     if (dynamic_cast<const PyNone*>(&other))

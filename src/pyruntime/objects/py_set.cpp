@@ -16,6 +16,11 @@
 #include "pyruntime/runtime_errors.h"
 #include "pyruntime/runtime_util.h"
 
+PySet::~PySet() {
+    for (PyObj* elem : raw)
+        (void) elem->decref();
+}
+
 PyObj* PySet::add(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw PyTypeError("add() takes exactly one argument");
@@ -23,9 +28,9 @@ PyObj* PySet::add(PyObj* self, PyObj** args, const int64_t argc) {
     if (!selfSet)
         throw PyTypeError("Can only add to set types");
 
-    args[0]->incref();
-    selfSet->raw.insert(args[0]);
-    return new PyNone();
+    if (selfSet->raw.insert(args[0]).second)
+        args[0]->incref();
+    return PyNone::None;
 }
 
 PyObj* PySet::update(PyObj* self, PyObj** args, const int64_t argc) {
@@ -37,36 +42,43 @@ PyObj* PySet::update(PyObj* self, PyObj** args, const int64_t argc) {
 
     if (const PySet* srcSet = dynamic_cast<const PySet*>(args[0]))
         for (PyObj* v : srcSet->raw) {
-            v->incref();
-            selfSet->raw.insert(v);
+            if (selfSet->raw.insert(v).second)
+                v->incref();
         }
     else if (const PyList* srcList = dynamic_cast<const PyList*>(args[0]))
         for (PyObj* v : srcList->data()) {
-            v->incref();
-            selfSet->raw.insert(v);
+            if (selfSet->raw.insert(v).second)
+                v->incref();
         }
     else if (const PyTuple* srcTuple = dynamic_cast<const PyTuple*>(args[0]))
         for (PyObj* v : srcTuple->data()) {
-            v->incref();
-            selfSet->raw.insert(v);
+            if (selfSet->raw.insert(v).second)
+                v->incref();
         }
     else
         throw PyTypeError("Can only update with iterable types, got" + args[0]->typeName());
 
-    return new PyNone();
+    return PyNone::None;
 }
 
 PyObj* PySet::getAttr(const std::string& name) {
+    PyObj* result = nullptr;
     if (name == "update")
-        return new PyMethod("update", this, update);
+        result = new PyMethod("update", this, update);
     if (name == "add")
-        return new PyMethod("add", this, add);
-    throw PyAttributeError(std::format("'{}' object has no attribute '{}'", typeName(), name));
+        result = new PyMethod("add", this, add);
+
+    if (!result)
+        throw PyAttributeError(std::format("'{}' object has no attribute '{}'", typeName(), name));
+    incref();
+    return result;
 }
 
 PyInt* PySet::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
 
-PyBool* PySet::contains(const PyObj* obj) const { return new PyBool(raw.contains(const_cast<PyObj*>(obj))); }
+PyBool* PySet::contains(const PyObj* obj) const {
+    return raw.contains(const_cast<PyObj*>(obj)) ? PyBool::True : PyBool::False;
+}
 
 size_t PySet::hash() const { throw PyTypeError("Unhashable type " + typeName()); }
 
@@ -109,13 +121,15 @@ bool PySet::operator==(const PyObj& other) const noexcept {
     return *this <=> other == std::partial_ordering::equivalent;
 }
 
+PySetIter::~PySetIter() { (void) set->decref(); }
+
 PyObj* PySetIter::next(PyObj* self, PyObj**, const int64_t argc) {
     if (argc != 0)
         throw PyTypeError("next() takes no arguments");
     PySetIter* selfIter = dynamic_cast<PySetIter*>(self);
     if (!selfIter)
         throw PyTypeError("Can only get the next value of iterator types");
-    if (selfIter->it == selfIter->set.end())
+    if (selfIter->it == selfIter->end)
         throw PyStopIteration();
 
     PyObj* obj = *selfIter->it;

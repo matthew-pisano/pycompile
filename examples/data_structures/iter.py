@@ -35,5 +35,5 @@ print(next(it))
 
 print("Iterate Exhausted:")
 it = iter([1])
-next(it)
+print(next(it))
 next(it)

@@ -5,6 +5,7 @@
 #include "pyruntime/objects/py_object.h"
 
 #include <format>
+#include <iostream>
 #include <stdexcept>
 
 #include "pyruntime/objects/py_str.h"
@@ -12,9 +13,14 @@
 
 void PyObj::incref() { refcount.fetch_add(1, std::memory_order_relaxed); }
 
-void PyObj::decref() {
-    if (refcount.fetch_sub(1, std::memory_order_acq_rel) == 1)
+bool PyObj::decref() {
+    if (refcount == 0)
+        throw std::runtime_error("Invalid decref");
+    if (refcount.fetch_sub(1, std::memory_order_acq_rel) <= 1) {
         delete this;
+        return true;
+    }
+    return false;
 }
 
 PyStr* PyObj::name() const { return new PyStr(typeName()); }
@@ -35,6 +41,6 @@ PyObj* PyObj::idx(const PyObj*) const {
     throw PyTypeError(std::format("Object of type '{}' is not subscriptable", typeName()));
 }
 
-void PyObj::setIdx(const PyObj*, PyObj*) {
+void PyObj::setIdx(PyObj*, PyObj*) {
     throw PyTypeError(std::format("Object of type '{}' does not support item assignment", typeName()));
 }

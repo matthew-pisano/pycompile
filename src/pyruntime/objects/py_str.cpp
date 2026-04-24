@@ -19,7 +19,7 @@ PyInt* PyStr::len() const { return new PyInt(static_cast<int64_t>(raw.size())); 
 
 PyBool* PyStr::contains(const PyObj* obj) const {
     if (const PyStr* str = dynamic_cast<const PyStr*>(obj))
-        return new PyBool(raw.contains(str->data()));
+        return raw.contains(str->data()) ? PyBool::True : PyBool::False;
     throw PyTypeError("str objects can only contain other str objects");
 }
 
@@ -53,13 +53,15 @@ bool PyStr::operator==(const PyObj& other) const noexcept {
     return *this <=> other == std::partial_ordering::equivalent;
 }
 
+PyStrIter::~PyStrIter() { (void) str->decref(); }
+
 PyObj* PyStrIter::next(PyObj* self, PyObj**, const int64_t argc) {
     if (argc != 0)
         throw PyTypeError("next() takes no arguments");
     PyStrIter* selfIter = dynamic_cast<PyStrIter*>(self);
     if (!selfIter)
         throw PyTypeError("Can only get the next value of iterator types");
-    if (selfIter->it == selfIter->str.end())
+    if (selfIter->it == selfIter->end)
         throw PyStopIteration();
 
     const char c = *selfIter->it;

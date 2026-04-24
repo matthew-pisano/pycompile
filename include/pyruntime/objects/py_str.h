@@ -36,11 +36,18 @@ struct PyStr : PyObj {
 
 private:
     std::string raw;
+
+    friend struct PyStrIter;
 };
 
 
 struct PyStrIter : PyIter {
-    explicit PyStrIter(std::string str) : str(std::move(str)) { it = this->str.begin(); }
+    explicit PyStrIter(PyStr* str) : str(str) {
+        this->str->incref();
+        it = this->str->raw.begin();
+        end = this->str->raw.end();
+    }
+    ~PyStrIter() override;
 
     static PyObj* next(PyObj* self, PyObj**, int64_t argc);
 
@@ -52,7 +59,8 @@ struct PyStrIter : PyIter {
 
 private:
     std::string::iterator it;
-    std::string str;
+    std::string::iterator end;
+    PyStr* str;
 };
 
 #endif // PYCOMPILE_PY_STR_H

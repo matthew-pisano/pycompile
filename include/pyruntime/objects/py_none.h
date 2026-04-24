@@ -8,8 +8,6 @@
 #include "py_object.h"
 
 struct PyNone : PyObj {
-    explicit PyNone() = default;
-
     [[nodiscard]] size_t hash() const override;
 
     [[nodiscard]] std::string toString() const override;
@@ -18,9 +16,18 @@ struct PyNone : PyObj {
 
     [[nodiscard]] bool isTruthy() const override;
 
+    void incref() override;
+
+    [[nodiscard]] bool decref() override;
+
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
 
     bool operator==(const PyObj&) const noexcept override;
+
+    static PyNone* None;
+
+private:
+    PyNone() = default;
 };
 
 #endif // PYCOMPILE_PY_NONE_H

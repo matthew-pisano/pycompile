@@ -18,6 +18,7 @@ using PyTupleData = std::vector<PyObj*>;
 
 struct PyTuple : PyObj {
     explicit PyTuple(PyTupleData tuple) : raw(std::move(tuple)) {}
+    ~PyTuple() override;
 
     [[nodiscard]] PyInt* len() const override;
 
@@ -41,11 +42,18 @@ struct PyTuple : PyObj {
 
 private:
     PyTupleData raw;
+
+    friend struct PyTupleIter;
 };
 
 
 struct PyTupleIter : PyIter {
-    explicit PyTupleIter(PyTupleData tuple) : tuple(std::move(tuple)) { it = this->tuple.begin(); }
+    explicit PyTupleIter(PyTuple* tuple) : tuple(tuple) {
+        this->tuple->incref();
+        it = this->tuple->raw.begin();
+        end = this->tuple->raw.end();
+    }
+    ~PyTupleIter() override;
 
     static PyObj* next(PyObj* self, PyObj**, int64_t argc);
 
@@ -57,7 +65,8 @@ struct PyTupleIter : PyIter {
 
 private:
     PyTupleData::iterator it;
-    PyTupleData tuple;
+    PyTupleData::iterator end;
+    PyTuple* tuple;
 };
 
 

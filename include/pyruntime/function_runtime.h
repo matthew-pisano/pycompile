@@ -21,7 +21,7 @@ PyFunction* pyir_makeFunction(const char* fnName, void* fn_ptr);
 
 
 // call dispatch
-PyObj* pyir_call(const PyObj* callee, PyObj** args, int64_t argc);
+PyObj* pyir_call(PyObj* callee, PyObj** args, int64_t argc);
 
 // Stub for Python push null
 PyObj* pyir_pushNull();

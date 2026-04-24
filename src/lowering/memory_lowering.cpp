@@ -28,6 +28,23 @@ mlir::LogicalResult InitModuleLowering::matchAndRewrite(mlir::Operation* op, mli
 }
 
 
+mlir::LogicalResult DestroyModuleLowering::matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
+                                                           mlir::ConversionPatternRewriter& rewriter) const {
+    mlir::MLIRContext* ctx = op->getContext();
+    const mlir::ModuleOp module = getModule(op);
+    const mlir::Location loc = op->getLoc();
+
+    // declare: extern void pyir_destroyModule()
+    const mlir::LLVM::LLVMFunctionType fnType =
+            mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {});
+    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_destroyModule", fnType);
+
+    rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{});
+    rewriter.eraseOp(op);
+    return mlir::success();
+}
+
+
 mlir::LogicalResult LoadFastLowering::matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                                       mlir::ConversionPatternRewriter& rewriter) const {
     pyir::LoadFast loadFast = mlir::cast<pyir::LoadFast>(op);

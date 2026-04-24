@@ -26,7 +26,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Function Definition MLIR") {
         REQUIRE(mlir::isa<pyir::LoadName>(getOp(moduleFn, 3)));
         REQUIRE(mlir::isa<pyir::PushNull>(getOp(moduleFn, 4)));
         REQUIRE(mlir::isa<pyir::Call>(getOp(moduleFn, 5)));
-        REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(moduleFn, 6)));
+        REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(moduleFn, 7)));
 
         // make_function references the nested fn by name
         pyir::MakeFunction makeFunc = mlir::cast<pyir::MakeFunction>(getOp(moduleFn, 1));
@@ -91,7 +91,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Function Definition MLIR") {
         REQUIRE(mlir::isa<pyir::PushNull>(getOp(moduleFn, 4)));
         REQUIRE(mlir::isa<pyir::LoadConst>(getOp(moduleFn, 5)));
         REQUIRE(mlir::isa<pyir::Call>(getOp(moduleFn, 6)));
-        REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(moduleFn, 7)));
+        REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(moduleFn, 8)));
 
         // make_function references the nested fn by name
         pyir::MakeFunction makeFunc = mlir::cast<pyir::MakeFunction>(getOp(moduleFn, 1));
@@ -159,7 +159,7 @@ TEST_CASE_METHOD(MLIRFixture, "Test Function Definition MLIR") {
         REQUIRE(mlir::isa<pyir::PushNull>(getOp(moduleFn, 6)));
         REQUIRE(mlir::isa<pyir::Call>(getOp(moduleFn, 7)));
         REQUIRE(mlir::isa<pyir::Call>(getOp(moduleFn, 8)));
-        REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(moduleFn, 9)));
+        REQUIRE(mlir::isa<mlir::func::ReturnOp>(getOp(moduleFn, 10)));
 
         // make_function references the nested fn by name
         pyir::MakeFunction makeFunc = mlir::cast<pyir::MakeFunction>(getOp(moduleFn, 1));

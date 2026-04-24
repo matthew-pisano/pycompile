@@ -38,6 +38,12 @@ def PyIR_InitModule : PyIR_Op<"init_module"> {
 }
 
 
+def PyIR_DestroyModule : PyIR_Op<"destroy_module"> {
+    let summary = "Destroy module-level metadata";
+    let assemblyFormat = "attr-dict";
+}
+
+
 def PyIR_Resume : PyIR_Op<"resume"> {
     let summary = "Resume execution of a generator or start a module";
     let arguments = (ins SI64Attr:$arg);
@@ -315,4 +321,10 @@ def PyIR_ForIter : PyIR_Op<"for_iter", [Terminator]> {
     let arguments = (ins ByteCodeObject_Type:$iterator, Variadic<ByteCodeObject_Type>:$exit_args);
     let successors = (successor AnySuccessor:$body, AnySuccessor:$exit);
     let assemblyFormat = "$iterator `(` $exit_args `)` `->` `body` $body `,` `exit` $exit attr-dict `:` type($iterator)";
+}
+
+
+def PyIR_PopIter : PyIR_Op<"pop_iter"> {
+    let summary = "Pops the more cecent iterator";
+    let assemblyFormat = "attr-dict";
 }

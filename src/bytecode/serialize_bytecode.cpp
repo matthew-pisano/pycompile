@@ -37,6 +37,12 @@ inline std::string argvalTypeToString(const ArgvalType type) {
 }
 
 
+/**
+ * Helper function to print a single instruction in a human-readable format, with indentation for nested code.
+ * @param instr The Instruction struct to print
+ * @param os The stream to write to
+ * @param indentLevel The current indentation level (number of spaces) to use for printing the instruction
+ */
 void serializeInstruction(const ByteCodeInstruction& instr, std::ostream& os, const int indentLevel) {
     const std::string ind(indentLevel * 4, ' ');
 

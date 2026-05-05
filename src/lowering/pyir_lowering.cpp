@@ -32,19 +32,22 @@
 #include "lowering/pyir_conversion_utils.h"
 #include "utils.h"
 
-
 /**
- * Registers a conversion from pyir::ByteCodeObjectType to !llvm.ptr.
- *
- * All Python values are represented as opaque pointers to heap-allocated
- * pyir::Value objects in the runtime. This avoids ABI complexity around
- * passing std::variant by value across the LLVM boundary.
- * @param converter The LLVM type converter
+ * Populates conversion patterns that lower PyIR ops to LLVM dialect ops.
+ * @param patterns The patterns for conversion
+ * @param typeConverter The type converter to use, must have PyIR type conversions registered via
+ * addPyIRTypeConversions.
  */
-static void addPyIRTypeConversions(mlir::LLVMTypeConverter& converter) {
-    converter.addConversion([](const pyir::ByteCodeObjectType type) -> mlir::Type {
-        return mlir::LLVM::LLVMPointerType::get(type.getContext());
-    });
+void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns, mlir::LLVMTypeConverter& typeConverter) {
+    mlir::MLIRContext* ctx = patterns.getContext();
+    patterns.add<InitModuleLowering, DestroyModuleLowering, IsTruthyLowering, ToBoolLowering, UnaryNegativeLowering,
+                 UnaryNotLowering, UnaryInvertLowering, BinaryOpLowering, CompareOpLowering, LoadFastLowering,
+                 StoreFastLowering, LoadNameLowering, StoreNameLowering, LoadConstLowering, PushNullLowering,
+                 CallLowering, PopTopLowering, FormatSimpleLowering, BuildStringLowering, PushScopeLowering,
+                 PopScopeLowering, LoadArgLowering, MakeFunctionLowering, ReturnValueLowering, BuildListLowering,
+                 ListExtendLowering, ListAppendLowering, LoadAttrLowering, ContainsOpLowering, BuildSetLowering,
+                 SetUpdateLowering, SetAddLowering, BuildMapLowering, StoreSubscrLowering, GetIterLowering,
+                 ForIterLowering, PopIterLowering>(typeConverter, ctx);
 }
 
 
@@ -68,7 +71,10 @@ protected:
         mlir::MLIRContext* ctx = &getContext();
 
         mlir::LLVMTypeConverter typeConverter(ctx);
-        addPyIRTypeConversions(typeConverter);
+        // Registers a conversion from pyir::ByteCodeObjectType to !llvm.ptr.
+        typeConverter.addConversion([](const pyir::ByteCodeObjectType type) -> mlir::Type {
+            return mlir::LLVM::LLVMPointerType::get(type.getContext());
+        });
 
         mlir::RewritePatternSet patterns(ctx);
         populatePyIRToLLVMPatterns(patterns, typeConverter);
@@ -88,22 +94,6 @@ protected:
 };
 
 
-void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns, mlir::LLVMTypeConverter& typeConverter) {
-    mlir::MLIRContext* ctx = patterns.getContext();
-    patterns.add<InitModuleLowering, DestroyModuleLowering, IsTruthyLowering, ToBoolLowering, UnaryNegativeLowering,
-                 UnaryNotLowering, UnaryInvertLowering, BinaryOpLowering, CompareOpLowering, LoadFastLowering,
-                 StoreFastLowering, LoadNameLowering, StoreNameLowering, LoadConstLowering, PushNullLowering,
-                 CallLowering, PopTopLowering, FormatSimpleLowering, BuildStringLowering, PushScopeLowering,
-                 PopScopeLowering, LoadArgLowering, MakeFunctionLowering, ReturnValueLowering, BuildListLowering,
-                 ListExtendLowering, ListAppendLowering, LoadAttrLowering, ContainsOpLowering, BuildSetLowering,
-                 SetUpdateLowering, SetAddLowering, BuildMapLowering, StoreSubscrLowering, GetIterLowering,
-                 ForIterLowering, PopIterLowering>(typeConverter, ctx);
-}
-
-
-std::unique_ptr<mlir::Pass> createPyIRToLLVMPass() { return std::make_unique<PyIRToLLVMPass>(); }
-
-
 void lowerToLLVMDialect(mlir::MLIRContext& ctx, const mlir::OwningOpRef<mlir::ModuleOp>& module) {
     ctx.loadDialect<mlir::LLVM::LLVMDialect>();
 
@@ -111,7 +101,7 @@ void lowerToLLVMDialect(mlir::MLIRContext& ctx, const mlir::OwningOpRef<mlir::Mo
 
     pm.addPass(mlir::createCanonicalizerPass());
     // Lower PyIR to LLVM dialect
-    pm.addPass(createPyIRToLLVMPass());
+    pm.addPass(std::make_unique<PyIRToLLVMPass>());
 
     mlir::Location errorLoc = mlir::UnknownLoc::get(&ctx);
     std::string errorMessage;

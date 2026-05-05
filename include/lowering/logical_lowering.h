@@ -12,7 +12,7 @@
 /**
  * Lowers pyir.is_truthy to a call to the runtime function pyir_isTruthy.
  *
- * Evaluates a heap-allocated Value* as a literal boolean.
+ * Evaluates a heap-allocated PyObj* as a literal boolean.
  *
  * pyir.is_truthy %val : !pyir.object
  *     %result = llvm.call @pyir_isTruthy(%val)
@@ -29,7 +29,7 @@ struct IsTruthyLowering : PyIROpConversion {
 /**
  * Lowers pyir.to_bool to a call to the runtime function pyir_toBool.
  *
- * Coerces a heap-allocated Value* to a boolean Value* by delegating to the runtime toBool helper. The result is a
+ * Coerces a heap-allocated PyObj* to a boolean PyObj* by delegating to the runtime toBool helper. The result is a
  * freshly allocated Value(bool).
  *
  * pyir.to_bool %val : !pyir.object
@@ -47,7 +47,7 @@ struct ToBoolLowering : PyIROpConversion {
 /**
  * Lowers pyir.pyir_unaryInvert to a call to the runtime function pyir_unaryInvert.
  *
- * Inverts a heap-allocated Value* and returns a new heap-allocated Value*.
+ * Inverts a heap-allocated PyObj* and returns a new heap-allocated PyObj*.
  *
  * pyir.pyir_unaryInvert %val : !pyir.object
  *     %result = llvm.call @pyir_unaryInvert(%val)
@@ -64,7 +64,7 @@ struct UnaryInvertLowering : PyIROpConversion {
 /**
  * Lowers pyir.pyir_unaryNegative to a call to the runtime function pyir_unaryNegative.
  *
- * Negates a heap-allocated Value* and returns a new heap-allocated Value*.
+ * Negates a heap-allocated PyObj* and returns a new heap-allocated PyObj*.
  *
  * pyir.pyir_unaryNegative %val : !pyir.object
  *     %result = llvm.call @pyir_unaryNegative(%val)
@@ -81,7 +81,7 @@ struct UnaryNegativeLowering : PyIROpConversion {
 /**
  * Lowers pyir.pyir_unaryNot to a call to the runtime function pyir_unaryNot.
  *
- * Negates a heap-allocated Value* and returns a new heap-allocated Value*.
+ * Negates a heap-allocated PyObj* and returns a new heap-allocated PyObj*.
  *
  * pyir.pyir_unaryNot %val : !pyir.object
  *     %result = llvm.call @pyir_unaryNot(%val)
@@ -98,8 +98,8 @@ struct UnaryNotLowering : PyIROpConversion {
 /**
  * Lowers pyir.binary_op to a call to the appropriate runtime binary operator function.
  *
- * The operator string is mapped to a runtime function at compile time. Both operands are heap-allocated Value*
- * pointers. The runtime performs the operation and returns a new heap-allocated Value*.
+ * The operator string is mapped to a runtime function at compile time. Both operands are heap-allocated PyObj*
+ * pointers. The runtime performs the operation and returns a new heap-allocated PyObj*.
  *
  * pyir.binary_op "+", %lhs, %rhs
  *     %result = llvm.call @pyir_add(%lhs, %rhs)
@@ -116,8 +116,8 @@ struct BinaryOpLowering : PyIROpConversion {
 /**
  * Lowers pyir.compare_op to a call to the appropriate runtime compare operator function.
  *
- * The operator string is mapped to a runtime function at compile time. Both operands are heap-allocated Value*
- * pointers. The runtime performs the operation and returns a new heap-allocated Value*.
+ * The operator string is mapped to a runtime function at compile time. Both operands are heap-allocated PyObj*
+ * pointers. The runtime performs the operation and returns a new heap-allocated PyObj*.
  *
  * pyir.compare_op "==", %lhs, %rhs
  *     %result = llvm.call @pyir_eq(%lhs, %rhs)
@@ -134,8 +134,8 @@ struct CompareOpLowering : PyIROpConversion {
 /**
  * Lowers pyir.contains_op to a call to the appropriate runtime contains operator function.
  *
- * The operator string is mapped to a runtime function at compile time. Both operands are heap-allocated Value*
- * pointers. The runtime performs the operation and returns a new heap-allocated Value*.
+ * The operator string is mapped to a runtime function at compile time. Both operands are heap-allocated PyObj*
+ * pointers. The runtime performs the operation and returns a new heap-allocated PyObj*.
  *
  * pyir.contains_op "==", %lhs, %rhs
  *     %result = llvm.call @pyir_in(%lhs, %rhs)
@@ -152,7 +152,7 @@ struct ContainsOpLowering : PyIROpConversion {
 /**
  * Lowers pyir.pyir_formatSimple to a call to the runtime function pyir_formatSimple.
  *
- * Formats a heap-allocated Value* as a string and returns a new heap-allocated Value*.
+ * Formats a heap-allocated PyObj* as a string and returns a new heap-allocated PyObj*.
  *
  * pyir.pyir_formatSimple %val : !pyir.object
  *     %result = llvm.call @pyir_formatSimple(%val)

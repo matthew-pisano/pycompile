@@ -10,7 +10,7 @@ mlir::LogicalResult buildArrayType(mlir::MLIRContext* ctx, mlir::Operation* op,
                                    mlir::ConversionPatternRewriter& rewriter, const mlir::Location& loc) {
     const int64_t count = static_cast<int64_t>(operands.size());
 
-    // Allocate a stack array of Value* to hold all parts: Value*[count]
+    // Allocate a stack array of PyObj* to hold all parts: PyObj*[count]
     mlir::LLVM::LLVMArrayType arrType = mlir::LLVM::LLVMArrayType::get(ptrType(ctx), count);
     mlir::LLVM::ConstantOp allocSize =
             rewriter.create<mlir::LLVM::ConstantOp>(loc, i64Type(ctx), rewriter.getI64IntegerAttr(1));
@@ -25,7 +25,7 @@ mlir::LogicalResult buildArrayType(mlir::MLIRContext* ctx, mlir::Operation* op,
         mlir::LLVM::GEPOp gep =
                 rewriter.create<mlir::LLVM::GEPOp>(loc, ptrType(ctx), ptrType(ctx), alloca, mlir::ValueRange{idx});
 
-        // Store the i-th operand (a Value*) into parts[i]
+        // Store the i-th operand (a PyObj*) into parts[i]
         rewriter.create<mlir::LLVM::StoreOp>(loc, operands[i], gep);
     }
 
@@ -45,7 +45,7 @@ mlir::LogicalResult BuildStringLowering::matchAndRewrite(mlir::Operation* op,
     const mlir::ModuleOp module = getModule(op);
     const mlir::Location loc = op->getLoc();
 
-    // declare: extern Value* pyir_buildString(Value** parts, int64_t count)
+    // declare: extern PyObj* pyir_buildString(Value** parts, int64_t count)
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), i64Type(ctx)});
     const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_buildString", fnType);
@@ -59,7 +59,7 @@ mlir::LogicalResult BuildListLowering::matchAndRewrite(mlir::Operation* op, cons
     const mlir::ModuleOp module = getModule(op);
     const mlir::Location loc = op->getLoc();
 
-    // declare: extern Value* pyir_buildList(Value** parts, int64_t count)
+    // declare: extern PyObj* pyir_buildList(Value** parts, int64_t count)
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), i64Type(ctx)});
     const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_buildList", fnType);
@@ -73,7 +73,7 @@ mlir::LogicalResult ListExtendLowering::matchAndRewrite(mlir::Operation* op, con
     const mlir::ModuleOp module = getModule(op);
     const mlir::Location loc = op->getLoc();
 
-    // declare: extern void pyir_listExtend(Value* list, Value* items)
+    // declare: extern void pyir_listExtend(PyObj* list, PyObj* items)
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
     mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_listExtend", fnType);
@@ -91,7 +91,7 @@ mlir::LogicalResult ListAppendLowering::matchAndRewrite(mlir::Operation* op, con
     const mlir::ModuleOp module = getModule(op);
     const mlir::Location loc = op->getLoc();
 
-    // declare: extern void pyir_listAppend(Value* list, Value* item)
+    // declare: extern void pyir_listAppend(PyObj* list, PyObj* item)
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
     mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_listAppend", fnType);
@@ -109,7 +109,7 @@ mlir::LogicalResult BuildSetLowering::matchAndRewrite(mlir::Operation* op, const
     const mlir::ModuleOp module = getModule(op);
     const mlir::Location loc = op->getLoc();
 
-    // declare: extern Value* pyir_buildSet(Value** parts, int64_t count)
+    // declare: extern PyObj* pyir_buildSet(Value** parts, int64_t count)
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), i64Type(ctx)});
     const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_buildSet", fnType);
@@ -123,7 +123,7 @@ mlir::LogicalResult SetUpdateLowering::matchAndRewrite(mlir::Operation* op, cons
     const mlir::ModuleOp module = getModule(op);
     const mlir::Location loc = op->getLoc();
 
-    // declare: extern void pyir_setUpdate(Value* set, Value* items)
+    // declare: extern void pyir_setUpdate(PyObj* set, PyObj* items)
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
     mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_setUpdate", fnType);
@@ -141,7 +141,7 @@ mlir::LogicalResult SetAddLowering::matchAndRewrite(mlir::Operation* op, const m
     const mlir::ModuleOp module = getModule(op);
     const mlir::Location loc = op->getLoc();
 
-    // declare: extern void pyir_setAdd(Value* set, Value* item)
+    // declare: extern void pyir_setAdd(PyObj* set, PyObj* item)
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
     mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_setAdd", fnType);
@@ -159,7 +159,7 @@ mlir::LogicalResult BuildMapLowering::matchAndRewrite(mlir::Operation* op, const
     const mlir::ModuleOp module = getModule(op);
     const mlir::Location loc = op->getLoc();
 
-    // declare: extern Value* pyir_buildMap(Value** parts, int64_t count)
+    // declare: extern PyObj* pyir_buildMap(Value** parts, int64_t count)
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), i64Type(ctx)});
     const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_buildMap", fnType);

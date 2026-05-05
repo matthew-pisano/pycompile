@@ -16,12 +16,12 @@ mlir::LogicalResult CallLowering::matchAndRewrite(mlir::Operation* op, const mli
     const mlir::ArrayRef<mlir::Value> args = operands.drop_front(1);
     const int64_t argc = static_cast<int64_t>(args.size());
 
-    // declare: extern Value* pyir_call(Value* callee, Value** args, int64_t argc)
+    // declare: extern PyObj* pyir_call(PyObj* callee, Value** args, int64_t argc)
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), ptrType(ctx), i64Type(ctx)});
     mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_call", fnType);
 
-    // allocate args array on the stack: Value*[argc]
+    // allocate args array on the stack: PyObj*[argc]
     mlir::Value argsPtr;
     if (argc > 0) {
         mlir::LLVM::LLVMArrayType arrType = mlir::LLVM::LLVMArrayType::get(ptrType(ctx), argc);
@@ -95,7 +95,7 @@ mlir::LogicalResult MakeFunctionLowering::matchAndRewrite(mlir::Operation* op, m
     pyir::MakeFunction makeFunc = mlir::cast<pyir::MakeFunction>(op);
     const std::string fnName = makeFunc.getFnName().str();
 
-    // declare: extern Value* pyir_makeFunction(char* display_name, void* fn_ptr)
+    // declare: extern PyObj* pyir_makeFunction(char* display_name, void* fn_ptr)
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), ptrType(ctx)});
     mlir::LLVM::LLVMFuncOp runtimeFn = getOrInsertRuntimeFn(rewriter, module, "pyir_makeFunction", fnType);

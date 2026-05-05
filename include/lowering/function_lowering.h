@@ -12,8 +12,8 @@
 /**
  * Lowers pyir.call to a call to the runtime function pyir_call.
  *
- * Arguments are stack-allocated as a Value*[] array and passed by pointer along with the argument count. The callee is
- * passed as a Value* pointer.
+ * Arguments are stack-allocated as a PyObj*[] array and passed by pointer along with the argument count. The callee is
+ * passed as a PyObj* pointer.
  *
  * pyir.call %callee(%arg0, %arg1)
  *     %arr    = llvm.alloca [2 x !llvm.ptr]
@@ -68,7 +68,7 @@ struct PopScopeLowering : PyIROpConversion {
  * Lowers pyir.make_function to a call to pyir_makeFunction(fn_ptr).
  *
  * Takes the symbol name stored in the attribute, gets its address as a function pointer,
- * and wraps it in a heap-allocated Value* callable.
+ * and wraps it in a heap-allocated PyObj* callable.
  *
  * pyir.make_function "fn_name"
  *     %ptr = llvm.mlir.addressof @fn_name

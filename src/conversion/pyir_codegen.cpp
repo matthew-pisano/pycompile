@@ -187,9 +187,9 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
 
     mlir::FunctionType fnType;
     if (meta.isFunction)
-        // Value*(Value** args, int64_t argc), matches Value::Fn
+        // PyObj*(Value** args, int64_t argc), matches Value::Fn
         fnType = builder.getFunctionType({pyType, pyType}, // args_ptr, argc
-                                         {pyType} // return Value*
+                                         {pyType} // return PyObj*
         );
     else
         // Module-level: no args, no return

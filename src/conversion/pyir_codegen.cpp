@@ -13,7 +13,6 @@
 #include <mlir/IR/Verifier.h>
 
 #include "conversion/builder_codegen.h"
-#include "conversion/codegen_utils.h"
 #include "conversion/control_flow_codegen.h"
 #include "conversion/function_codegen.h"
 #include "conversion/logical_codegen.h"

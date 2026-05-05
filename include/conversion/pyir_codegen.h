@@ -11,14 +11,35 @@
 #include "bytecode/bytecode.h"
 
 
-/// Builds an MLIR module from the given bytecode
+/**
+ * A collection of data structures used for bookkeeping during the bytecode to MLIR conversion process.
+ */
+struct ConversionMeta {
+    /// Value stack, maps the CPython evaluation stack to SSA values.
+    std::vector<mlir::Value> stack;
+    /// Maps program offsets to program blocks, used for jump addressing.
+    std::unordered_map<size_t, mlir::Block*> offsetToBlock;
+    /// Keeps track of declared function names before construction.
+    std::unordered_map<mlir::Value*, std::string> pendingFunctions;
+    /// Whether the module is a top-level module or a function
+    bool isFunction;
+};
+
+
+/**
+ * Builds an MLIR module from the given bytecode.
+ */
 void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ByteCodeModule& module,
                      const std::string& moduleName);
 
-/// Wraps a single module into an mlir::ModuleOp containing one FuncOp
+/**
+ * Wraps a single module into an mlir::ModuleOp containing one FuncOp.
+ */
 mlir::OwningOpRef<mlir::ModuleOp> generatePyIR(mlir::MLIRContext& ctx, const ByteCodeModule& module);
 
-/// Wraps multiple modules into a single mlir::ModuleOp
+/**
+ * Wraps multiple modules into a single mlir::ModuleOp.
+ */
 mlir::OwningOpRef<mlir::ModuleOp> mergePyIRModules(mlir::MLIRContext& ctx,
                                                    std::vector<mlir::OwningOpRef<mlir::ModuleOp>>& mlirModules);
 

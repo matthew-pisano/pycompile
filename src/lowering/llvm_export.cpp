@@ -42,16 +42,6 @@ std::string pyRuntimeMain() {
 #endif
 }
 
-/**
- * Initializes LLVM's native target, ASM printer, and ASM parser. Safe to call multiple times: LLVM initialization
- * is idempotent.
- */
-static void initializeLLVMTargets() {
-    llvm::InitializeNativeTarget();
-    llvm::InitializeNativeTargetAsmPrinter();
-    llvm::InitializeNativeTargetAsmParser();
-}
-
 
 /**
  * Creates an LLVM TargetMachine for the given options.
@@ -64,7 +54,10 @@ static void initializeLLVMTargets() {
  * @throws std::runtime_error if the target triple cannot be resolved.
  */
 static std::unique_ptr<llvm::TargetMachine> createTargetMachine(const LLVMExportOptions& options) {
-    initializeLLVMTargets();
+    // Initializes LLVM's native target, ASM printer, and ASM parser.
+    llvm::InitializeNativeTarget();
+    llvm::InitializeNativeTargetAsmPrinter();
+    llvm::InitializeNativeTargetAsmParser();
 
     const std::string tripleStr =
             options.targetTriple.empty() ? llvm::sys::getDefaultTargetTriple() : options.targetTriple;
@@ -178,13 +171,13 @@ std::unique_ptr<llvm::Module> translateToLLVMIR(llvm::LLVMContext& llvmCtx,
 
 void exportObjectFile(const std::unique_ptr<llvm::Module>& llvmModule, const std::filesystem::path& output,
                       const LLVMExportOptions& options) {
-    // open output file
+    // Open output file
     std::error_code ec;
     llvm::raw_fd_ostream outStream(output.string(), ec, llvm::sys::fs::OF_None);
     if (ec)
         throw std::runtime_error("Failed to open output file: " + ec.message());
 
-    // emit object file
+    // Omit object file
     llvm::legacy::PassManager codegenPm;
     const std::unique_ptr<llvm::TargetMachine> tm = createTargetMachine(options);
     if (tm->addPassesToEmitFile(codegenPm, outStream, nullptr, llvm::CodeGenFileType::ObjectFile))
@@ -196,6 +189,9 @@ void exportObjectFile(const std::unique_ptr<llvm::Module>& llvmModule, const std
 
 
 void linkObjectFile(const std::filesystem::path& obj, const std::filesystem::path& output) {
+    // Use an existing linker program to link the object file with the runtime library.
+    // Tries to find a suitable C++ compiler in PATH to use as a linker, since it will automatically link the C++
+    // standard library which the runtime depends on. If no compiler is found, throws a runtime_error.
     llvm::ErrorOr<std::string> cppCompiler = llvm::sys::findProgramByName("c++");
     if (!cppCompiler)
         cppCompiler = llvm::sys::findProgramByName("g++");

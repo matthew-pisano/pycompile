@@ -4,7 +4,11 @@
 
 #include "lowering/builder_lowering.h"
 
-
+/**
+ * Helper function to build the array of PyObj* and call the runtime fn for building strings, lists, sets, or maps.
+ * This abstracts the common logic of allocating an array, storing operands, and calling the runtime function with the
+ * array pointer and count.
+ */
 mlir::LogicalResult buildArrayType(mlir::MLIRContext* ctx, mlir::Operation* op,
                                    const mlir::ArrayRef<mlir::Value> operands, const mlir::LLVM::LLVMFuncOp& fn,
                                    mlir::ConversionPatternRewriter& rewriter, const mlir::Location& loc) {

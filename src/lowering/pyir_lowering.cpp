@@ -32,24 +32,6 @@
 #include "lowering/pyir_conversion_utils.h"
 #include "utils.h"
 
-/**
- * Populates conversion patterns that lower PyIR ops to LLVM dialect ops.
- * @param patterns The patterns for conversion
- * @param typeConverter The type converter to use, must have PyIR type conversions registered via
- * addPyIRTypeConversions.
- */
-void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns, mlir::LLVMTypeConverter& typeConverter) {
-    mlir::MLIRContext* ctx = patterns.getContext();
-    patterns.add<InitModuleLowering, DestroyModuleLowering, IsTruthyLowering, ToBoolLowering, UnaryNegativeLowering,
-                 UnaryNotLowering, UnaryInvertLowering, BinaryOpLowering, CompareOpLowering, LoadFastLowering,
-                 StoreFastLowering, LoadNameLowering, StoreNameLowering, LoadConstLowering, PushNullLowering,
-                 CallLowering, PopTopLowering, FormatSimpleLowering, BuildStringLowering, PushScopeLowering,
-                 PopScopeLowering, LoadArgLowering, MakeFunctionLowering, ReturnValueLowering, BuildListLowering,
-                 ListExtendLowering, ListAppendLowering, LoadAttrLowering, ContainsOpLowering, BuildSetLowering,
-                 SetUpdateLowering, SetAddLowering, BuildMapLowering, StoreSubscrLowering, GetIterLowering,
-                 ForIterLowering, PopIterLowering>(typeConverter, ctx);
-}
-
 
 /**
  * MLIR pass that lowers the entire PyIR dialect to the LLVM dialect.
@@ -91,6 +73,25 @@ protected:
         if (mlir::failed(mlir::applyFullConversion(module, target, std::move(patterns))))
             signalPassFailure();
     }
+
+private:
+    /**
+     * Populates conversion patterns that lower PyIR ops to LLVM dialect ops.
+     * @param patterns The patterns for conversion
+     * @param typeConverter The type converter to use, must have PyIR type conversions registered via
+     * addPyIRTypeConversions.
+     */
+    static void populatePyIRToLLVMPatterns(mlir::RewritePatternSet& patterns, mlir::LLVMTypeConverter& typeConverter) {
+        mlir::MLIRContext* ctx = patterns.getContext();
+        patterns.add<InitModuleLowering, DestroyModuleLowering, IsTruthyLowering, ToBoolLowering, UnaryNegativeLowering,
+                     UnaryNotLowering, UnaryInvertLowering, BinaryOpLowering, CompareOpLowering, LoadFastLowering,
+                     StoreFastLowering, LoadNameLowering, StoreNameLowering, LoadConstLowering, PushNullLowering,
+                     CallLowering, PopTopLowering, FormatSimpleLowering, BuildStringLowering, PushScopeLowering,
+                     PopScopeLowering, LoadArgLowering, MakeFunctionLowering, ReturnValueLowering, BuildListLowering,
+                     ListExtendLowering, ListAppendLowering, LoadAttrLowering, ContainsOpLowering, BuildSetLowering,
+                     SetUpdateLowering, SetAddLowering, BuildMapLowering, StoreSubscrLowering, GetIterLowering,
+                     ForIterLowering, PopIterLowering>(typeConverter, ctx);
+    }
 };
 
 
@@ -103,6 +104,7 @@ void lowerToLLVMDialect(mlir::MLIRContext& ctx, const mlir::OwningOpRef<mlir::Mo
     // Lower PyIR to LLVM dialect
     pm.addPass(std::make_unique<PyIRToLLVMPass>());
 
+    // Callback for capturing a failure and saving the original error message and location
     mlir::Location errorLoc = mlir::UnknownLoc::get(&ctx);
     std::string errorMessage;
     mlir::ScopedDiagnosticHandler handler(&ctx, [&](const mlir::Diagnostic& diag) {

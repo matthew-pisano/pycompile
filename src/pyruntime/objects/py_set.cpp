@@ -106,6 +106,7 @@ PySetData& PySet::data() { return raw; }
 
 std::partial_ordering PySet::operator<=>(const PyObj& other) const noexcept {
     if (const PySet* s = dynamic_cast<const PySet*>(&other)) {
+        // Ensure that both sets have the exact same elements or compare the sizes if sizes are unequal
         if (raw.size() != s->raw.size())
             return raw.size() <=> s->raw.size();
 

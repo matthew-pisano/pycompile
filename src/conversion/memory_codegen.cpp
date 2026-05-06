@@ -19,7 +19,7 @@ static size_t fnCounter = 0;
 
 
 /**
- * Resolves free or cell variable names based on the given CodeInfo
+ * Resolves free or cell variable names based on the given CodeInfo.
  * @param info The CodeInfo of the program
  * @param idx The index of the desired name
  * @return The name of the free or cell variable
@@ -135,7 +135,7 @@ void storeDerefCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, cons
 
 
 /**
- * Translates a vector of Python primitives into an MLIR ArrayAttr object
+ * Translates a vector of Python primitives into an MLIR ArrayAttr object.
  */
 mlir::ArrayAttr getArrayAttr(mlir::OpBuilder& builder, const std::vector<PrimitiveArgvals>& tuple) {
     llvm::SmallVector<mlir::Attribute> attrs;
@@ -186,6 +186,7 @@ void loadConstCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ml
         return;
     }
 
+    // For other constants, convert the value into an MLIR attribute and emit a LoadConst
     mlir::Attribute attr;
     if (instr.argvalType == ArgvalType::Str)
         attr = builder.getStringAttr(std::get<std::string>(instr.argval));

@@ -22,7 +22,7 @@
 #include "utils.h"
 
 /**
- * Gets the location of the given instruction in terms of MLIR
+ * Gets the location of the given instruction in terms of MLIR.
  * @param ctx The MLIR context
  * @param instr The instruction to locate
  * @param filename The filename for the instruction
@@ -45,23 +45,70 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
     const mlir::Location loc = getInstructionLocation(ctx, instr, module.filename);
 
     switch (instr.opcode) {
+        // ---- Bookkeeping instructions, no MLIR equivalent needed ----
         case PythonOpcode::RESUME:
         case PythonOpcode::NOT_TAKEN:
         case PythonOpcode::END_FOR:
-            // Bookkeeping instructions, no MLIR equivalent needed.
             return;
-        case PythonOpcode::PUSH_NULL:
-            // Push a null sentinel onto the stack for the call convention.
-            return meta.stack.push_back(builder.create<pyir::PushNull>(loc, pyType).getResult());
-        case PythonOpcode::POP_TOP:
-            // Discard top of stack, if the value is unused MLIR's DCE will clean up the producing op if it's Pure.
-            return meta.stack.pop_back();
-        case PythonOpcode::COPY: {
-            const int64_t* copyIdx = std::get_if<int64_t>(&instr.argval);
-            return meta.stack.push_back(meta.stack.at(meta.stack.size() - *copyIdx));
-        }
+        // ---- Builder Ops ----
+        case PythonOpcode::BUILD_STRING:
+            return buildStringCodegen(builder, ctx, loc, instr, meta);
+        case PythonOpcode::BUILD_LIST:
+            return buildListCodegen(builder, ctx, loc, instr, meta);
+        case PythonOpcode::LIST_EXTEND:
+            return listExtendCodegen(builder, loc, instr, meta);
+        case PythonOpcode::LIST_APPEND:
+            return listAppendCodegen(builder, loc, instr, meta);
+        case PythonOpcode::BUILD_SET:
+            return buildSetCodegen(builder, ctx, loc, instr, meta);
+        case PythonOpcode::SET_UPDATE:
+            return setUpdateCodegen(builder, loc, instr, meta);
+        case PythonOpcode::SET_ADD:
+            return setAddCodegen(builder, loc, instr, meta);
+        case PythonOpcode::BUILD_MAP:
+            return buildMapCodegen(builder, ctx, loc, instr, meta);
+        // ---- Control flow Ops ----
+        case PythonOpcode::JUMP_FORWARD:
+            return jumpForwardCodegen(builder, loc, instr, meta);
+        case PythonOpcode::JUMP_BACKWARD:
+            return jumpBackwardCodegen(builder, loc, instr, meta);
+        case PythonOpcode::POP_JUMP_IF_TRUE:
+            return popJumpIfTrueCodegen(builder, loc, fn, instr, meta);
+        case PythonOpcode::POP_JUMP_IF_FALSE:
+            return popJumpIfFalseCodegen(builder, loc, fn, instr, meta);
+        case PythonOpcode::GET_ITER:
+            return getIterCodegen(builder, ctx, loc, meta);
+        case PythonOpcode::FOR_ITER:
+            return forIterCodegen(builder, ctx, loc, fn, instr, meta);
+        case PythonOpcode::POP_ITER:
+            return popIterCodegen(builder, loc);
+        // ---- Function Ops ----
         case PythonOpcode::MAKE_FUNCTION:
             return makeFunctionCodegen(builder, ctx, loc, meta);
+        case PythonOpcode::CALL:
+            return callFuncCodegen(builder, ctx, loc, instr, meta);
+        case PythonOpcode::RETURN_VALUE:
+            return returnValueCodegen(builder, loc, meta);
+        // ---- Logical Ops ----
+        case PythonOpcode::BINARY_OP:
+            return binaryOpCodegen(builder, ctx, loc, instr, meta);
+        case PythonOpcode::COMPARE_OP:
+            return compareOpCodegen(builder, ctx, loc, instr, meta);
+        case PythonOpcode::CONTAINS_OP:
+            return containsOpCodegen(builder, ctx, loc, instr, meta);
+        case PythonOpcode::TO_BOOL:
+            return toBoolCodegen(builder, ctx, loc, meta);
+        case PythonOpcode::UNARY_NOT:
+            return unaryNotCodegen(builder, ctx, loc, meta);
+        case PythonOpcode::UNARY_NEGATIVE:
+            return unaryNegativeCodegen(builder, ctx, loc, meta);
+        case PythonOpcode::UNARY_INVERT:
+            return unaryInvertCodegen(builder, ctx, loc, meta);
+        case PythonOpcode::FORMAT_SIMPLE:
+            return formatSimpleCodegen(builder, ctx, loc, meta);
+        // ---- Memory Ops ----
+        case PythonOpcode::LOAD_SMALL_INT:
+            return loadSmallIntCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::LOAD_GLOBAL:
             return loadGlobalCodegen(builder, ctx, loc, instr, meta);
         case PythonOpcode::LOAD_FAST_BORROW:
@@ -84,58 +131,18 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             return storeDerefCodegen(builder, loc, instr, module.info, meta);
         case PythonOpcode::STORE_SUBSCR:
             return storeSubscrCodegen(builder, loc, meta);
-        case PythonOpcode::BINARY_OP:
-            return binaryOpCodegen(builder, ctx, loc, instr, meta);
-        case PythonOpcode::COMPARE_OP:
-            return compareOpCodegen(builder, ctx, loc, instr, meta);
-        case PythonOpcode::CONTAINS_OP:
-            return containsOpCodegen(builder, ctx, loc, instr, meta);
-        case PythonOpcode::CALL:
-            return callFuncCodegen(builder, ctx, loc, instr, meta);
-        case PythonOpcode::RETURN_VALUE:
-            return returnValueCodegen(builder, loc, meta);
-        case PythonOpcode::JUMP_FORWARD:
-            return jumpForwardCodegen(builder, loc, instr, meta);
-        case PythonOpcode::JUMP_BACKWARD:
-            return jumpBackwardCodegen(builder, loc, instr, meta);
-        case PythonOpcode::POP_JUMP_IF_TRUE:
-            return popJumpIfTrueCodegen(builder, loc, fn, instr, meta);
-        case PythonOpcode::POP_JUMP_IF_FALSE:
-            return popJumpIfFalseCodegen(builder, loc, fn, instr, meta);
-        case PythonOpcode::GET_ITER:
-            return getIterCodegen(builder, ctx, loc, meta);
-        case PythonOpcode::FOR_ITER:
-            return forIterCodegen(builder, ctx, loc, fn, instr, meta);
-        case PythonOpcode::POP_ITER:
-            return popIterCodegen(builder, loc);
-        case PythonOpcode::LOAD_SMALL_INT:
-            return loadSmallIntCodegen(builder, ctx, loc, instr, meta);
-        case PythonOpcode::TO_BOOL:
-            return toBoolCodegen(builder, ctx, loc, meta);
-        case PythonOpcode::UNARY_NOT:
-            return unaryNotCodegen(builder, ctx, loc, meta);
-        case PythonOpcode::UNARY_NEGATIVE:
-            return unaryNegativeCodegen(builder, ctx, loc, meta);
-        case PythonOpcode::UNARY_INVERT:
-            return unaryInvertCodegen(builder, ctx, loc, meta);
-        case PythonOpcode::FORMAT_SIMPLE:
-            return formatSimpleCodegen(builder, ctx, loc, meta);
-        case PythonOpcode::BUILD_STRING:
-            return buildStringCodegen(builder, ctx, loc, instr, meta);
-        case PythonOpcode::BUILD_LIST:
-            return buildListCodegen(builder, ctx, loc, instr, meta);
-        case PythonOpcode::LIST_EXTEND:
-            return listExtendCodegen(builder, loc, instr, meta);
-        case PythonOpcode::LIST_APPEND:
-            return listAppendCodegen(builder, loc, instr, meta);
-        case PythonOpcode::BUILD_SET:
-            return buildSetCodegen(builder, ctx, loc, instr, meta);
-        case PythonOpcode::SET_UPDATE:
-            return setUpdateCodegen(builder, loc, instr, meta);
-        case PythonOpcode::SET_ADD:
-            return setAddCodegen(builder, loc, instr, meta);
-        case PythonOpcode::BUILD_MAP:
-            return buildMapCodegen(builder, ctx, loc, instr, meta);
+        // ---- Misc. Ops ----
+        case PythonOpcode::PUSH_NULL:
+            // Push a null sentinel onto the stack for the call convention.
+            return meta.stack.push_back(builder.create<pyir::PushNull>(loc, pyType).getResult());
+        case PythonOpcode::POP_TOP:
+            // Discard top of stack, if the value is unused MLIR's DCE will clean up the producing op if it's Pure.
+            return meta.stack.pop_back();
+        case PythonOpcode::COPY: {
+            // Copy a value at the given index to the top of the stack
+            const int64_t* copyIdx = std::get_if<int64_t>(&instr.argval);
+            return meta.stack.push_back(meta.stack.at(meta.stack.size() - *copyIdx));
+        }
         case PythonOpcode::UNKNOWN:
         default:
             throw PyCompileError("Unsupported opcode '" + pythonOpcodeToString(instr.opcode) + "'", loc);
@@ -159,6 +166,7 @@ void switchToOffsetBlock(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const
         if (targetBlock->getNumArguments() == 0)
             for (mlir::Value v : branchArgs)
                 targetBlock->addArgument(v.getType(), loc);
+        // Add the block at the offset to the MLIR code
         builder.create<mlir::cf::BranchOp>(loc, targetBlock, mlir::ValueRange{branchArgs});
     }
 
@@ -171,7 +179,7 @@ void switchToOffsetBlock(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const
 
 
 /**
- * Translates a ByteCodeModule to an MLIR FuncOp instruction-by-instruction
+ * Translates a ByteCodeModule to an MLIR FuncOp instruction-by-instruction.
  * @param builder The MLIR OpBuilder to use by reference
  * @param ctx The MLIR Context
  * @param module The original ByteCodeModule
@@ -195,16 +203,15 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
         // Module-level: no args, no return
         fnType = builder.getFunctionType({}, {});
 
-
     mlir::func::FuncOp fn =
             builder.create<mlir::func::FuncOp>(mlir::UnknownLoc::get(&ctx), llvm::StringRef(moduleName), fnType);
 
     mlir::Block* block = fn.addEntryBlock();
     builder.setInsertionPointToStart(block);
 
-    const mlir::Location preambleLoc =
-            module.instructions.empty() ? mlir::UnknownLoc::get(&ctx)
-                                        : getInstructionLocation(ctx, module.instructions.front(), module.filename);
+    mlir::Location preambleLoc = mlir::UnknownLoc::get(&ctx);
+    if (!module.instructions.empty())
+        preambleLoc = getInstructionLocation(ctx, module.instructions.front(), module.filename);
 
     // For functions, emit push_scope + arg unpacking preamble using block arguments
     if (meta.isFunction) {
@@ -221,7 +228,6 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
     // For modules, setup dunder variables and state
     else
         builder.create<pyir::InitModule>(preambleLoc, module.filename, module.moduleName);
-
 
     // Exception table handler targets also get blocks
     for (const ExceptionTableEntry& e : module.info.exceptionTable)
@@ -295,6 +301,7 @@ mlir::OwningOpRef<mlir::ModuleOp> mergePyIRModules(mlir::MLIRContext& ctx,
     const mlir::FileLineColLoc fileLoc = mlir::FileLineColLoc::get(&ctx, mlirModuleName, 0, 0);
     mlir::ModuleOp merged = mlir::ModuleOp::create(fileLoc);
 
+    // Simple merging strategy: just move all operations from each module into the merged module's body.
     for (mlir::OwningOpRef<mlir::ModuleOp>& mlirModule : mlirModules) {
         llvm::SmallVector<mlir::Operation*> ops;
         for (mlir::Operation& op : mlirModule.get().getBody()->getOperations())

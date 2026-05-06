@@ -146,6 +146,7 @@ int main(const int argc, char* argv[]) {
         }
     }
 
+    // Read in the input Python files
     std::vector<std::string> fileContents;
     for (const std::string& fileName : inputFileNames) {
         try {
@@ -187,6 +188,7 @@ int main(const int argc, char* argv[]) {
             return 0;
     }
 
+    // Merge MLIR modules into a single module if there are multiple input files
     mlir::OwningOpRef<mlir::ModuleOp> mergedMlirModule;
     if (mlirModules.size() > 1)
         try {
@@ -210,6 +212,7 @@ int main(const int argc, char* argv[]) {
     llvmOptions.optLevel = std::stoi(optimLevel);
     llvmOptions.debugInfo = debugBuild;
 
+    // Translate LLVM MLIR dialect to LLVM IR
     llvm::LLVMContext llvmCtx; // Must exit scope after all other LLVM Module instances
     std::unique_ptr<llvm::Module> llvmModule;
     try {
@@ -224,7 +227,7 @@ int main(const int argc, char* argv[]) {
             return 0;
     }
 
-    // Create object file
+    // Create object file from LLVM IR
     std::filesystem::path modulePath(getMLIRModuleName(mergedMlirModule));
     const std::string moduleObjectPath = modulePath.replace_extension(".o");
     try {

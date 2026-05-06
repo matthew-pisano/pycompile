@@ -7,6 +7,7 @@
 
 extern "C" {
 int pyir_runModule(void (*moduleFn)());
+
 const char* pyir_getLastError();
 }
 

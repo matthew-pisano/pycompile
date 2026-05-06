@@ -8,7 +8,7 @@
 #include "bytecode/bytecode.h"
 
 /**
- * Extracts a vector of opcodes from a given vector of instruction
+ * Extracts a vector of opcodes from a given vector of instruction.
  * @param instructions The vector of instructions
  * @return A vector of opcodes from the instructions
  */

@@ -13,7 +13,7 @@
 
 
 /**
- * Fixture that initializes the MLIR context and compiles python strings to MLIR modules
+ * Fixture that initializes the MLIR context and compiles python strings to MLIR modules.
  */
 struct MLIRFixture {
     mlir::MLIRContext mlirCtx;
@@ -28,7 +28,7 @@ struct MLIRFixture {
 
 
 /**
- * Gets the MLIR operation at the given index
+ * Gets the MLIR operation at the given index.
  */
 inline mlir::Operation* getOp(mlir::func::FuncOp fn, const int index) {
     auto it = fn.getBlocks().front().getOperations().begin();

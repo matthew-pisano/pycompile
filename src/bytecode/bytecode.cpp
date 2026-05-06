@@ -122,7 +122,7 @@ ByteCodeModule generatePythonByteCode(PyObject* code, const std::string& filenam
 
 
 /**
- * Translates a Python tuple object into a variant of C++ representations of Python primitives
+ * Translates a Python tuple object into a variant of C++ representations of Python primitives.
  */
 std::vector<PrimitiveArgvals> decodeTupleStr(PyObject* argval, const std::string& filename,
                                              const ByteCodeInstruction& instr) {
@@ -149,7 +149,7 @@ std::vector<PrimitiveArgvals> decodeTupleStr(PyObject* argval, const std::string
 
 
 /**
- * Translates a Python frozen set object into a variant of C++ representations of Python primitives
+ * Translates a Python frozen set object into a variant of C++ representations of Python primitives.
  */
 std::vector<PrimitiveArgvals> decodeFrozenSet(PyObject* argval, const std::string& filename,
                                               const ByteCodeInstruction& instr) {

@@ -16,6 +16,9 @@ struct PyNone;
 
 using PyTupleData = std::vector<PyObj*>;
 
+/**
+ * PyTuple represents the tuple type in Python. It is an immutable sequence type that can hold any number of objects.
+ */
 struct PyTuple : PyObj {
     explicit PyTuple(PyTupleData tuple) : raw(std::move(tuple)) {}
     ~PyTuple() override;
@@ -34,6 +37,7 @@ struct PyTuple : PyObj {
 
     [[nodiscard]] bool isTruthy() const override;
 
+    /// Returns a copy of the raw tuple data.
     [[nodiscard]] PyTupleData data() const;
 
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
@@ -47,6 +51,9 @@ private:
 };
 
 
+/**
+ * PyTupleIter represents an iterator over the elements of a PyIter.
+ */
 struct PyTupleIter : PyIter {
     explicit PyTupleIter(PyTuple* tuple) : tuple(tuple) {
         this->tuple->incref();
@@ -55,6 +62,7 @@ struct PyTupleIter : PyIter {
     }
     ~PyTupleIter() override;
 
+    /// Returns the next element in the tuple, or raises StopIteration if there are no more elements.
     static PyObj* next(PyObj* self, PyObj**, int64_t argc);
 
     [[nodiscard]] std::string toString() const override { return "<tuple_iterator>"; }

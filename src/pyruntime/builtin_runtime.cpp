@@ -24,7 +24,10 @@
 #include "pyruntime/runtime_util.h"
 
 
+/// The name of the original model file being executed, used for error reporting and the __file__ builtin variable.
 static std::string moduleFile;
+
+/// The name of the original module being executed, used for error reporting and the __name__ builtin variable.
 static std::string moduleName;
 
 
@@ -159,6 +162,7 @@ PyObj* pyir_builtinFloat(PyObj** args, const int64_t argc) {
             if (const PyStr* s = dynamic_cast<PyStr*>(args[0]))
                 result = new PyFloat(std::stod(s->data()));
         } catch (...) {
+            // Ignore conversion errors, will throw a PyTypeError below
         }
     }
 
@@ -395,6 +399,14 @@ PyObj* pyir_builtinType(PyObj** args, const int64_t argc) {
 }
 
 
+/**
+ * Helper function to find the shortest container among the given arguments, used for zip() to determine how many
+ * elements to zip together.
+ * @param args The arguments to search through
+ * @param argc The number of arguments
+ * @return The shortest container among the arguments
+ * @throws PyTypeError if any argument does not have a length (i.e. is not a container)
+ */
 PyObj* getShortestContainer(PyObj** args, const int64_t argc) {
     if (argc == 0)
         throw PyTypeError("Expected at least one element to compare the lengths of");
@@ -421,12 +433,14 @@ PyObj* pyir_builtinZip(PyObj** args, const int64_t argc) {
     const PyObj* shortest = getShortestContainer(args, argc);
     PyInt* shortestLen = shortest->len();
     std::vector<std::vector<PyObj*>> zipped(shortestLen->data());
+    // Pre-allocate the inner vectors for each element in the shortest container
     for (int64_t elemIdx = 0; elemIdx < shortestLen->data(); elemIdx++)
         zipped[elemIdx] = std::vector<PyObj*>(argc);
 
+    // Iterate over each container argument and extract the elements at each index to zip together
     for (int64_t containerIdx = 0; containerIdx < argc; containerIdx++) {
-        // Iterate over keys for dict
         if (PyDict* dict = dynamic_cast<PyDict*>(args[containerIdx])) {
+            // Iterate over keys for dict, since zip() only zips the keys of a dict
             int64_t elemIdx = 0;
             for (const auto& key : dict->data() | std::views::keys) {
                 if (elemIdx >= shortestLen->data())
@@ -437,6 +451,7 @@ PyObj* pyir_builtinZip(PyObj** args, const int64_t argc) {
                 elemIdx++;
             }
         } else {
+            // For non-dict containers, zip the elements at each index together
             for (int64_t elemIdx = 0; elemIdx < shortestLen->data(); elemIdx++) {
                 PyInt* idx = new PyInt(elemIdx);
                 PyObj* elem = args[containerIdx]->idx(idx);
@@ -448,12 +463,14 @@ PyObj* pyir_builtinZip(PyObj** args, const int64_t argc) {
 
     std::vector<PyObj*> result;
     result.reserve(shortestLen->data());
+    // Create a tuple for each zipped element and add it to the result list
     for (int64_t elemIdx = 0; elemIdx < shortestLen->data(); elemIdx++)
         result.push_back(new PyTuple(zipped[elemIdx]));
 
     (void) shortestLen->decref();
 
     decrefArgs(args, argc);
+    // Return a list of tuples containing the zipped elements
     return new PyList(result);
 }
 
@@ -469,6 +486,8 @@ PyObj* pyir_builtinInput(PyObj** args, const int64_t argc) {
         decrefArgs(args, argc);
     }
 
+    // Large buffer to read input into, Python's input() does not have a fixed limit but this should be
+    // sufficient for most cases
     char buf[4096];
     if (!fgets(buf, sizeof(buf), stdin))
         return new PyStr("");

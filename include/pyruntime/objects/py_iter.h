@@ -13,6 +13,10 @@
 
 struct PyNone;
 
+/**
+ * PyIter represents the iterator protocol in Python. It is an abstract base class that defines the interface for all
+ * iterable objects in Python.
+ */
 struct PyIter : PyObj {
     [[nodiscard]] size_t hash() const override { throw std::runtime_error("Unhashable type " + typeName()); }
 

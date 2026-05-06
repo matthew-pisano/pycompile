@@ -97,12 +97,17 @@ static void withStdinInput(const std::function<void()>& fn, const std::string& i
 
 
 /**
- * Fixture that initializes the MLIR and LLVM contexts and compiles python strings to LLVM modules
+ * Fixture that initializes the MLIR and LLVM contexts and compiles python strings to LLVM modules.
  */
 struct JITFixture {
     mlir::MLIRContext mlirCtx;
     llvm::LLVMContext llvmCtx;
 
+    /**
+     * Compiles the given python source code to an LLVM module.
+     * @param source The source code to compile.
+     * @return An LLVM module containing the compiled code.
+     */
     std::unique_ptr<llvm::Module> compile(const std::string& source) {
         const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
         const mlir::OwningOpRef<mlir::ModuleOp> mlirModule = generatePyIR(mlirCtx, bytecodeModule);
@@ -112,6 +117,8 @@ struct JITFixture {
 
     /**
      * JIT compile and run the module, returning the exit code from main().
+     * @param source The source code to run.
+     * @return The exit code from running the module.
      */
     int run(const std::string& source) {
         std::unique_ptr<llvm::Module> llvmModule = compile(source);
@@ -138,7 +145,7 @@ struct JITFixture {
             symbols[(*jit)->getExecutionSession().intern(name)] = sym;
         };
 
-        // Register all runtime functions
+        // Register all runtime functions used in tests
         addSymbol("pyir_initModule", reinterpret_cast<void*>(pyir_initModule));
         addSymbol("pyir_destroyModule", reinterpret_cast<void*>(pyir_destroyModule));
         addSymbol("pyir_clearDanglingScope", reinterpret_cast<void*>(pyir_clearDanglingScope));
@@ -221,6 +228,8 @@ struct JITFixture {
 
     /**
      * Run and capture stdout output.
+     * @param source The source code to run.
+     * @return The captured stdout output from running the code.
      */
     std::string runCapture(const std::string& source) {
         std::exception_ptr ex;
@@ -236,6 +245,12 @@ struct JITFixture {
         return output;
     }
 
+    /**
+     * Run with stdin input and capture stdout output.
+     * @param source The source code to run.
+     * @param input The string to feed into stdin.
+     * @return The captured stdout output from running the code with the given stdin input.
+     */
     std::string runCaptureWithInput(const std::string& source, const std::string& input) {
         std::exception_ptr ex;
         std::string output = captureStdout([&] {

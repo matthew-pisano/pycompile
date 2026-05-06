@@ -8,6 +8,11 @@
 #include <Python.h>
 
 
+/**
+ * RAII wrapper for a Python interpreter.
+ *
+ * Ensures the interpreter is initialized upon creation and finalized upon destruction.
+ */
 class PythonInterpreter {
 public:
     PythonInterpreter() {
@@ -22,11 +27,8 @@ public:
 
     // Non-copyable/non-movable to avoid accidental lifetime issues
     PythonInterpreter(const PythonInterpreter&) = delete;
-
     PythonInterpreter& operator=(const PythonInterpreter&) = delete;
-
     PythonInterpreter(PythonInterpreter&&) = delete;
-
     PythonInterpreter& operator=(PythonInterpreter&&) = delete;
 };
 

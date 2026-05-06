@@ -7,15 +7,6 @@
 #include "bytecode.h"
 
 /**
- * Helper function to print a single instruction in a human-readable format, with indentation for nested code.
- * @param instr The Instruction struct to print
- * @param os The stream to write to
- * @param indentLevel The current indentation level (number of spaces) to use for printing the instruction
- */
-void serializeInstruction(const ByteCodeInstruction& instr, std::ostream& os, int indentLevel = 0);
-
-
-/**
  * Helper function to print the bytecode module in a human-readable format, including metadata and instructions.
  * @param code The ByteCodeModule struct to print
  * @param os The stream to write to

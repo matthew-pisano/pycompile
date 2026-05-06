@@ -37,8 +37,16 @@ inline std::string argvalTypeToString(const ArgvalType type) {
 }
 
 
+/**
+ * Helper function to print a single instruction in a human-readable format, with indentation for nested code.
+ * @param instr The Instruction struct to print
+ * @param os The stream to write to
+ * @param indentLevel The current indentation level (number of spaces) to use for printing the instruction
+ */
 void serializeInstruction(const ByteCodeInstruction& instr, std::ostream& os, const int indentLevel) {
-    const std::string ind(indentLevel * 4, ' ');
+    std::string ind;
+    for (int i = 0; i < indentLevel; ++i)
+        ind += ">>> ";
 
     std::string instRepr;
     if (!instr.argrepr.empty())
@@ -58,18 +66,19 @@ void serializeInstruction(const ByteCodeInstruction& instr, std::ostream& os, co
     else
         instRepr = "";
 
-    const std::string argTypeStr = "[" + argvalTypeToString(instr.argvalType) + "]";
-    const std::string lineStartStr = instr.startsLine ? "*" : " ";
-    const std::string linenoStr = instr.lineno.has_value() ? "L" + std::to_string(*instr.lineno) : "L-";
+    const std::string argTypeStr = "(" + argvalTypeToString(instr.argvalType) + ")";
+    const std::string linenoStr = instr.startsLine ? std::to_string(*instr.lineno) : "";
 
-    os << ind << lineStartStr << linenoStr << " offset " << std::setw(4) << std::left << instr.offset << " | "
-       << std::setw(30) << std::left << instr.opcode << " " << std::setw(10) << std::left << argTypeStr << " | "
+    os << ind << std::setw(4) << std::left << linenoStr << " " << std::setw(4) << std::left << instr.offset << " "
+       << std::setw(20) << std::left << instr.opcode << " " << std::setw(10) << std::left << argTypeStr << " "
        << instRepr << std::endl;
 }
 
 
 void serializeByteCodeModule(const ByteCodeModule& code, std::ostream& os, const int depth) {
-    const std::string ind(depth * 4, ' ');
+    std::string ind;
+    for (int i = 0; i < depth; ++i)
+        ind += ">>> ";
 
     // Print code metadata
     if (!code.info.cellvars.empty()) {
@@ -98,7 +107,6 @@ void serializeByteCodeModule(const ByteCodeModule& code, std::ostream& os, const
 
         // If the instruction has a nested code object, print it recursively with increased indentation.
         if (instr.argvalType == ArgvalType::Code) {
-            os << ind << "  [nested code object]:\n";
             // Wrap nested instructions in a temporary DisassembledCode for printing
             if (const auto* nestedPtr = std::get_if<std::shared_ptr<ByteCodeModule>>(&instr.argval)) {
                 if (*nestedPtr)

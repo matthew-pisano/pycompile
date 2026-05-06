@@ -14,9 +14,9 @@
 void PyObj::incref() { refcount.fetch_add(1, std::memory_order_relaxed); }
 
 bool PyObj::decref() {
-    if (refcount == 0)
+    if (refcount <= 0)
         throw std::runtime_error("Invalid decref");
-    if (refcount.fetch_sub(1, std::memory_order_acq_rel) <= 1) {
+    if (refcount.fetch_sub(1, std::memory_order_acq_rel) == 1) {
         delete this;
         return true;
     }

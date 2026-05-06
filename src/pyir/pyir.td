@@ -212,7 +212,7 @@ def PyIR_LoadAttr : PyIR_Op<"load_attr"> {
 
 
 def PyIR_ReturnValue : PyIR_Op<"return_value", [Terminator]> {
-    let summary = "Return a Value* from a Python function";
+    let summary = "Return a PyObj* from a Python function";
     let arguments = (ins ByteCodeObject_Type:$value);
     let assemblyFormat = "$value attr-dict `:` type($value)";
 }

@@ -60,12 +60,6 @@ struct CodeInfo {
     std::vector<std::string> varnames;
 
     /**
-     * Names of local variables, arguments, and other identifiers used in the code object.
-     * Used for debugging and disassembly purposes.
-     */
-    std::vector<std::string> names;
-
-    /**
      * Exception table entries, which define protected regions of code and their handlers.
      */
     std::vector<ExceptionTableEntry> exceptionTable;
@@ -79,7 +73,7 @@ enum class ArgvalType { None, Bool, Int, Float, Str, TupleStr, FrozenSet, Code }
 
 
 /**
- * Dummy struct to represent the absence of an instruction argument, since some instructions have no argument.
+ * Dummy struct to represent the absence of an instruction argument or a literal None.
  */
 struct ArgvalNone {};
 
@@ -115,7 +109,7 @@ struct ByteCodeInstruction {
 
 
 /**
- * A bytecode module object, containing its metadata and the list of instructions.
+ * A bytecode module or function object, containing its metadata and the list of instructions.
  */
 struct ByteCodeModule {
     std::string filename; // The filename associated with the code object, used for error messages and debugging
@@ -126,7 +120,7 @@ struct ByteCodeModule {
 
 
 /**
- * Compiles a vector of Python code strings down into Python bytecode
+ * Compiles a vector of Python code strings down into Python bytecode.
  * @param fileContents The vector of Python code to compile
  * @param fileNames The file names corresponding to each Python module
  * @return A vector of compiled bytecode modules
@@ -136,7 +130,7 @@ std::vector<ByteCodeModule> compilePython(const std::vector<std::string>& fileCo
 
 
 /**
- * Compiles a string of Python code down into Python bytecode
+ * Compiles a string of Python code down into Python bytecode.
  * @param fileContent The string of Python code to compile
  * @param fileName The file name corresponding to the Python module
  * @return A compiled bytecode module

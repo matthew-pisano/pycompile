@@ -57,6 +57,7 @@ mlir::LogicalResult PyIROpConversion::linkOpToRuntimeFunc(const std::string& fun
     const mlir::ModuleOp module = getModule(op);
     const mlir::Location loc = op->getLoc();
 
+    // Choose correct function prototype based on arguments
     mlir::LLVM::LLVMFunctionType fnType;
     if (argc == 1)
         fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
@@ -67,6 +68,7 @@ mlir::LogicalResult PyIROpConversion::linkOpToRuntimeFunc(const std::string& fun
 
     mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, func, fnType);
 
+    // Choose correct call operation based on arguments
     mlir::LLVM::CallOp call;
     if (argc == 1)
         call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{operands[0]});

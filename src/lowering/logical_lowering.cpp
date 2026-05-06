@@ -11,7 +11,7 @@ mlir::LogicalResult IsTruthyLowering::matchAndRewrite(mlir::Operation* op, const
     const mlir::ModuleOp module = getModule(op);
     const mlir::Location loc = op->getLoc();
 
-    // declare: extern int8_t pyir_isTruthy(Value* val)
+    // declare: extern int8_t pyir_isTruthy(PyObj* val)
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(mlir::IntegerType::get(ctx, 8), {ptrType(ctx)});
     mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_isTruthy", fnType);

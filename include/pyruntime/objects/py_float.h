@@ -9,6 +9,9 @@
 #include "py_method.h"
 #include "py_object.h"
 
+/**
+ * PyFloat represents the float type in Python. It represents a double-precision floating point number.
+ */
 struct PyFloat : PyObj {
     explicit PyFloat(const double_t decimal) : raw(decimal) {}
 
@@ -20,6 +23,7 @@ struct PyFloat : PyObj {
 
     [[nodiscard]] bool isTruthy() const override;
 
+    /// Returns the raw double value of this PyFloat.
     [[nodiscard]] double_t data() const;
 
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;

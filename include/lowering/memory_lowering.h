@@ -47,7 +47,7 @@ struct DestroyModuleLowering : PyIROpConversion {
  * Lowers pyir.load_fast to a call to the runtime function pyir_loadFast.
  *
  * The name string is stored as a constant and passed as a const char* pointer. The runtime resolves the name
- * against the names present in the current scope and returns a heap-allocated Value*.
+ * against the names present in the current scope and returns a heap-allocated PyObj*.
  *
  * pyir.load_fast "arg"
  *     %ptr = llvm.mlir.addressof @__pyir_str_arg
@@ -66,7 +66,7 @@ struct LoadFastLowering : PyIROpConversion {
  * Lowers pyir.store_fast to a call to the runtime function pyir_storeFast.
  *
  * The name string is stored as a constant and passed as a const char* pointer alongside the heap-allocated
- * Value* to store. The runtime inserts or replaces the name in a local scope table, managing refcounts on the old
+ * PyObj* to store. The runtime inserts or replaces the name in a local scope table, managing refcounts on the old
  * and new values.
  *
  * pyir.store_fast "x", %val
@@ -86,7 +86,7 @@ struct StoreFastLowering : PyIROpConversion {
  * Lowers pyir.load_name to a call to the runtime function pyir_loadName.
  *
  * The name string is stored as a global constant and passed as a const char* pointer. The runtime resolves the name
- * against the builtin table or module names and returns a heap-allocated Value*.
+ * against the builtin table or module names and returns a heap-allocated PyObj*.
  *
  * pyir.load_name "print"
  *     %ptr = llvm.mlir.addressof @__pyir_str_print
@@ -105,7 +105,7 @@ struct LoadNameLowering : PyIROpConversion {
  * Lowers pyir.store_name to a call to the runtime function pyir_storeName.
  *
  * The name string is stored as a global constant and passed as a const char* pointer alongside the heap-allocated
- * Value* to store. The runtime inserts or replaces the name in the module scope table, managing refcounts on the old
+ * PyObj* to store. The runtime inserts or replaces the name in the module scope table, managing refcounts on the old
  * and new values.
  *
  * pyir.store_name "a", %val
@@ -125,8 +125,8 @@ struct StoreNameLowering : PyIROpConversion {
  * Lowers pyir.load_attr to a call to the runtime function pyir_load_attr.
  *
  * The attribute name is stored as a global string constant and passed as a const char* pointer
- * alongside the heap-allocated Value* object. The runtime looks up the attribute on the object
- * and returns a heap-allocated Value* (typically a BoundMethod).
+ * alongside the heap-allocated PyObj* object. The runtime looks up the attribute on the object
+ * and returns a heap-allocated PyObj* (typically a BoundMethod).
  *
  * pyir.load_attr %obj, "append" : !pyir.object
  *     %name_ptr = llvm.mlir.addressof @__pyir_str_append
@@ -148,31 +148,49 @@ struct LoadAttrLowering : PyIROpConversion {
  *   IntegerAttr -> pyir_loadConstInt(int64_t)
  *
  * String constants are stored as global i8 arrays. Integer constants are passed directly as i64 values. Both return a
- * heap-allocated Value*.
+ * heap-allocated PyObj*.
  */
 struct LoadConstLowering : PyIROpConversion {
     LoadConstLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
         PyIROpConversion(pyir::LoadConst::getOperationName(), tc, ctx) {}
 
+    /**
+     * Helper function for lowering the code for loading a literal string constant.
+     */
     static mlir::Value loadStringConst(mlir::ConversionPatternRewriter& rewriter, mlir::MLIRContext* ctx,
                                        const mlir::Location& loc, const mlir::ModuleOp& module,
                                        const mlir::StringAttr& strAttr);
 
+    /**
+     * Helper function for lowering the code for loading a literal bool constant.
+     */
     static mlir::Value loadBoolConst(mlir::ConversionPatternRewriter& rewriter, mlir::MLIRContext* ctx,
                                      const mlir::Location& loc, const mlir::ModuleOp& module,
                                      const mlir::BoolAttr& boolAttr);
 
+    /**
+     * Helper function for lowering the code for loading a literal int constant.
+     */
     static mlir::Value loadIntConst(mlir::ConversionPatternRewriter& rewriter, mlir::MLIRContext* ctx,
                                     const mlir::Location& loc, const mlir::ModuleOp& module,
                                     const mlir::IntegerAttr& intAttr);
 
+    /**
+     * Helper function for lowering the code for loading a literal float constant.
+     */
     static mlir::Value loadFloatConst(mlir::ConversionPatternRewriter& rewriter, mlir::MLIRContext* ctx,
                                       const mlir::Location& loc, const mlir::ModuleOp& module,
                                       const mlir::FloatAttr& floatAttr);
 
+    /**
+     * Helper function for lowering the code for loading a literal None constant.
+     */
     static mlir::Value loadNoneConst(mlir::ConversionPatternRewriter& rewriter, mlir::MLIRContext* ctx,
                                      const mlir::Location& loc, const mlir::ModuleOp& module);
 
+    /**
+     * Helper function for lowering the code for loading a literal tuple constant.
+     */
     static mlir::Value loadTupleConst(mlir::ConversionPatternRewriter& rewriter, mlir::MLIRContext* ctx,
                                       const mlir::Location& loc, const mlir::ModuleOp& module,
                                       const mlir::ArrayAttr& arrAttr);
@@ -201,8 +219,8 @@ struct LoadArgLowering : PyIROpConversion {
 /**
  * Lowers pyir.store_subscr to a call to the runtime function pyir_storeSubscr.
  *
- * Stores a heap-allocated Value* into a collection at the given index.
- * Both the collection and index are heap-allocated Value* pointers.
+ * Stores a heap-allocated PyObj* into a collection at the given index.
+ * Both the collection and index are heap-allocated PyObj* pointers.
  *
  * pyir.store_subscr %collection, %idx, %value : !pyir.object, !pyir.object, !pyir.object
  *     llvm.call @pyir_storeSubscr(%collection, %idx, %value)

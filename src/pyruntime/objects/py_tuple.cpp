@@ -68,6 +68,7 @@ PyListData PyTuple::data() const { return raw; }
 
 std::partial_ordering PyTuple::operator<=>(const PyObj& other) const noexcept {
     if (const PyTuple* t = dynamic_cast<const PyTuple*>(&other)) {
+        // Ensure that both tuples have the same elements in the same order or compare the sizes if sizes are unequal
         if (raw.size() != t->raw.size())
             return raw.size() <=> t->raw.size();
 

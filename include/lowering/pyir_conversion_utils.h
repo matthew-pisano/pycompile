@@ -12,7 +12,7 @@
 
 /**
  * Returns an opaque LLVM pointer type (!llvm.ptr) in the given context.
- * Used as the LLVM representation of pyir::Value* throughout the lowering.
+ * Used as the LLVM representation of pyir::PyObj* throughout the lowering.
  */
 mlir::LLVM::LLVMPointerType ptrType(mlir::MLIRContext* ctx);
 

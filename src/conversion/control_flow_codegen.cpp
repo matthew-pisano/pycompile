@@ -38,6 +38,9 @@ void jumpBackwardCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, co
 }
 
 
+/**
+ * Helper function for translating conditional jump functions into MLIR branches.
+ */
 inline void popJumpIfCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, mlir::func::FuncOp& fn,
                              const int64_t* target, const bool truthy, ConversionMeta& meta) {
     mlir::Value cond = meta.stack.back();

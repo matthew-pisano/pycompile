@@ -2,11 +2,6 @@
 // Created by matthew on 3/22/26.
 //
 
-
-/**
- * Fixture that initializes the MLIR context and compiles python strings to MLIR modules
- */
-
 #include <catch2/catch_all.hpp>
 #include <iostream>
 #include <llvm/IR/LLVMContext.h>
@@ -21,12 +16,17 @@
 
 
 /**
- * Fixture that initializes the MLIR and LLVM contexts and compiles python strings to LLVM modules
+ * Fixture that initializes the MLIR and LLVM contexts and compiles python strings to LLVM modules.
  */
 struct LLVMFixture {
     mlir::MLIRContext mlirCtx;
     llvm::LLVMContext llvmCtx;
 
+    /**
+     * Compiles the given python source code to an LLVM module.
+     * @param source The source code to compile.
+     * @return An LLVM module containing the compiled code.
+     */
     std::unique_ptr<llvm::Module> compile(const std::string& source) {
         const ByteCodeModule bytecodeModule = compilePython(source, "<embedded>");
         const mlir::OwningOpRef<mlir::ModuleOp> mlirModule = generatePyIR(mlirCtx, bytecodeModule);

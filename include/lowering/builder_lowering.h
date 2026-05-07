@@ -78,10 +78,10 @@ struct ListExtendLowering : PyIROpConversion {
 /**
  * Lowers pyir.list_append to a call to the runtime function pyir_listAppend.
  *
- * Appends a heap-allocated list PyObj* with the contents of another PyObj*.
+ * Appends a heap-allocated list PyObj* with another PyObj*.
  *
- * pyir.list_append %list, %items : !pyir.object, !pyir.object
- *     llvm.call @pyir_listAppend(%list, %items)
+ * pyir.list_append %list, %item : !pyir.object, !pyir.object
+ *     llvm.call @pyir_listAppend(%list, %item)
  */
 struct ListAppendLowering : PyIROpConversion {
     ListAppendLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
@@ -121,7 +121,7 @@ struct BuildSetLowering : PyIROpConversion {
  * Updates a heap-allocated set PyObj* with the contents of another PyObj*.
  *
  * pyir.set_update %list, %items : !pyir.object, !pyir.object
- *     llvm.call @pyir_setUpdate(%list, %items)
+ *     llvm.call @pyir_setUpdate(%set, %items)
  */
 struct SetUpdateLowering : PyIROpConversion {
     SetUpdateLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
@@ -135,10 +135,10 @@ struct SetUpdateLowering : PyIROpConversion {
 /**
  * Lowers pyir.set_add to a call to the runtime function pyir_setAdd.
  *
- * Adds a heap-allocated set PyObj* with the contents of another PyObj*.
+ * Adds a heap-allocated PyObj* to a set PyObj*.
  *
- * pyir.set_add %list, %items : !pyir.object, !pyir.object
- *     llvm.call @pyir_setAdd(%list, %items)
+ * pyir.set_add %set, %item : !pyir.object, !pyir.object
+ *     llvm.call @pyir_setAdd(%set, %item)
  */
 struct SetAddLowering : PyIROpConversion {
     SetAddLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
@@ -167,6 +167,23 @@ struct SetAddLowering : PyIROpConversion {
 struct BuildMapLowering : PyIROpConversion {
     BuildMapLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
         PyIROpConversion(pyir::BuildMap::getOperationName(), tc, ctx) {}
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
+                                        mlir::ConversionPatternRewriter& rewriter) const override;
+};
+
+
+/**
+ * Lowers pyir.map_add to a call to the runtime function pyir_mapAdd.
+ *
+ * Adds two heap-allocated PyObj* key and values to a dict PyObj*.
+ *
+ * pyir.map_add %map, %key, %value : !pyir.object, !pyir.object, !pyir.object
+ *     llvm.call @pyir_mapAdd(%map, %key, %value)
+ */
+struct MapAddLowering : PyIROpConversion {
+    MapAddLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::MapAdd::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value> operands,
                                         mlir::ConversionPatternRewriter& rewriter) const override;

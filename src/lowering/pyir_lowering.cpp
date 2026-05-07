@@ -89,8 +89,8 @@ private:
                      CallLowering, PopTopLowering, FormatSimpleLowering, BuildStringLowering, PushScopeLowering,
                      PopScopeLowering, LoadArgLowering, MakeFunctionLowering, ReturnValueLowering, BuildListLowering,
                      ListExtendLowering, ListAppendLowering, LoadAttrLowering, ContainsOpLowering, BuildSetLowering,
-                     SetUpdateLowering, SetAddLowering, BuildMapLowering, StoreSubscrLowering, GetIterLowering,
-                     ForIterLowering, PopIterLowering>(typeConverter, ctx);
+                     SetUpdateLowering, SetAddLowering, BuildMapLowering, MapAddLowering, StoreSubscrLowering,
+                     GetIterLowering, ForIterLowering, PopIterLowering>(typeConverter, ctx);
     }
 };
 

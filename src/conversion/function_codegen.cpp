@@ -40,9 +40,9 @@ void callFuncCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mli
         meta.stack.pop_back();
     }
 
-    meta.stack.pop_back(); // null sentinel
+    meta.stack.pop_back(); // Null sentinel
     mlir::Value callee = meta.stack.back();
-    meta.stack.pop_back(); // actual callee
+    meta.stack.pop_back(); // Actual callee
 
     meta.stack.push_back(builder.create<pyir::Call>(loc, pyType, callee, args).getResult());
 }

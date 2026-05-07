@@ -40,7 +40,7 @@ mlir::LogicalResult ForIterLowering::matchAndRewrite(mlir::Operation* op, const 
     const mlir::Location loc = op->getLoc();
     pyir::ForIter forIter = mlir::cast<pyir::ForIter>(op);
 
-    // declare: extern Value* pyir_forIter(Value* iterator)
+    // declare: extern PyObj* pyir_forIter(PyObj* iterator)
     const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
     mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, getModule(op), "pyir_forIter", fnType);
 

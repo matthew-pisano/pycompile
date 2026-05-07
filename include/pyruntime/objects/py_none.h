@@ -7,6 +7,9 @@
 #include "py_method.h"
 #include "py_object.h"
 
+/**
+ * PyNone represents the None type in Python. It is a singleton type, with only one instance: None.
+ */
 struct PyNone : PyObj {
     [[nodiscard]] size_t hash() const override;
 

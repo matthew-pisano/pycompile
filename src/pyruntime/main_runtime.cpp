@@ -13,6 +13,10 @@
 
 extern "C" void __pymodule(); // Provided by the translated MLIR module
 
+/**
+ * Destroys immortal objects that are not managed by reference counting. This should be called at the end of main to
+ * prevent memory leaks.
+ */
 void destroyImmortals() {
     delete PyNone::None;
     delete PyBool::True;
@@ -20,6 +24,8 @@ void destroyImmortals() {
 }
 
 int main() {
+    // Use a custom main function to handle uncaught exceptions and print tracebacks in a Python-like format.
+    // Otherwise, uncaught exceptions would SIGABRT with little useful information about the error.
     try {
         __pymodule();
         destroyImmortals();
@@ -33,6 +39,7 @@ int main() {
         (void) file->decref();
         (void) name->decref();
         pyir_destroyModule();
+        // Decrefs all known values until deletion to prevent memory leaks
         pyir_clearDanglingScope();
         destroyImmortals();
         return 1;

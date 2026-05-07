@@ -16,12 +16,18 @@ struct PyNone;
 
 using PySetData = std::unordered_set<PyObj*, PyObjPtrHash, PyObjPtrEqual>;
 
+/**
+ * PySet represents the set type in Python. It is a mutable unordered collection of unique elements. Elements must be
+ * hashable.
+ */
 struct PySet : PyObj {
     explicit PySet(PySetData set) : raw(std::move(set)) {}
     ~PySet() override;
 
+    /// Adds an element to the set. If the element is already present, this method does nothing.
     static PyObj* add(PyObj* self, PyObj** args, int64_t argc);
 
+    /// Updates the set, adding elements from another iterable. If an element is already present, it is not added again.
     static PyObj* update(PyObj* self, PyObj** args, int64_t argc);
 
     PyObj* getAttr(const std::string& name) override;
@@ -38,8 +44,10 @@ struct PySet : PyObj {
 
     [[nodiscard]] bool isTruthy() const override;
 
+    /// Returns a copy of the raw set data.
     [[nodiscard]] PySetData data() const;
 
+    /// Returns a mutable reference to the raw set data.
     PySetData& data();
 
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
@@ -53,6 +61,9 @@ private:
 };
 
 
+/**
+ * PySetIter represents an iterator over the elements of a PySet.
+ */
 struct PySetIter : PyIter {
     explicit PySetIter(PySet* set) : set(set) {
         this->set->incref();
@@ -61,6 +72,7 @@ struct PySetIter : PyIter {
     }
     ~PySetIter() override;
 
+    /// Returns the next element in the set, or raises StopIteration if there are no more elements.
     static PyObj* next(PyObj* self, PyObj**, int64_t argc);
 
     [[nodiscard]] std::string toString() const override { return "<set_iterator>"; }

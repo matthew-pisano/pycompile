@@ -122,7 +122,7 @@ ByteCodeModule generatePythonByteCode(PyObject* code, const std::string& filenam
 
 
 /**
- * Translates a Python tuple object into a variant of C++ representations of Python primitives
+ * Translates a Python tuple object into a variant of C++ representations of Python primitives.
  */
 std::vector<PrimitiveArgvals> decodeTupleStr(PyObject* argval, const std::string& filename,
                                              const ByteCodeInstruction& instr) {
@@ -149,7 +149,7 @@ std::vector<PrimitiveArgvals> decodeTupleStr(PyObject* argval, const std::string
 
 
 /**
- * Translates a Python frozen set object into a variant of C++ representations of Python primitives
+ * Translates a Python frozen set object into a variant of C++ representations of Python primitives.
  */
 std::vector<PrimitiveArgvals> decodeFrozenSet(PyObject* argval, const std::string& filename,
                                               const ByteCodeInstruction& instr) {
@@ -315,7 +315,7 @@ ByteCodeModule generatePythonByteCode(PyObject* code, const std::string& filenam
     PyObject* item;
     // Iterate over the instructions returned by dis, extracting their attributes into Instruction structs
     while ((item = PyIter_Next(instrIt))) {
-        // Recursive call is devluating a nested code object
+        // Recursive call is evaluating a nested code object
         ByteCodeInstruction instr = decodeByteCodeInstruction(item, filename, currentLineno, depth);
         Py_DECREF(item);
         result.instructions.push_back(std::move(instr));
@@ -328,7 +328,9 @@ ByteCodeModule generatePythonByteCode(PyObject* code, const std::string& filenam
 
 std::vector<ByteCodeModule> compilePython(const std::vector<std::string>& fileContents,
                                           const std::vector<std::string>& fileNames) {
-    PythonInterpreter pyInterp; // Initializes Python via RAII
+    // Initializes Python via RAII
+    // Goes out of scope implicitly upon this function throwing an exception
+    PythonInterpreter pyInterp;
 
     // Disassemble PyObjects into Python bytecode
     std::vector<ByteCodeModule> bytecodeModules;

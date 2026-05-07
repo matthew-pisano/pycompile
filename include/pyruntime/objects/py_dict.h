@@ -16,18 +16,27 @@ struct PyNone;
 
 using PyDictData = std::map<PyObj*, PyObj*, PyObjPtrCompare>;
 
+/**
+ * PyDict represents the dict type in Python. It is a mutable mapping type that maps keys to values. Keys must be
+ * hashable, and values can be any Python object.
+ */
 struct PyDict : PyObj {
     explicit PyDict(PyDictData dict) : raw(std::move(dict)) {}
     ~PyDict() override;
 
+    /// Safely gets the value associated with the given key, returning None if the key is not present in the dict.
     static PyObj* get(PyObj* self, PyObj** args, int64_t argc);
 
+    /// Gets a PyTuple of the keys in this dict.
     static PyObj* keys(PyObj* self, PyObj** args, int64_t argc);
 
+    /// Gets a PyTuple of the values in this dict.
     static PyObj* values(PyObj* self, PyObj** args, int64_t argc);
 
+    /// Gets a PyTuple of the key-value pairs in this dict, where each pair is represented as a 2-tuple.
     static PyObj* items(PyObj* self, PyObj** args, int64_t argc);
 
+    /// Updates this dict with the key-value pairs from another dict.
     static PyObj* update(PyObj* self, PyObj** args, int64_t argc);
 
     PyObj* getAttr(const std::string& name) override;
@@ -48,8 +57,10 @@ struct PyDict : PyObj {
 
     [[nodiscard]] bool isTruthy() const override;
 
+    /// Returns a copy of the raw dict data.
     [[nodiscard]] PyDictData data() const;
 
+    /// Returns a mutable reference to the raw dict data.
     PyDictData& data();
 
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;
@@ -63,6 +74,9 @@ private:
 };
 
 
+/**
+ * PyDictIter represents an iterator over the keys of a PyDict.
+ */
 struct PyDictIter : PyIter {
     explicit PyDictIter(PyDict* dict) : dict(dict) {
         this->dict->incref();
@@ -71,6 +85,7 @@ struct PyDictIter : PyIter {
     }
     ~PyDictIter() override;
 
+    /// Returns the next key in the dict, or raises StopIteration if there are no more keys.
     static PyObj* next(PyObj* self, PyObj**, int64_t argc);
 
     [[nodiscard]] std::string toString() const override { return "<dict_iterator>"; }

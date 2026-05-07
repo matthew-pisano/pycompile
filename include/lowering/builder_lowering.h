@@ -13,8 +13,8 @@
  * Lowers pyir.pyir_buildString to allocate memory and construct a new string using the runtime function
  * pyir_buildString
  *
- * Parts are stack-allocated as a Value*[] array and passed by pointer along with the part count.
- * The runtime concatenates all parts into a single string Value*.
+ * Parts are stack-allocated as a PyObj*[] array and passed by pointer along with the part count.
+ * The runtime concatenates all parts into a single string PyObj*.
  *
  * pyir.build_string %part0, %part1, ... : (!pyir.object, !pyir.object, ...) -> !pyir.object
  *     %arr   = llvm.alloca [n x !llvm.ptr]
@@ -37,8 +37,8 @@ struct BuildStringLowering : PyIROpConversion {
 /**
  * Lowers pyir.pyir_buildList to allocate memory and construct a new list using the runtime function pyir_buildList
  *
- * Parts are stack-allocated as a Value*[] array and passed by pointer along with the part count.
- * The runtime appends all parts into a single list Value*.
+ * Parts are stack-allocated as a PyObj*[] array and passed by pointer along with the part count.
+ * The runtime appends all parts into a single list PyObj*.
  *
  * pyir.build_list %part0, %part1, ... : (!pyir.object, !pyir.object, ...) -> !pyir.object
  *     %arr   = llvm.alloca [n x !llvm.ptr]
@@ -61,7 +61,7 @@ struct BuildListLowering : PyIROpConversion {
 /**
  * Lowers pyir.list_extend to a call to the runtime function pyir_listExtend.
  *
- * Extends a heap-allocated list Value* with the contents of another Value*.
+ * Extends a heap-allocated list PyObj* with the contents of another PyObj*.
  *
  * pyir.list_extend %list, %items : !pyir.object, !pyir.object
  *     llvm.call @pyir_listExtend(%list, %items)
@@ -78,7 +78,7 @@ struct ListExtendLowering : PyIROpConversion {
 /**
  * Lowers pyir.list_append to a call to the runtime function pyir_listAppend.
  *
- * Appends a heap-allocated list Value* with the contents of another Value*.
+ * Appends a heap-allocated list PyObj* with the contents of another PyObj*.
  *
  * pyir.list_append %list, %items : !pyir.object, !pyir.object
  *     llvm.call @pyir_listAppend(%list, %items)
@@ -94,8 +94,8 @@ struct ListAppendLowering : PyIROpConversion {
 /**
  * Lowers pyir.pyir_buildSet to allocate memory and construct a new set using the runtime function pyir_buildSet
  *
- * Parts are stack-allocated as a Value*[] array and passed by pointer along with the part count.
- * The runtime appends all parts into a single set Value*.
+ * Parts are stack-allocated as a PyObj*[] array and passed by pointer along with the part count.
+ * The runtime appends all parts into a single set PyObj*.
  *
  * pyir.build_set %part0, %part1, ... : (!pyir.object, !pyir.object, ...) -> !pyir.object
  *     %arr   = llvm.alloca [n x !llvm.ptr]
@@ -118,7 +118,7 @@ struct BuildSetLowering : PyIROpConversion {
 /**
  * Lowers pyir.set_update to a call to the runtime function pyir_setUpdate.
  *
- * Updates a heap-allocated set Value* with the contents of another Value*.
+ * Updates a heap-allocated set PyObj* with the contents of another PyObj*.
  *
  * pyir.set_update %list, %items : !pyir.object, !pyir.object
  *     llvm.call @pyir_setUpdate(%list, %items)
@@ -135,7 +135,7 @@ struct SetUpdateLowering : PyIROpConversion {
 /**
  * Lowers pyir.set_add to a call to the runtime function pyir_setAdd.
  *
- * Adds a heap-allocated set Value* with the contents of another Value*.
+ * Adds a heap-allocated set PyObj* with the contents of another PyObj*.
  *
  * pyir.set_add %list, %items : !pyir.object, !pyir.object
  *     llvm.call @pyir_setAdd(%list, %items)
@@ -152,8 +152,8 @@ struct SetAddLowering : PyIROpConversion {
 /**
  * Lowers pyir.pyir_buildMap to allocate memory and construct a new map using the runtime function pyir_buildMap
  *
- * Parts are stack-allocated as a Value*[] array and passed by pointer along with the part count.
- * The runtime appends all pairs of parts into a single dict Value*.
+ * Parts are stack-allocated as a PyObj*[] array and passed by pointer along with the part count.
+ * The runtime appends all pairs of parts into a single dict PyObj*.
  *
  * pyir.build_map %part0, %part1, ... : (!pyir.object, !pyir.object, ...) -> !pyir.object
  *     %arr   = llvm.alloca [n x !llvm.ptr]

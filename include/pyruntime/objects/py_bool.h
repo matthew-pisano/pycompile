@@ -8,6 +8,9 @@
 #include "py_method.h"
 #include "py_object.h"
 
+/**
+ * PyBool represents the bool type in Python. It is a doubleton type, with only two instances: True and False.
+ */
 struct PyBool : PyObj {
     [[nodiscard]] size_t hash() const override;
 
@@ -17,6 +20,7 @@ struct PyBool : PyObj {
 
     [[nodiscard]] bool isTruthy() const override;
 
+    /// Returns the raw boolean value of this PyBool.
     [[nodiscard]] bool data() const;
 
     void incref() override;
@@ -27,7 +31,10 @@ struct PyBool : PyObj {
 
     bool operator==(const PyObj&) const noexcept override;
 
+    /// The PyBool truth singleton.
     static PyBool* True;
+
+    /// The PyBool false singleton.
     static PyBool* False;
 
 private:

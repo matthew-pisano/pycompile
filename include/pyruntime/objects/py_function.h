@@ -11,6 +11,9 @@
 
 using PyFunctionData = PyObj* (*) (PyObj**, int64_t);
 
+/**
+ * PyFunction represents the function type in Python. It is a callable object that encapsulates a C++ function pointer.
+ */
 struct PyFunction : PyObj {
     explicit PyFunction(std::string fnName, const PyFunctionData& func) : fnName(std::move(fnName)), fn(func) {}
 
@@ -22,8 +25,10 @@ struct PyFunction : PyObj {
 
     [[nodiscard]] bool isTruthy() const override;
 
+    /// Returns the name of this PyFunction.
     [[nodiscard]] std::string funcName() const;
 
+    /// Returns the raw function pointer of this PyFunction.
     [[nodiscard]] PyFunctionData data() const;
 
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;

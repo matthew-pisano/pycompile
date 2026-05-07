@@ -193,6 +193,7 @@ PyDictData& PyDict::data() { return raw; }
 
 std::partial_ordering PyDict::operator<=>(const PyObj& other) const noexcept {
     if (const PyDict* d = dynamic_cast<const PyDict*>(&other)) {
+        // Ensure that both dicts have the exact same key-value pairs or compare the sizes if sizes are unequal
         if (raw.size() != d->raw.size())
             return raw.size() <=> d->raw.size();
 

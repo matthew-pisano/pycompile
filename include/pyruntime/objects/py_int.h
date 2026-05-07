@@ -7,6 +7,9 @@
 #include "py_method.h"
 #include "py_object.h"
 
+/**
+ * PyInt represents the int type in Python. It represents a 64-bit signed integer.
+ */
 struct PyInt : PyObj {
     explicit PyInt(const int64_t integer) : raw(integer) {}
 
@@ -18,6 +21,7 @@ struct PyInt : PyObj {
 
     [[nodiscard]] bool isTruthy() const override;
 
+    /// Returns the raw integer value of this PyInt.
     [[nodiscard]] int64_t data() const;
 
     std::partial_ordering operator<=>(const PyObj& other) const noexcept override;

@@ -26,18 +26,34 @@ std::string formatUnsupportedOperands(const std::string& op, const std::string& 
     return std::format("Unsupported operand type(s) for {}: '{}' and '{}'", op, lhsType, rhsType);
 }
 
+/// Format a bad operand type error.
 std::string formatUnsupportedOperands(const std::string& op, const std::string& valType) {
     return std::format("Bad operand type for {}: '{}'", op, valType);
 }
 
 
+/// Checks if the given type is a PyBool
 bool pyir_isBool(const PyObj* val) { return dynamic_cast<const PyBool*>(val); }
+
+/// Checks if the given type is a PyInt
 bool pyir_isInt(const PyObj* val) { return dynamic_cast<const PyInt*>(val); }
+
+/// Checks if the given type is a PyFloat
 bool pyir_isFloat(const PyObj* val) { return dynamic_cast<const PyFloat*>(val); }
+
+/// Checks if the given type is a PyStr
 bool pyir_isStr(const PyObj* val) { return dynamic_cast<const PyStr*>(val); }
+
+/// Checks if the given type is a PyList
 bool pyir_isList(const PyObj* val) { return dynamic_cast<const PyList*>(val); }
+
+/// Checks if the given type is a PySet
 bool pyir_isSet(const PyObj* val) { return dynamic_cast<const PySet*>(val); }
+
+/// Checks if the given type is a PyDict
 bool pyir_isDict(const PyObj* val) { return dynamic_cast<const PyDict*>(val); }
+
+/// Checks if the given type is a PyTuple
 bool pyir_isTuple(const PyObj* val) { return dynamic_cast<const PyTuple*>(val); }
 
 
@@ -57,10 +73,12 @@ PyObj* pyir_add(PyObj* lhs, PyObj* rhs) {
     else if (pyir_isStr(lhs) && pyir_isStr(rhs))
         result = new PyStr(dynamic_cast<PyStr*>(lhs)->data() + dynamic_cast<PyStr*>(rhs)->data());
     else if (pyir_isList(lhs) && pyir_isList(rhs)) {
+        // List concatenation: combine elements of both lists into a new list
         result = new PyList({});
         PyList::extend(result, &lhs, 1);
         PyList::extend(result, &rhs, 1);
     } else if (pyir_isTuple(lhs) && pyir_isTuple(rhs)) {
+        // Tuple concatenation: combine elements of both tuples into a new tuple
         PyListData lhsVal = dynamic_cast<PyTuple*>(lhs)->data();
         PyListData rhsVal = dynamic_cast<PyTuple*>(rhs)->data();
         PyListData combined;
@@ -87,6 +105,7 @@ PyObj* pyir_sub(PyObj* lhs, PyObj* rhs) {
     else if ((pyir_isFloat(lhs) || pyir_isInt(lhs)) && (pyir_isFloat(rhs) || pyir_isInt(rhs)))
         result = new PyFloat(valueToFloat(lhs) - valueToFloat(rhs));
     else if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
+        // Set difference: elements in lhs that are not in rhs
         PySetData res = dynamic_cast<PySet*>(lhs)->data();
         const PySetData rSet = dynamic_cast<PySet*>(rhs)->data();
         for (PyObj* lItem : dynamic_cast<PySet*>(lhs)->data()) {
@@ -203,10 +222,12 @@ PyObj* pyir_mod(PyObj* lhs, PyObj* rhs) {
 PyObj* pyir_pipe(PyObj* lhs, PyObj* rhs) {
     PyObj* result = nullptr;
     if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
+        // Set union: all unique elements from both sets
         result = new PySet({});
         PySet::update(result, &lhs, 1);
         PySet::update(result, &rhs, 1);
     } else if (pyir_isDict(lhs) && pyir_isDict(rhs)) {
+        // Dict union: all unique keys from both dicts, with values from rhs taking precedence on key conflicts
         result = new PyDict({});
         PyDict::update(result, &lhs, 1);
         PyDict::update(result, &rhs, 1);
@@ -226,6 +247,7 @@ PyObj* pyir_pipe(PyObj* lhs, PyObj* rhs) {
 PyObj* pyir_ampersand(PyObj* lhs, PyObj* rhs) {
     PyObj* result = nullptr;
     if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
+        // Set intersection: only elements that are in both sets
         result = new PySet({});
         const PySetData rSet = dynamic_cast<PySet*>(rhs)->data();
         for (PyObj* lItem : dynamic_cast<PySet*>(lhs)->data())
@@ -374,6 +396,7 @@ PyObj* pyir_xor(PyObj* lhs, PyObj* rhs) {
         result = (dynamic_cast<PyBool*>(lhs)->data() ^ dynamic_cast<PyBool*>(rhs)->data()) == 1 ? PyBool::True
                                                                                                 : PyBool::False;
     else if (pyir_isSet(lhs) && pyir_isSet(rhs)) {
+        // Set symmetric difference: elements that are in either set but not in both
         const PySetData lSet = dynamic_cast<PySet*>(lhs)->data();
         const PySetData rSet = dynamic_cast<PySet*>(rhs)->data();
         PySetData res;

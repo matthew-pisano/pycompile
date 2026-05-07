@@ -132,6 +132,7 @@ PyListData& PyList::data() { return raw; }
 
 std::partial_ordering PyList::operator<=>(const PyObj& other) const noexcept {
     if (const PyList* l = dynamic_cast<const PyList*>(&other)) {
+        // Ensure the value at each index is the same or compare the sizes if sizes are unequal
         if (raw.size() != l->raw.size())
             return raw.size() <=> l->raw.size();
 

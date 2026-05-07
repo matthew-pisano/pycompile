@@ -13,7 +13,7 @@
  * Lowers pyir.push_null to a call to pyir_pushNull().
  *
  * push_null is a CPython calling convention artifact that places a null sentinel below the callee on the stack. In the
- * lowered IR it becomes a runtime call that returns a null Value* sentinel, which the Call lowering discards.
+ * lowered IR it becomes a runtime call that returns a null PyObj* sentinel, which the Call lowering discards.
  */
 struct PushNullLowering : PyIROpConversion {
     PushNullLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
@@ -42,7 +42,7 @@ struct PopTopLowering : PyIROpConversion {
 /**
  * Lowers pyir.get_iter to a call to the runtime function pyir_getIter.
  *
- * Wraps a heap-allocated container Value* in an iterator Value* that tracks
+ * Wraps a heap-allocated container PyObj* in an iterator PyObj* that tracks
  * the current position for use with pyir.for_iter.
  *
  * pyir.get_iter %container : !pyir.object -> !pyir.object

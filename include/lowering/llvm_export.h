@@ -22,7 +22,7 @@ struct LLVMExportOptions {
     std::string cpu = "native";
 
     /// Optimization level: 0 = none, 1 = less, 2 = default, 3 = aggressive.
-    unsigned int optLevel = 0;
+    uint32_t optLevel = 0;
 
     /// Whether to generate a debug build.
     bool debugInfo = false;

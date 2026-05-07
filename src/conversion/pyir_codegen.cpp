@@ -11,6 +11,7 @@
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/AsmState.h>
 #include <mlir/IR/Verifier.h>
+#include <unordered_set>
 
 #include "conversion/builder_codegen.h"
 #include "conversion/control_flow_codegen.h"
@@ -272,6 +273,9 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
             switchToOffsetBlock(builder, ctx, module, instr, meta);
 
         buildMLIRInstruction(builder, ctx, module, fn, instr, meta);
+
+        if (instr.opcode == PythonOpcode::RETURN_VALUE)
+            return;
     }
 }
 

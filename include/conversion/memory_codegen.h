@@ -93,4 +93,18 @@ void loadAttrCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mli
  */
 void storeSubscrCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, ConversionMeta& meta);
 
+
+/**
+ * Converts a STORE_FAST_LOAD_FAST bytecode instruction to pyir::StoreFast followed by pyir::LoadFast.
+ */
+void storeFastLoadFastCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
+                              const ByteCodeInstruction& instr, ConversionMeta& meta);
+
+
+/**
+ * Converts a LOAD_FAST_AND_CLEAR bytecode instruction to pyir::LoadFast and pyir::StoreFast with null.
+ */
+void loadFastAndClearCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
+                             const ByteCodeInstruction& instr, ConversionMeta& meta);
+
 #endif // PYCOMPILE_MEMORY_CODEGEN_H

@@ -67,6 +67,8 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             return setAddCodegen(builder, loc, instr, meta);
         case PythonOpcode::BUILD_MAP:
             return buildMapCodegen(builder, ctx, loc, instr, meta);
+        case PythonOpcode::MAP_ADD:
+            return mapAddCodegen(builder, loc, instr, meta);
         // ---- Control flow Ops ----
         case PythonOpcode::JUMP_FORWARD:
             return jumpForwardCodegen(builder, loc, instr, meta);
@@ -131,6 +133,10 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
             return storeDerefCodegen(builder, loc, instr, module.info, meta);
         case PythonOpcode::STORE_SUBSCR:
             return storeSubscrCodegen(builder, loc, meta);
+        case PythonOpcode::STORE_FAST_LOAD_FAST:
+            return storeFastLoadFastCodegen(builder, ctx, loc, instr, meta);
+        case PythonOpcode::LOAD_FAST_AND_CLEAR:
+            return loadFastAndClearCodegen(builder, ctx, loc, instr, meta);
         // ---- Misc. Ops ----
         case PythonOpcode::PUSH_NULL:
             // Push a null sentinel onto the stack for the call convention.
@@ -141,7 +147,17 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
         case PythonOpcode::COPY: {
             // Copy a value at the given index to the top of the stack
             const int64_t* copyIdx = std::get_if<int64_t>(&instr.argval);
+            if (!copyIdx)
+                throw PyCompileError("COPY must have an int argval", loc);
             return meta.stack.push_back(meta.stack.at(meta.stack.size() - *copyIdx));
+        }
+        case PythonOpcode::SWAP: {
+            const int64_t* idx = std::get_if<int64_t>(&instr.argval);
+            if (!idx)
+                throw PyCompileError("SWAP must have an int argval", loc);
+            // Swap the top of the stack with the value at the given index
+            std::swap(meta.stack.back(), meta.stack.at(meta.stack.size() - *idx));
+            break;
         }
         case PythonOpcode::UNKNOWN:
         default:

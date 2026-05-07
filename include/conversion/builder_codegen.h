@@ -64,4 +64,11 @@ void setAddCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const By
 void buildMapCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                      const ByteCodeInstruction& instr, ConversionMeta& meta);
 
+
+/**
+ * Converts a MAP_ADD bytecode instruction to pyir::MapAdd.
+ */
+void mapAddCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const ByteCodeInstruction& instr,
+                   ConversionMeta& meta);
+
 #endif // PYCOMPILE_BUILDER_CODEGEN_H

@@ -308,6 +308,13 @@ def PyIR_BuildMap : PyIR_Op<"build_map"> {
 }
 
 
+def PyIR_MapAdd : PyIR_Op<"map_add"> {
+    let summary = "Adds a key-value pair to a map (at the given index) with the pair of items at the top of the stack";
+    let arguments = (ins ByteCodeObject_Type:$map, ByteCodeObject_Type:$key, ByteCodeObject_Type:$value);
+    let assemblyFormat = "$map `,` $key `,` $value attr-dict `:` type($map) `,` type($key) `,` type($value)";
+}
+
+
 def PyIR_GetIter : PyIR_Op<"get_iter"> {
     let summary = "Gets the corresponding iterator for the given container";
     let arguments = (ins ByteCodeObject_Type:$container);

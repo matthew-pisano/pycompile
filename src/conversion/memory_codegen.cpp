@@ -250,7 +250,5 @@ void loadFastAndClearCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, c
     const std::string* name = std::get_if<std::string>(&instr.argval);
     if (!name)
         throw PyCompileError("LOAD_FAST_AND_CLEAR must have a string argval", loc);
-    meta.stack.push_back(builder.create<pyir::LoadFast>(loc, pyType, *name).getResult());
-    mlir::Value null = builder.create<pyir::PushNull>(loc, pyType).getResult();
-    builder.create<pyir::StoreFast>(loc, *name, null);
+    meta.stack.push_back(builder.create<pyir::LoadFastAndClear>(loc, pyType, *name).getResult());
 }

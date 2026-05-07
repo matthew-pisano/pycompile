@@ -64,6 +64,26 @@ mlir::LogicalResult LoadFastLowering::matchAndRewrite(mlir::Operation* op, mlir:
 }
 
 
+mlir::LogicalResult LoadFastAndClearLowering::matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
+                                                              mlir::ConversionPatternRewriter& rewriter) const {
+    pyir::LoadFastAndClear loadFastAndClear = mlir::cast<pyir::LoadFastAndClear>(op);
+    mlir::MLIRContext* ctx = op->getContext();
+    const mlir::ModuleOp module = getModule(op);
+    const mlir::Location loc = op->getLoc();
+
+    // declare: extern PyObj* pyir_loadFastAndClear(const char* name)
+    const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
+    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_loadFastAndClear", fnType);
+
+    const std::string globalName = "__pyir_str_" + loadFastAndClear.getVarName().str();
+    const mlir::Value strPtr =
+            getOrInsertStringConstant(rewriter, module, loc, globalName, loadFastAndClear.getVarName());
+    mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{strPtr});
+    rewriter.replaceOp(op, call.getResult());
+    return mlir::success();
+}
+
+
 mlir::LogicalResult StoreFastLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                        mlir::ConversionPatternRewriter& rewriter) const {
     pyir::StoreFast storeFast = mlir::cast<pyir::StoreFast>(op);

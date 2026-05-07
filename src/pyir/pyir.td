@@ -96,6 +96,14 @@ def PyIR_LoadFast : PyIR_Op<"load_fast", [Pure]> {
 }
 
 
+def PyIR_LoadFastAndClear : PyIR_Op<"load_fast_and_clear"> {
+    let summary = "Load a local variable by name, store it on the stack, and clear its value";
+    let arguments = (ins StrAttr:$var_name);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$var_name attr-dict";
+}
+
+
 def PyIR_StoreFast : PyIR_Op<"store_fast"> {
     let summary = "Store a value into a local variable";
     let arguments = (ins StrAttr:$var_name, ByteCodeObject_Type:$value);

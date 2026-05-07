@@ -102,7 +102,7 @@ void storeFastLoadFastCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, 
 
 
 /**
- * Converts a LOAD_FAST_AND_CLEAR bytecode instruction to pyir::LoadFast and pyir::StoreFast with null.
+ * Converts a LOAD_FAST_AND_CLEAR bytecode instruction to pyir::LoadFastAndClear.
  */
 void loadFastAndClearCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                              const ByteCodeInstruction& instr, ConversionMeta& meta);

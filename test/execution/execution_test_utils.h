@@ -152,6 +152,7 @@ struct JITFixture {
         addSymbol("pyir_loadName", reinterpret_cast<void*>(pyir_loadName));
         addSymbol("pyir_storeName", reinterpret_cast<void*>(pyir_storeName));
         addSymbol("pyir_loadFast", reinterpret_cast<void*>(pyir_loadFast));
+        addSymbol("pyir_loadFastAndClear", reinterpret_cast<void*>(pyir_loadFastAndClear));
         addSymbol("pyir_storeFast", reinterpret_cast<void*>(pyir_storeFast));
         addSymbol("pyir_pushScope", reinterpret_cast<void*>(pyir_pushScope));
         addSymbol("pyir_popScope", reinterpret_cast<void*>(pyir_popScope));
@@ -194,6 +195,7 @@ struct JITFixture {
         addSymbol("pyir_setUpdate", reinterpret_cast<void*>(pyir_setUpdate));
         addSymbol("pyir_setAdd", reinterpret_cast<void*>(pyir_setAdd));
         addSymbol("pyir_buildMap", reinterpret_cast<void*>(pyir_buildMap));
+        addSymbol("pyir_mapAdd", reinterpret_cast<void*>(pyir_mapAdd));
         addSymbol("pyir_storeSubscr", reinterpret_cast<void*>(pyir_storeSubscr));
         addSymbol("pyir_builtinEnumerate", reinterpret_cast<void*>(pyir_builtinEnumerate));
         addSymbol("pyir_builtinIsInstance", reinterpret_cast<void*>(pyir_builtinIsInstance));

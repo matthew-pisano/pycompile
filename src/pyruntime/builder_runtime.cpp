@@ -78,5 +78,4 @@ void pyir_mapAdd(PyObj* dict, PyObj* key, PyObj* value) {
     PyObj* args[2] = {key, value};
     PyDict::add(dict, args, 2);
     (void) key->decref();
-    (void) value->decref();
 }

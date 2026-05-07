@@ -93,3 +93,21 @@ TEST_CASE_METHOD(JITFixture, "Test JIT For") {
         REQUIRE(output == "0 0\n0 1\n0 2\n1 0\n1 1\n1 2\n2 0\n2 1\n2 2\n");
     }
 }
+
+
+TEST_CASE_METHOD(JITFixture, "Test JIT Comprehensions") {
+    SECTION("Test List Comprehension") {
+        const std::string output = runCapture("print([i * 2 for i in range(3)])");
+        REQUIRE(output == "[0, 2, 4]\n");
+    }
+
+    SECTION("Test Dict Comprehension") {
+        const std::string output = runCapture("print({i: str(i) for i in range(3)})");
+        REQUIRE(output == "{0: '0', 1: '1', 2: '2'}\n");
+    }
+
+    SECTION("Test Set Comprehension") {
+        const std::string output = runCapture("print({i * 2 for i in range(3)} == {0, 2, 4})");
+        REQUIRE(output == "True\n");
+    }
+}

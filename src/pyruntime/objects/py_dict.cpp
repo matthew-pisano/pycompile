@@ -94,6 +94,15 @@ PyObj* PyDict::items(PyObj* self, PyObj**, const int64_t argc) {
 }
 
 
+PyObj* PyDict::add(PyObj* self, PyObj** args, const int64_t argc) {
+    if (argc != 2)
+        throw PyTypeError("add() takes exactly two arguments");
+
+    self->setIdx(args[0], args[1]);
+    return PyNone::None;
+}
+
+
 PyObj* PyDict::update(PyObj* self, PyObj** args, const int64_t argc) {
     if (argc != 1)
         throw PyTypeError("update() takes exactly one argument");
@@ -112,6 +121,7 @@ PyObj* PyDict::update(PyObj* self, PyObj** args, const int64_t argc) {
 
     return PyNone::None;
 }
+
 
 PyObj* PyDict::getAttr(const std::string& name) {
     PyObj* result = nullptr;

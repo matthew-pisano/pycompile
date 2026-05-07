@@ -36,6 +36,9 @@ struct PyDict : PyObj {
     /// Gets a PyTuple of the key-value pairs in this dict, where each pair is represented as a 2-tuple.
     static PyObj* items(PyObj* self, PyObj** args, int64_t argc);
 
+    /// Updates this dict with the key-value given pair.
+    static PyObj* add(PyObj* self, PyObj** args, int64_t argc);
+
     /// Updates this dict with the key-value pairs from another dict.
     static PyObj* update(PyObj* self, PyObj** args, int64_t argc);
 

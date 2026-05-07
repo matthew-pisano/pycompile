@@ -18,6 +18,13 @@ struct PyObj;
 PyObj* pyir_loadFast(const char* name);
 
 /**
+ * Fetches the value of a local variable and clears its value in the current scope.
+ * @param name The name of the local variable
+ * @return The value previously held by the local variable
+ */
+PyObj* pyir_loadFastAndClear(const char* name);
+
+/**
  * Stores a value in a local variable.
  * @param name The name of the local variable
  * @param val The value to store in the local variable

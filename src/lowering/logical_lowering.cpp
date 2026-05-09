@@ -14,13 +14,13 @@ mlir::LogicalResult IsTruthyLowering::matchAndRewrite(mlir::Operation* op, const
     // declare: extern int8_t pyir_isTruthy(PyObj* val)
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(mlir::IntegerType::get(ctx, 8), {ptrType(ctx)});
-    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_isTruthy", fnType);
+    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_isTruthy", fnType);
 
-    mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{operands[0]});
+    mlir::LLVM::CallOp call = mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{operands[0]});
 
     // truncate i8 to i1 for cf.cond_br
     const mlir::Value i1val =
-            rewriter.create<mlir::LLVM::TruncOp>(loc, mlir::IntegerType::get(ctx, 1), call.getResult());
+            mlir::LLVM::TruncOp::create(rewriter, loc, mlir::IntegerType::get(ctx, 1), call.getResult());
 
     rewriter.replaceOp(op, i1val);
     return mlir::success();

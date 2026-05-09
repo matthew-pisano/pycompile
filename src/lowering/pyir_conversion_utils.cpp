@@ -22,30 +22,31 @@ mlir::Type f64Type(mlir::MLIRContext* ctx) { return mlir::Float64Type::get(ctx);
 
 
 mlir::LLVM::LLVMFuncOp getOrInsertRuntimeFn(mlir::PatternRewriter& rewriter, mlir::ModuleOp module,
-                                            llvm::StringRef name, mlir::LLVM::LLVMFunctionType fnType) {
+                                            const llvm::StringRef name, const mlir::LLVM::LLVMFunctionType fnType) {
     if (const mlir::LLVM::LLVMFuncOp fn = module.lookupSymbol<mlir::LLVM::LLVMFuncOp>(name))
         return fn;
 
     mlir::PatternRewriter::InsertionGuard guard(rewriter);
     rewriter.setInsertionPointToStart(module.getBody());
-    return rewriter.create<mlir::LLVM::LLVMFuncOp>(rewriter.getUnknownLoc(), name, fnType,
-                                                   mlir::LLVM::Linkage::External);
+    return mlir::LLVM::LLVMFuncOp::create(rewriter, rewriter.getUnknownLoc(), name, fnType,
+                                          mlir::LLVM::Linkage::External);
 }
 
 
 mlir::Value getOrInsertStringConstant(mlir::ConversionPatternRewriter& rewriter, mlir::ModuleOp module,
-                                      const mlir::Location loc, llvm::StringRef name, const llvm::StringRef str) {
+                                      const mlir::Location loc, const llvm::StringRef name, const llvm::StringRef str) {
     auto* ctx = module.getContext();
 
     if (!module.lookupSymbol(name)) {
         mlir::PatternRewriter::InsertionGuard guard(rewriter);
         rewriter.setInsertionPointToStart(module.getBody());
-        auto strType = mlir::LLVM::LLVMArrayType::get(i8Type(ctx), str.size() + 1);
-        rewriter.create<mlir::LLVM::GlobalOp>(loc, strType, /*isConstant=*/true, mlir::LLVM::Linkage::Private, name,
-                                              rewriter.getStringAttr(str.str() + '\0'));
+        const auto strType = mlir::LLVM::LLVMArrayType::get(i8Type(ctx), str.size() + 1);
+        mlir::LLVM::GlobalOp::create(rewriter, loc, strType, /*isConstant=*/true, mlir::LLVM::Linkage::Private, name,
+                                     rewriter.getStringAttr(str.str() + '\0'));
     }
 
-    return rewriter.create<mlir::LLVM::AddressOfOp>(loc, ptrType(ctx), name);
+    const mlir::Value result = mlir::LLVM::AddressOfOp::create(rewriter, loc, ptrType(ctx), name);
+    return result;
 }
 
 
@@ -66,14 +67,14 @@ mlir::LogicalResult PyIROpConversion::linkOpToRuntimeFunc(const std::string& fun
     else
         throw std::runtime_error("Unsupported number of args in runtime function link");
 
-    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, func, fnType);
+    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, func, fnType);
 
     // Choose correct call operation based on arguments
     mlir::LLVM::CallOp call;
     if (argc == 1)
-        call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{operands[0]});
+        call = mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{operands[0]});
     else
-        call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{operands[0], operands[1]});
+        call = mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{operands[0], operands[1]});
 
     rewriter.replaceOp(op, call.getResult());
     return mlir::success();

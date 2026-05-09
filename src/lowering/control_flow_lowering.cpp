@@ -20,9 +20,9 @@ mlir::LogicalResult PopTopLowering::matchAndRewrite(mlir::Operation* op, const m
 
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx)});
-    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_decref", fnType);
+    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_decref", fnType);
 
-    rewriter.create<mlir::LLVM::CallOp>(loc, fn, operands[0]);
+    mlir::LLVM::CallOp::create(rewriter, loc, fn, operands[0]);
     rewriter.eraseOp(op);
     return mlir::success();
 }
@@ -42,15 +42,15 @@ mlir::LogicalResult ForIterLowering::matchAndRewrite(mlir::Operation* op, const 
 
     // declare: extern PyObj* pyir_forIter(PyObj* iterator)
     const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
-    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, getModule(op), "pyir_forIter", fnType);
+    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, getModule(op), "pyir_forIter", fnType);
 
     // Advance the iterator, returns nullptr if exhausted
-    mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{operands[0]});
-    mlir::Value next = call.getResult();
+    mlir::LLVM::CallOp call = mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{operands[0]});
+    const mlir::Value next = call.getResult();
 
     // Check if result is null: icmp ne %next, null
-    mlir::Value null = rewriter.create<mlir::LLVM::ZeroOp>(loc, ptrType(ctx));
-    mlir::Value cond = rewriter.create<mlir::LLVM::ICmpOp>(loc, mlir::LLVM::ICmpPredicate::ne, next, null);
+    const mlir::Value null = mlir::LLVM::ZeroOp::create(rewriter, loc, ptrType(ctx));
+    mlir::Value cond = mlir::LLVM::ICmpOp::create(rewriter, loc, mlir::LLVM::ICmpPredicate::ne, next, null);
 
     // Branch to body with next value, or to exit if exhausted
     mlir::Block* bodyBlock = forIter.getBody();
@@ -84,9 +84,9 @@ mlir::LogicalResult PopIterLowering::matchAndRewrite(mlir::Operation* op, mlir::
     // declare: extern void pyir_popIter()
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {});
-    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_popIter", fnType);
+    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_popIter", fnType);
 
-    rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{});
+    mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{});
     rewriter.eraseOp(op);
     return mlir::success();
 }

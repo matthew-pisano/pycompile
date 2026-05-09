@@ -19,33 +19,33 @@ mlir::LogicalResult CallLowering::matchAndRewrite(mlir::Operation* op, const mli
     // declare: extern PyObj* pyir_call(PyObj* callee, Value** args, int64_t argc)
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), ptrType(ctx), i64Type(ctx)});
-    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_call", fnType);
+    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_call", fnType);
 
     // Allocate args array on the stack: PyObj*[argc]
     mlir::Value argsPtr;
     if (argc > 0) {
-        mlir::LLVM::LLVMArrayType arrType = mlir::LLVM::LLVMArrayType::get(ptrType(ctx), argc);
-        mlir::LLVM::AllocaOp alloca = rewriter.create<mlir::LLVM::AllocaOp>(
-                loc, ptrType(ctx), arrType,
-                rewriter.create<mlir::LLVM::ConstantOp>(loc, i64Type(ctx), rewriter.getI64IntegerAttr(1)));
+        const mlir::LLVM::LLVMArrayType arrType = mlir::LLVM::LLVMArrayType::get(ptrType(ctx), argc);
+        mlir::LLVM::AllocaOp alloca = mlir::LLVM::AllocaOp::create(
+                rewriter, loc, ptrType(ctx), arrType,
+                mlir::LLVM::ConstantOp::create(rewriter, loc, i64Type(ctx), rewriter.getI64IntegerAttr(1)));
 
         // Store each arg into the array
         for (int64_t i = 0; i < argc; i++) {
             mlir::LLVM::ConstantOp idx =
-                    rewriter.create<mlir::LLVM::ConstantOp>(loc, i64Type(ctx), rewriter.getI64IntegerAttr(i));
+                    mlir::LLVM::ConstantOp::create(rewriter, loc, i64Type(ctx), rewriter.getI64IntegerAttr(i));
             mlir::LLVM::GEPOp gep =
-                    rewriter.create<mlir::LLVM::GEPOp>(loc, ptrType(ctx), ptrType(ctx), alloca, mlir::ValueRange{idx});
-            rewriter.create<mlir::LLVM::StoreOp>(loc, args[i], gep);
+                    mlir::LLVM::GEPOp::create(rewriter, loc, ptrType(ctx), ptrType(ctx), alloca, mlir::ValueRange{idx});
+            mlir::LLVM::StoreOp::create(rewriter, loc, args[i], gep);
         }
         argsPtr = alloca;
     } else
         // nullptr for empty args
-        argsPtr = rewriter.create<mlir::LLVM::ZeroOp>(loc, ptrType(ctx));
+        argsPtr = mlir::LLVM::ZeroOp::create(rewriter, loc, ptrType(ctx));
 
     mlir::LLVM::ConstantOp argcVal =
-            rewriter.create<mlir::LLVM::ConstantOp>(loc, i64Type(ctx), rewriter.getI64IntegerAttr(argc));
+            mlir::LLVM::ConstantOp::create(rewriter, loc, i64Type(ctx), rewriter.getI64IntegerAttr(argc));
 
-    mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{callee, argsPtr, argcVal});
+    mlir::LLVM::CallOp call = mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{callee, argsPtr, argcVal});
 
     rewriter.replaceOp(op, call.getResult());
     return mlir::success();
@@ -61,9 +61,9 @@ mlir::LogicalResult PushScopeLowering::matchAndRewrite(mlir::Operation* op, mlir
     // declare: extern void pyir_pushScope()
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {});
-    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_pushScope", fnType);
+    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_pushScope", fnType);
 
-    rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{});
+    mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{});
     rewriter.eraseOp(op);
     return mlir::success();
 }
@@ -78,9 +78,9 @@ mlir::LogicalResult PopScopeLowering::matchAndRewrite(mlir::Operation* op, mlir:
     // declare: extern void pyir_popScope()
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {});
-    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_popScope", fnType);
+    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_popScope", fnType);
 
-    rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{});
+    mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{});
     rewriter.eraseOp(op);
     return mlir::success();
 }
@@ -98,14 +98,14 @@ mlir::LogicalResult MakeFunctionLowering::matchAndRewrite(mlir::Operation* op, m
     // declare: extern PyObj* pyir_makeFunction(char* display_name, void* fn_ptr)
     const mlir::LLVM::LLVMFunctionType fnType =
             mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), ptrType(ctx)});
-    mlir::LLVM::LLVMFuncOp runtimeFn = getOrInsertRuntimeFn(rewriter, module, "pyir_makeFunction", fnType);
+    const mlir::LLVM::LLVMFuncOp runtimeFn = getOrInsertRuntimeFn(rewriter, module, "pyir_makeFunction", fnType);
 
     // Get function pointer from symbol table
-    const mlir::Value fnPtr = rewriter.create<mlir::LLVM::AddressOfOp>(loc, ptrType(ctx), fnName);
+    const mlir::Value fnPtr = mlir::LLVM::AddressOfOp::create(rewriter, loc, ptrType(ctx), fnName);
     const std::string globalName = "__pyir_str_fn_" + makeFunc.getFnName().str();
     const mlir::Value namePtr = getOrInsertStringConstant(rewriter, module, loc, globalName, makeFunc.getFnName());
 
-    mlir::LLVM::CallOp call = rewriter.create<mlir::LLVM::CallOp>(loc, runtimeFn, mlir::ValueRange{namePtr, fnPtr});
+    mlir::LLVM::CallOp call = mlir::LLVM::CallOp::create(rewriter, loc, runtimeFn, mlir::ValueRange{namePtr, fnPtr});
 
     rewriter.replaceOp(op, call.getResult());
     return mlir::success();

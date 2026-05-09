@@ -14,7 +14,7 @@
 
 void makeFunctionCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                          ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const mlir::Value sentinel = meta.stack.back();
     meta.stack.pop_back();
 
@@ -23,13 +23,13 @@ void makeFunctionCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const
     // Erase the sentinel PushNull op since it was just a placeholder
     sentinel.getDefiningOp()->erase();
 
-    meta.stack.push_back(builder.create<pyir::MakeFunction>(loc, pyType, fnName).getResult());
+    meta.stack.push_back(pyir::MakeFunction::create(builder, loc, pyType, fnName).getResult());
 }
 
 
 void callFuncCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                      const ByteCodeInstruction& instr, ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const int64_t* argc = std::get_if<int64_t>(&instr.argval);
     if (!argc)
         throw PyCompileError("CALL must have an int argval", loc);
@@ -41,10 +41,10 @@ void callFuncCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mli
     }
 
     meta.stack.pop_back(); // Null sentinel
-    mlir::Value callee = meta.stack.back();
+    const mlir::Value callee = meta.stack.back();
     meta.stack.pop_back(); // Actual callee
 
-    meta.stack.push_back(builder.create<pyir::Call>(loc, pyType, callee, args).getResult());
+    meta.stack.push_back(pyir::Call::create(builder, loc, pyType, callee, args).getResult());
 }
 
 
@@ -57,13 +57,13 @@ void returnValueCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, Con
 
     // Pop the local scope before returning from a function (not needed at module level)
     if (meta.isFunction)
-        builder.create<pyir::PopScope>(loc);
+        pyir::PopScope::create(builder, loc);
     // Emit destroy module instruction at the end of a top level module
     else
-        builder.create<pyir::DestroyModule>(loc);
+        pyir::DestroyModule::create(builder, loc);
 
     if (retVal)
-        builder.create<pyir::ReturnValue>(loc, retVal);
+        pyir::ReturnValue::create(builder, loc, retVal);
     else
-        builder.create<mlir::func::ReturnOp>(loc);
+        mlir::func::ReturnOp::create(builder, loc);
 }

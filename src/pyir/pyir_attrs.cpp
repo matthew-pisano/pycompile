@@ -5,5 +5,6 @@
 #include "pyir/pyir_attrs.h"
 
 #define GET_ATTRDEF_CLASSES
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include "pyir_attrs.cpp.inc"
 #undef GET_ATTRDEF_CLASSES

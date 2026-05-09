@@ -37,45 +37,45 @@ std::string resolveDeref(const CodeInfo& info, const int64_t idx) {
 
 void loadSmallIntCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                          const ByteCodeInstruction& instr, ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const int64_t* target = std::get_if<int64_t>(&instr.argval);
     if (!target)
         throw PyCompileError("LOAD_SMALL_INT must have an int argval", loc);
-    mlir::Attribute attr = builder.getI64IntegerAttr(*target);
-    meta.stack.push_back(builder.create<pyir::LoadConst>(loc, pyType, attr).getResult());
+    const mlir::Attribute attr = builder.getI64IntegerAttr(*target);
+    meta.stack.push_back(pyir::LoadConst::create(builder, loc, pyType, attr).getResult());
 }
 
 
 void loadGlobalCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                        const ByteCodeInstruction& instr, ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const std::string* name = std::get_if<std::string>(&instr.argval);
     if (!name)
         throw PyCompileError("LOAD_GLOBAL must have a string argval", loc);
     // Push the value
-    meta.stack.push_back(builder.create<pyir::LoadName>(loc, pyType, *name).getResult());
+    meta.stack.push_back(pyir::LoadName::create(builder, loc, pyType, *name).getResult());
     // LOAD_GLOBAL also pushes a null sentinel
-    meta.stack.push_back(builder.create<pyir::PushNull>(loc, pyType).getResult());
+    meta.stack.push_back(pyir::PushNull::create(builder, loc, pyType).getResult());
 }
 
 
 void loadFastBorrowCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                            const ByteCodeInstruction& instr, ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const std::string* name = std::get_if<std::string>(&instr.argval);
     if (!name)
         throw PyCompileError("LOAD_FAST_BORROW must have a string argval", loc);
-    meta.stack.push_back(builder.create<pyir::LoadFast>(loc, pyType, *name).getResult());
+    meta.stack.push_back(pyir::LoadFast::create(builder, loc, pyType, *name).getResult());
 }
 
 
 void loadNameCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                      const ByteCodeInstruction& instr, ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const std::string* name = std::get_if<std::string>(&instr.argval);
     if (!name)
         throw PyCompileError("LOAD_NAME must have a string argval", loc);
-    meta.stack.push_back(builder.create<pyir::LoadName>(loc, pyType, *name).getResult());
+    meta.stack.push_back(pyir::LoadName::create(builder, loc, pyType, *name).getResult());
 }
 
 
@@ -84,19 +84,19 @@ void storeNameCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const
     const std::string* name = std::get_if<std::string>(&instr.argval);
     if (!name)
         throw PyCompileError("STORE_NAME must have a string argval", loc);
-    mlir::Value val = meta.stack.back();
+    const mlir::Value val = meta.stack.back();
     meta.stack.pop_back();
-    builder.create<pyir::StoreName>(loc, *name, val);
+    pyir::StoreName::create(builder, loc, *name, val);
 }
 
 
 void loadFastCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                      const ByteCodeInstruction& instr, ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const std::string* name = std::get_if<std::string>(&instr.argval);
     if (!name)
         throw PyCompileError("LOAD_FAST must have a string argval", loc);
-    meta.stack.push_back(builder.create<pyir::LoadFast>(loc, pyType, *name).getResult());
+    meta.stack.push_back(pyir::LoadFast::create(builder, loc, pyType, *name).getResult());
 }
 
 
@@ -105,20 +105,20 @@ void storeFastCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const
     const std::string* name = std::get_if<std::string>(&instr.argval);
     if (!name)
         throw PyCompileError("STORE_FAST must have a string argval", loc);
-    mlir::Value val = meta.stack.back();
+    const mlir::Value val = meta.stack.back();
     meta.stack.pop_back();
-    builder.create<pyir::StoreFast>(loc, *name, val);
+    pyir::StoreFast::create(builder, loc, *name, val);
 }
 
 
 void loadDerefCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                       const ByteCodeInstruction& instr, const CodeInfo& codeInfo, ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const int64_t* idx = std::get_if<int64_t>(&instr.argval);
     if (!idx)
         throw PyCompileError("LOAD_DEREF must have an int argval", loc);
     const std::string name = resolveDeref(codeInfo, *idx);
-    meta.stack.push_back(builder.create<pyir::LoadDeref>(loc, pyType, name).getResult());
+    meta.stack.push_back(pyir::LoadDeref::create(builder, loc, pyType, name).getResult());
 }
 
 
@@ -128,9 +128,9 @@ void storeDerefCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, cons
     if (!idx)
         throw PyCompileError("STORE_DEREF must have an int argval", loc);
     const std::string name = resolveDeref(codeInfo, *idx);
-    mlir::Value val = meta.stack.back();
+    const mlir::Value val = meta.stack.back();
     meta.stack.pop_back();
-    builder.create<pyir::StoreDeref>(loc, name, val);
+    pyir::StoreDeref::create(builder, loc, name, val);
 }
 
 
@@ -157,12 +157,12 @@ mlir::ArrayAttr getArrayAttr(mlir::OpBuilder& builder, const std::vector<Primiti
 
 void loadConstCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                       const mlir::func::FuncOp& fn, const ByteCodeInstruction& instr, ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     if (std::holds_alternative<ArgvalNone>(instr.argval)) {
         // None is a valid return value inside functions
         if (meta.isFunction) {
-            mlir::Attribute attr = pyir::NoneAttr::get(&ctx);
-            meta.stack.push_back(builder.create<pyir::LoadConst>(loc, pyType, attr).getResult());
+            const mlir::Attribute attr = pyir::NoneAttr::get(&ctx);
+            meta.stack.push_back(pyir::LoadConst::create(builder, loc, pyType, attr).getResult());
         }
         return;
     }
@@ -180,7 +180,7 @@ void loadConstCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ml
         builder.setInsertionPointToEnd(parentModule.getBody());
         buildMLIRModule(builder, ctx, nested, fnName);
 
-        const mlir::Value sentinel = builder.create<pyir::PushNull>(loc, pyType).getResult();
+        const mlir::Value sentinel = pyir::PushNull::create(builder, loc, pyType).getResult();
         meta.pendingFunctions[static_cast<mlir::Value*>(sentinel.getAsOpaquePointer())] = fnName;
         meta.stack.push_back(sentinel);
         return;
@@ -201,53 +201,53 @@ void loadConstCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ml
     else
         throw PyCompileError("LOAD_CONST unknown argval type " + instr.argrepr, loc);
 
-    meta.stack.push_back(builder.create<pyir::LoadConst>(loc, pyType, attr).getResult());
+    meta.stack.push_back(pyir::LoadConst::create(builder, loc, pyType, attr).getResult());
 }
 
 
 void loadAttrCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                      const ByteCodeInstruction& instr, ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const std::string* name = std::get_if<std::string>(&instr.argval);
     if (!name)
         throw PyCompileError("LOAD_ATTR must have a string argval", loc);
-    mlir::Value obj = meta.stack.back();
+    const mlir::Value obj = meta.stack.back();
     meta.stack.pop_back();
-    meta.stack.push_back(builder.create<pyir::LoadAttr>(loc, pyType, obj, *name).getResult());
-    meta.stack.push_back(builder.create<pyir::PushNull>(loc, pyType).getResult());
+    meta.stack.push_back(pyir::LoadAttr::create(builder, loc, pyType, obj, *name).getResult());
+    meta.stack.push_back(pyir::PushNull::create(builder, loc, pyType).getResult());
 }
 
 
 void storeSubscrCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, ConversionMeta& meta) {
-    mlir::Value idx = meta.stack.back();
+    const mlir::Value idx = meta.stack.back();
     meta.stack.pop_back();
-    mlir::Value collection = meta.stack.back();
+    const mlir::Value collection = meta.stack.back();
     meta.stack.pop_back();
-    mlir::Value value = meta.stack.back();
+    const mlir::Value value = meta.stack.back();
     meta.stack.pop_back();
-    builder.create<pyir::StoreSubscr>(loc, collection, idx, value);
+    pyir::StoreSubscr::create(builder, loc, collection, idx, value);
 }
 
 
-void storeFastLoadFastCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
-                              const ByteCodeInstruction& instr, ConversionMeta& meta) {
+void storeFastLoadFastCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const ByteCodeInstruction& instr,
+                              ConversionMeta& meta) {
     const std::vector<PrimitiveArgvals>* arg = std::get_if<std::vector<PrimitiveArgvals>>(&instr.argval);
     if (!arg)
         throw PyCompileError("STORE_FAST_LOAD_FAST must have an tuplestr argval", loc);
     const std::string storeName = std::get<std::string>(arg->at(0));
     const std::string loadName = std::get<std::string>(arg->at(1));
-    mlir::Value val = meta.stack.back();
+    const mlir::Value val = meta.stack.back();
     meta.stack.pop_back();
-    builder.create<pyir::StoreFast>(loc, storeName, val);
+    pyir::StoreFast::create(builder, loc, storeName, val);
     meta.stack.push_back(val);
 }
 
 
 void loadFastAndClearCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                              const ByteCodeInstruction& instr, ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const std::string* name = std::get_if<std::string>(&instr.argval);
     if (!name)
         throw PyCompileError("LOAD_FAST_AND_CLEAR must have a string argval", loc);
-    meta.stack.push_back(builder.create<pyir::LoadFastAndClear>(loc, pyType, *name).getResult());
+    meta.stack.push_back(pyir::LoadFastAndClear::create(builder, loc, pyType, *name).getResult());
 }

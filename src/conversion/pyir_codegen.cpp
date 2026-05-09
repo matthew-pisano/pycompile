@@ -42,7 +42,7 @@ mlir::Location getInstructionLocation(mlir::MLIRContext& ctx, const ByteCodeInst
  */
 void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ByteCodeModule& module,
                           mlir::func::FuncOp& fn, const ByteCodeInstruction& instr, ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const mlir::Location loc = getInstructionLocation(ctx, instr, module.filename);
 
     switch (instr.opcode) {
@@ -135,13 +135,13 @@ void buildMLIRInstruction(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, cons
         case PythonOpcode::STORE_SUBSCR:
             return storeSubscrCodegen(builder, loc, meta);
         case PythonOpcode::STORE_FAST_LOAD_FAST:
-            return storeFastLoadFastCodegen(builder, ctx, loc, instr, meta);
+            return storeFastLoadFastCodegen(builder, loc, instr, meta);
         case PythonOpcode::LOAD_FAST_AND_CLEAR:
             return loadFastAndClearCodegen(builder, ctx, loc, instr, meta);
         // ---- Misc. Ops ----
         case PythonOpcode::PUSH_NULL:
             // Push a null sentinel onto the stack for the call convention.
-            return meta.stack.push_back(builder.create<pyir::PushNull>(loc, pyType).getResult());
+            return meta.stack.push_back(pyir::PushNull::create(builder, loc, pyType).getResult());
         case PythonOpcode::POP_TOP:
             // Discard top of stack, if the value is unused MLIR's DCE will clean up the producing op if it's Pure.
             return meta.stack.pop_back();
@@ -184,7 +184,7 @@ void switchToOffsetBlock(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const
             for (mlir::Value v : branchArgs)
                 targetBlock->addArgument(v.getType(), loc);
         // Add the block at the offset to the MLIR code
-        builder.create<mlir::cf::BranchOp>(loc, targetBlock, mlir::ValueRange{branchArgs});
+        mlir::cf::BranchOp::create(builder, loc, targetBlock, mlir::ValueRange{branchArgs});
     }
 
     builder.setInsertionPointToStart(targetBlock);
@@ -221,7 +221,7 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
         fnType = builder.getFunctionType({}, {});
 
     mlir::func::FuncOp fn =
-            builder.create<mlir::func::FuncOp>(mlir::UnknownLoc::get(&ctx), llvm::StringRef(moduleName), fnType);
+            mlir::func::FuncOp::create(builder, mlir::UnknownLoc::get(&ctx), llvm::StringRef(moduleName), fnType);
 
     mlir::Block* block = fn.addEntryBlock();
     builder.setInsertionPointToStart(block);
@@ -232,19 +232,19 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
 
     // For functions, emit push_scope + arg unpacking preamble using block arguments
     if (meta.isFunction) {
-        builder.create<pyir::PushScope>(preambleLoc);
+        pyir::PushScope::create(builder, preambleLoc);
 
-        mlir::Value argsPtr = block->getArgument(0); // args_ptr (!pyir.object, i.e. Value**)
-
+        const mlir::Value argsPtr = block->getArgument(0); // args_ptr (!pyir.object, i.e. Value**)
         for (size_t i = 0; i < static_cast<size_t>(module.info.argcount); i++) {
-            mlir::IntegerAttr idxAttr = builder.getI64IntegerAttr(static_cast<int64_t>(i));
-            mlir::Value argVal = builder.create<pyir::LoadArg>(preambleLoc, pyType, argsPtr, idxAttr).getResult();
-            builder.create<pyir::StoreFast>(preambleLoc, module.info.varnames[i], argVal);
+            const mlir::IntegerAttr idxAttr = builder.getI64IntegerAttr(static_cast<int64_t>(i));
+            const mlir::Value argVal =
+                    pyir::LoadArg::create(builder, preambleLoc, pyType, argsPtr, idxAttr).getResult();
+            pyir::StoreFast::create(builder, preambleLoc, module.info.varnames[i], argVal);
         }
     }
     // For modules, setup dunder variables and state
     else
-        builder.create<pyir::InitModule>(preambleLoc, module.filename, module.moduleName);
+        pyir::InitModule::create(builder, preambleLoc, module.filename, module.moduleName);
 
     // Exception table handler targets also get blocks
     for (const ExceptionTableEntry& e : module.info.exceptionTable)

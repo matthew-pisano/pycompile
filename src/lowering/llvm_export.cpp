@@ -67,7 +67,7 @@ static std::unique_ptr<llvm::TargetMachine> createTargetMachine(const LLVMExport
             options.cpu.empty() || options.cpu == "native" ? llvm::sys::getHostCPUName().str() : options.cpu;
 
     std::string err;
-    const llvm::Target* target = llvm::TargetRegistry::lookupTarget(triple.str(), err);
+    const llvm::Target* target = llvm::TargetRegistry::lookupTarget(triple, err);
     if (!target)
         throw std::runtime_error("failed to lookup LLVM target: " + err);
 

@@ -8,7 +8,7 @@
 
 void buildStringCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                         const ByteCodeInstruction& instr, ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const int64_t* count = std::get_if<int64_t>(&instr.argval);
     if (!count)
         throw std::runtime_error("BUILD_STRING must have an int argval");
@@ -18,13 +18,13 @@ void buildStringCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const 
         parts[i] = meta.stack.back();
         meta.stack.pop_back();
     }
-    meta.stack.push_back(builder.create<pyir::BuildString>(loc, pyType, parts).getResult());
+    meta.stack.push_back(pyir::BuildString::create(builder, loc, pyType, parts).getResult());
 }
 
 
 void buildListCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                       const ByteCodeInstruction& instr, ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const int64_t* count = std::get_if<int64_t>(&instr.argval);
     if (!count)
         throw std::runtime_error("BUILD_LIST must have an int argval");
@@ -34,7 +34,7 @@ void buildListCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const ml
         parts[i] = meta.stack.back();
         meta.stack.pop_back();
     }
-    meta.stack.push_back(builder.create<pyir::BuildList>(loc, pyType, parts).getResult());
+    meta.stack.push_back(pyir::BuildList::create(builder, loc, pyType, parts).getResult());
 }
 
 
@@ -47,8 +47,8 @@ void listExtendCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, cons
     const mlir::Value items = meta.stack.back();
     meta.stack.pop_back();
 
-    mlir::Value list = meta.stack.at(meta.stack.size() - *idx);
-    builder.create<pyir::ListExtend>(loc, list, items);
+    const mlir::Value list = meta.stack.at(meta.stack.size() - *idx);
+    pyir::ListExtend::create(builder, loc, list, items);
 }
 
 
@@ -61,14 +61,14 @@ void listAppendCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, cons
     const mlir::Value item = meta.stack.back();
     meta.stack.pop_back();
 
-    mlir::Value list = meta.stack.at(meta.stack.size() - *idx);
-    builder.create<pyir::ListAppend>(loc, list, item);
+    const mlir::Value list = meta.stack.at(meta.stack.size() - *idx);
+    pyir::ListAppend::create(builder, loc, list, item);
 }
 
 
 void buildSetCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                      const ByteCodeInstruction& instr, ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const int64_t* count = std::get_if<int64_t>(&instr.argval);
     if (!count)
         throw std::runtime_error("BUILD_SET must have an int argval");
@@ -78,7 +78,7 @@ void buildSetCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mli
         parts[i] = meta.stack.back();
         meta.stack.pop_back();
     }
-    meta.stack.push_back(builder.create<pyir::BuildSet>(loc, pyType, parts).getResult());
+    meta.stack.push_back(pyir::BuildSet::create(builder, loc, pyType, parts).getResult());
 }
 
 
@@ -91,8 +91,8 @@ void setUpdateCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const
     const mlir::Value items = meta.stack.back();
     meta.stack.pop_back();
 
-    mlir::Value set = meta.stack.at(meta.stack.size() - *idx);
-    builder.create<pyir::SetUpdate>(loc, set, items);
+    const mlir::Value set = meta.stack.at(meta.stack.size() - *idx);
+    pyir::SetUpdate::create(builder, loc, set, items);
 }
 
 
@@ -105,14 +105,14 @@ void setAddCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const By
     const mlir::Value item = meta.stack.back();
     meta.stack.pop_back();
 
-    mlir::Value set = meta.stack.at(meta.stack.size() - *idx);
-    builder.create<pyir::SetAdd>(loc, set, item);
+    const mlir::Value set = meta.stack.at(meta.stack.size() - *idx);
+    pyir::SetAdd::create(builder, loc, set, item);
 }
 
 
 void buildMapCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                      const ByteCodeInstruction& instr, ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const int64_t* countPtr = std::get_if<int64_t>(&instr.argval);
     if (!countPtr)
         throw std::runtime_error("BUILD_MAP must have an int argval");
@@ -124,7 +124,7 @@ void buildMapCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mli
         parts[i] = meta.stack.back();
         meta.stack.pop_back();
     }
-    meta.stack.push_back(builder.create<pyir::BuildMap>(loc, pyType, parts).getResult());
+    meta.stack.push_back(pyir::BuildMap::create(builder, loc, pyType, parts).getResult());
 }
 
 
@@ -139,6 +139,6 @@ void mapAddCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const By
     const mlir::Value key = meta.stack.back();
     meta.stack.pop_back();
 
-    mlir::Value dict = meta.stack.at(meta.stack.size() - *idx);
-    builder.create<pyir::MapAdd>(loc, dict, key, value);
+    const mlir::Value dict = meta.stack.at(meta.stack.size() - *idx);
+    pyir::MapAdd::create(builder, loc, dict, key, value);
 }

@@ -16,6 +16,7 @@
 #include "pyir/pyir_types.h"
 
 #define GET_OP_CLASSES
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 #include "pyir_ops.h.inc"
 #undef GET_OP_CLASSES
 

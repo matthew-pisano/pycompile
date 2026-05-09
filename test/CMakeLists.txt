@@ -31,6 +31,12 @@ target_include_directories(pycompile-tests SYSTEM PRIVATE
         ${MLIR_INCLUDE_DIRS}
         ${LLVM_INCLUDE_DIRS}
 )
+set_target_properties(pycompile-tests PROPERTIES
+        COMPILE_WARNING_AS_ERROR ON
+)
+target_compile_options(pycompile-tests PRIVATE
+        $<$<CXX_COMPILER_ID:Clang>:-Wno-c2y-extensions>
+)
 
 include(CTest)
 include(Catch)

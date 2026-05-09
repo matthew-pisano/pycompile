@@ -169,3 +169,21 @@ mlir::LogicalResult BuildMapLowering::matchAndRewrite(mlir::Operation* op, const
     const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_buildMap", fnType);
     return buildArrayType(ctx, op, operands, fn, rewriter, loc);
 }
+
+
+mlir::LogicalResult MapAddLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
+                                                    mlir::ConversionPatternRewriter& rewriter) const {
+    mlir::MLIRContext* ctx = op->getContext();
+    const mlir::ModuleOp module = getModule(op);
+    const mlir::Location loc = op->getLoc();
+
+    // declare: extern void pyir_mapAdd(PyObj* dict, PyObj* key, PyObj* value)
+    const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
+            mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx), ptrType(ctx)});
+    mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_mapAdd", fnType);
+
+    // operands[0] = map, operands[1] = key, operands[2] = value
+    rewriter.create<mlir::LLVM::CallOp>(loc, fn, mlir::ValueRange{operands[0], operands[1], operands[2]});
+    rewriter.eraseOp(op);
+    return mlir::success();
+}

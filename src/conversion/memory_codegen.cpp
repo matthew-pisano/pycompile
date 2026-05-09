@@ -227,3 +227,27 @@ void storeSubscrCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, Con
     meta.stack.pop_back();
     builder.create<pyir::StoreSubscr>(loc, collection, idx, value);
 }
+
+
+void storeFastLoadFastCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
+                              const ByteCodeInstruction& instr, ConversionMeta& meta) {
+    const std::vector<PrimitiveArgvals>* arg = std::get_if<std::vector<PrimitiveArgvals>>(&instr.argval);
+    if (!arg)
+        throw PyCompileError("STORE_FAST_LOAD_FAST must have an tuplestr argval", loc);
+    const std::string storeName = std::get<std::string>(arg->at(0));
+    const std::string loadName = std::get<std::string>(arg->at(1));
+    mlir::Value val = meta.stack.back();
+    meta.stack.pop_back();
+    builder.create<pyir::StoreFast>(loc, storeName, val);
+    meta.stack.push_back(val);
+}
+
+
+void loadFastAndClearCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
+                             const ByteCodeInstruction& instr, ConversionMeta& meta) {
+    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const std::string* name = std::get_if<std::string>(&instr.argval);
+    if (!name)
+        throw PyCompileError("LOAD_FAST_AND_CLEAR must have a string argval", loc);
+    meta.stack.push_back(builder.create<pyir::LoadFastAndClear>(loc, pyType, *name).getResult());
+}

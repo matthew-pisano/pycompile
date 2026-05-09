@@ -96,6 +96,14 @@ def PyIR_LoadFast : PyIR_Op<"load_fast", [Pure]> {
 }
 
 
+def PyIR_LoadFastAndClear : PyIR_Op<"load_fast_and_clear"> {
+    let summary = "Load a local variable by name, store it on the stack, and clear its value";
+    let arguments = (ins StrAttr:$var_name);
+    let results   = (outs ByteCodeObject_Type:$result);
+    let assemblyFormat = "$var_name attr-dict";
+}
+
+
 def PyIR_StoreFast : PyIR_Op<"store_fast"> {
     let summary = "Store a value into a local variable";
     let arguments = (ins StrAttr:$var_name, ByteCodeObject_Type:$value);
@@ -305,6 +313,13 @@ def PyIR_BuildMap : PyIR_Op<"build_map"> {
     let arguments = (ins Variadic<ByteCodeObject_Type>:$parts);
     let results   = (outs ByteCodeObject_Type:$result);
     let assemblyFormat = "$parts attr-dict `:` functional-type($parts, $result)";
+}
+
+
+def PyIR_MapAdd : PyIR_Op<"map_add"> {
+    let summary = "Adds a key-value pair to a map (at the given index) with the pair of items at the top of the stack";
+    let arguments = (ins ByteCodeObject_Type:$map, ByteCodeObject_Type:$key, ByteCodeObject_Type:$value);
+    let assemblyFormat = "$map `,` $key `,` $value attr-dict `:` type($map) `,` type($key) `,` type($value)";
 }
 
 

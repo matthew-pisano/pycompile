@@ -70,6 +70,14 @@ void pyir_setAdd(PyObj* set, PyObj* item);
  * @return A new PyDict*
  */
 PyObj* pyir_buildMap(PyObj** parts, int64_t count);
+
+/**
+ * Adds to the given dict with the given key-value pair.
+ * @param dict The dict to add to
+ * @param key The key to add
+ * @param value The value to add
+ */
+void pyir_mapAdd(PyObj* dict, PyObj* key, PyObj* value);
 }
 
 #endif // PYCOMPILE_BUILDER_RUNTIME_H

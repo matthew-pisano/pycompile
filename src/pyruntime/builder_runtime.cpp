@@ -72,3 +72,10 @@ PyObj* pyir_buildMap(PyObj** parts, const int64_t count) {
         result.insert({parts[i - 1], parts[i]});
     return new PyDict(result);
 }
+
+
+void pyir_mapAdd(PyObj* dict, PyObj* key, PyObj* value) {
+    PyObj* args[2] = {key, value};
+    PyDict::add(dict, args, 2);
+    (void) key->decref();
+}

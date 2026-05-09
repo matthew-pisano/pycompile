@@ -287,7 +287,9 @@ ByteCodeModule generatePythonByteCode(PyObject* code, const std::string& filenam
     result.info.freevars = extractPyTupleStrings(code, "co_freevars");
     result.info.cellvars = extractPyTupleStrings(code, "co_cellvars");
     result.info.varnames = extractPyTupleStrings(code, "co_varnames");
-    result.info.exceptionTable = decodeExceptionTable(code);
+
+    // Exception table currently does not decode the raw bytes from Python correctly. Ignored for now
+    // result.info.exceptionTable = decodeExceptionTable(code);
 
     PyObject* argcount = PyObject_GetAttrString(code, "co_argcount");
     result.info.argcount = argcount ? PyLong_AsInt(argcount) : 0;

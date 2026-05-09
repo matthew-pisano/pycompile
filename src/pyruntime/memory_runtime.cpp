@@ -35,6 +35,23 @@ PyObj* pyir_loadFast(const char* name) {
 }
 
 
+PyObj* pyir_loadFastAndClear(const char* name) {
+    if (scopeStack.empty())
+        throw std::runtime_error(std::string("No active scope to load '") + name + "'");
+
+    std::unordered_map<std::string, PyObj*>& locals = scopeStack.back();
+
+    const auto it = locals.find(name);
+    if (it == locals.end())
+        return PyNone::None;
+
+    it->second->incref();
+    PyObj* value = it->second;
+    locals[name] = PyNone::None;
+    return value;
+}
+
+
 void pyir_storeFast(const char* name, PyObj* val) {
     if (scopeStack.empty())
         throw std::runtime_error(std::string("No active scope to store '") + name + "'");

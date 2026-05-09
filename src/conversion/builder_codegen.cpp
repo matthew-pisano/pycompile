@@ -91,8 +91,8 @@ void setUpdateCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const
     const mlir::Value items = meta.stack.back();
     meta.stack.pop_back();
 
-    mlir::Value list = meta.stack.at(meta.stack.size() - *idx);
-    builder.create<pyir::SetUpdate>(loc, list, items);
+    mlir::Value set = meta.stack.at(meta.stack.size() - *idx);
+    builder.create<pyir::SetUpdate>(loc, set, items);
 }
 
 
@@ -105,8 +105,8 @@ void setAddCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const By
     const mlir::Value item = meta.stack.back();
     meta.stack.pop_back();
 
-    mlir::Value list = meta.stack.at(meta.stack.size() - *idx);
-    builder.create<pyir::SetAdd>(loc, list, item);
+    mlir::Value set = meta.stack.at(meta.stack.size() - *idx);
+    builder.create<pyir::SetAdd>(loc, set, item);
 }
 
 
@@ -125,4 +125,20 @@ void buildMapCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mli
         meta.stack.pop_back();
     }
     meta.stack.push_back(builder.create<pyir::BuildMap>(loc, pyType, parts).getResult());
+}
+
+
+void mapAddCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const ByteCodeInstruction& instr,
+                   ConversionMeta& meta) {
+    const int64_t* idx = std::get_if<int64_t>(&instr.argval);
+    if (!idx)
+        throw std::runtime_error("MAP_ADD must have an int argval");
+
+    const mlir::Value value = meta.stack.back();
+    meta.stack.pop_back();
+    const mlir::Value key = meta.stack.back();
+    meta.stack.pop_back();
+
+    mlir::Value dict = meta.stack.at(meta.stack.size() - *idx);
+    builder.create<pyir::MapAdd>(loc, dict, key, value);
 }

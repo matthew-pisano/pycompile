@@ -51,11 +51,30 @@ struct DestroyModuleLowering : PyIROpConversion {
  *
  * pyir.load_fast "arg"
  *     %ptr = llvm.mlir.addressof @__pyir_str_arg
- *    %val = llvm.call @pyir_loadFast(%ptr)
+ *     %val = llvm.call @pyir_loadFast(%ptr)
  */
 struct LoadFastLowering : PyIROpConversion {
     LoadFastLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
         PyIROpConversion(pyir::LoadFast::getOperationName(), tc, ctx) {}
+
+    mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
+                                        mlir::ConversionPatternRewriter& rewriter) const override;
+};
+
+
+/**
+ * Lowers pyir.load_fast_and_clear to a call to the runtime function pyir_loadFastAndClear.
+ *
+ * The name string is stored as a constant and passed as a const char* pointer. The runtime resolves the name
+ * against the names present in the current scope and clears the variable with that name.
+ *
+ * pyir.load_fast_and_clear "arg"
+ *     %ptr = llvm.mlir.addressof @__pyir_str_arg
+ *     %val = llvm.call @pyir_loadFastAndClear(%ptr)
+ */
+struct LoadFastAndClearLowering : PyIROpConversion {
+    LoadFastAndClearLowering(const mlir::LLVMTypeConverter& tc, mlir::MLIRContext* ctx) :
+        PyIROpConversion(pyir::LoadFastAndClear::getOperationName(), tc, ctx) {}
 
     mlir::LogicalResult matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                         mlir::ConversionPatternRewriter& rewriter) const override;

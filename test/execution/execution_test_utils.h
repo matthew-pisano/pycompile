@@ -32,7 +32,11 @@
 static std::string captureStdout(const std::function<void()>& fn) {
     // Redirect stdout to a pipe
     int pipeFileDescriptor[2];
-    pipe(pipeFileDescriptor);
+    if (pipe(pipeFileDescriptor) == -1) {
+        perror("pipe");
+        exit(EXIT_FAILURE);
+    }
+
     const int savedStdout = dup(STDOUT_FILENO);
     dup2(pipeFileDescriptor[1], STDOUT_FILENO);
     close(pipeFileDescriptor[1]);
@@ -71,9 +75,15 @@ static std::string captureStdout(const std::function<void()>& fn) {
  */
 static void withStdinInput(const std::function<void()>& fn, const std::string& input) {
     int pipeFileDescriptor[2];
-    pipe(pipeFileDescriptor);
+    if (pipe(pipeFileDescriptor) == -1) {
+        perror("pipe");
+        exit(EXIT_FAILURE);
+    }
 
-    write(pipeFileDescriptor[1], input.c_str(), input.size());
+    if (write(pipeFileDescriptor[1], input.c_str(), input.size()) == -1) {
+        perror("write failed");
+        exit(EXIT_FAILURE);
+    }
     close(pipeFileDescriptor[1]);
 
     const int savedStdin = dup(STDIN_FILENO);

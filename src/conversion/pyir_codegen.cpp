@@ -266,16 +266,22 @@ void buildMLIRModule(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const Byt
             meta.offsetToBlock[*target] = fn.addBlock();
     }
 
+    // Ensure no more instructions are emitted to a block after a return operation is emitted
+    bool blockComplete = false;
     for (const ByteCodeInstruction& instr : module.instructions) {
         // If this offset is a jump target, switch to its block.
         // Emit a branch from the current block if it isn't already terminated.
-        if (meta.offsetToBlock.contains(instr.offset))
+        if (meta.offsetToBlock.contains(instr.offset)) {
+            // A new block has started, so the block complate flag is reset
+            blockComplete = false;
             switchToOffsetBlock(builder, ctx, module, instr, meta);
+        }
 
-        buildMLIRInstruction(builder, ctx, module, fn, instr, meta);
+        if (!blockComplete)
+            buildMLIRInstruction(builder, ctx, module, fn, instr, meta);
 
         if (instr.opcode == PythonOpcode::RETURN_VALUE)
-            return;
+            blockComplete = true;
     }
 }
 

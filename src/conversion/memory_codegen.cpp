@@ -231,7 +231,6 @@ void storeSubscrCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, Con
 
 void storeFastLoadFastCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
                               const ByteCodeInstruction& instr, ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
     const std::vector<PrimitiveArgvals>* arg = std::get_if<std::vector<PrimitiveArgvals>>(&instr.argval);
     if (!arg)
         throw PyCompileError("STORE_FAST_LOAD_FAST must have an tuplestr argval", loc);
@@ -240,7 +239,7 @@ void storeFastLoadFastCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, 
     mlir::Value val = meta.stack.back();
     meta.stack.pop_back();
     builder.create<pyir::StoreFast>(loc, storeName, val);
-    meta.stack.push_back(builder.create<pyir::LoadFast>(loc, pyType, loadName).getResult());
+    meta.stack.push_back(val);
 }
 
 

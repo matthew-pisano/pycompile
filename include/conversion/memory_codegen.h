@@ -97,8 +97,8 @@ void storeSubscrCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, Con
 /**
  * Converts a STORE_FAST_LOAD_FAST bytecode instruction to pyir::StoreFast followed by pyir::LoadFast.
  */
-void storeFastLoadFastCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,
-                              const ByteCodeInstruction& instr, ConversionMeta& meta);
+void storeFastLoadFastCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const ByteCodeInstruction& instr,
+                              ConversionMeta& meta);
 
 
 /**

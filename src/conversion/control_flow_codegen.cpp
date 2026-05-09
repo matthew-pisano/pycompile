@@ -17,7 +17,7 @@ void jumpForwardCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, con
     if (!target)
         throw PyCompileError("JUMP_FORWARD must have an int argval", loc);
     mlir::Block* dest = meta.offsetToBlock.at(*target);
-    builder.create<mlir::cf::BranchOp>(loc, dest);
+    mlir::cf::BranchOp::create(builder, loc, dest);
 }
 
 
@@ -34,7 +34,7 @@ void jumpBackwardCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, co
         for (mlir::Value v : branchArgs)
             dest->addArgument(v.getType(), loc);
 
-    builder.create<mlir::cf::BranchOp>(loc, dest, mlir::ValueRange{branchArgs});
+    mlir::cf::BranchOp::create(builder, loc, dest, mlir::ValueRange{branchArgs});
 }
 
 
@@ -43,11 +43,11 @@ void jumpBackwardCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, co
  */
 inline void popJumpIfCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, mlir::func::FuncOp& fn,
                              const int64_t* target, const bool truthy, ConversionMeta& meta) {
-    mlir::Value cond = meta.stack.back();
+    const mlir::Value cond = meta.stack.back();
     meta.stack.pop_back();
 
     // unbox !pyir.object -> i1
-    mlir::Value i1cond = builder.create<pyir::IsTruthy>(loc, builder.getI1Type(), cond).getResult();
+    const mlir::Value i1cond = pyir::IsTruthy::create(builder, loc, builder.getI1Type(), cond).getResult();
     mlir::Block* ifBlock = meta.offsetToBlock.at(*target);
     mlir::Block* elseBlock = fn.addBlock();
 
@@ -62,11 +62,11 @@ inline void popJumpIfCodegen(mlir::OpBuilder& builder, const mlir::Location& loc
             ifBlock->addArgument(t, loc);
 
     if (truthy)
-        builder.create<mlir::cf::CondBranchOp>(loc, i1cond, ifBlock, mlir::ValueRange{ifArgs}, elseBlock,
-                                               mlir::ValueRange{});
+        mlir::cf::CondBranchOp::create(builder, loc, i1cond, ifBlock, mlir::ValueRange{ifArgs}, elseBlock,
+                                       mlir::ValueRange{});
     else
-        builder.create<mlir::cf::CondBranchOp>(loc, i1cond, elseBlock, mlir::ValueRange{}, ifBlock,
-                                               mlir::ValueRange{ifArgs});
+        mlir::cf::CondBranchOp::create(builder, loc, i1cond, elseBlock, mlir::ValueRange{}, ifBlock,
+                                       mlir::ValueRange{ifArgs});
     builder.setInsertionPointToStart(elseBlock);
 }
 
@@ -90,10 +90,10 @@ void popJumpIfFalseCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, 
 
 
 void getIterCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc, ConversionMeta& meta) {
-    pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
-    mlir::Value container = meta.stack.back();
+    const pyir::ByteCodeObjectType pyType = pyir::ByteCodeObjectType::get(&ctx);
+    const mlir::Value container = meta.stack.back();
     meta.stack.pop_back(); // Replace value
-    meta.stack.push_back(builder.create<pyir::GetIter>(loc, pyType, container).getResult());
+    meta.stack.push_back(pyir::GetIter::create(builder, loc, pyType, container).getResult());
 }
 
 
@@ -104,7 +104,7 @@ void forIterCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir
         throw PyCompileError("FOR_ITER must have an int argval", loc);
 
     // Get iterator for instruction
-    mlir::Value iterator = meta.stack.back();
+    const mlir::Value iterator = meta.stack.back();
 
     mlir::Block* exitBlock = meta.offsetToBlock.at(*target);
     mlir::Block* bodyBlock = fn.addBlock();
@@ -119,7 +119,7 @@ void forIterCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir
         for (mlir::Value v : exitArgs)
             exitBlock->addArgument(v.getType(), loc);
 
-    builder.create<pyir::ForIter>(loc, iterator, exitArgs, bodyBlock, exitBlock);
+    pyir::ForIter::create(builder, loc, iterator, exitArgs, bodyBlock, exitBlock);
 
     // Continue in body block with next value on stack
     builder.setInsertionPointToStart(bodyBlock);
@@ -127,4 +127,4 @@ void forIterCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir
     meta.stack.push_back(bodyBlock->getArgument(0));
 }
 
-void popIterCodegen(mlir::OpBuilder& builder, const mlir::Location& loc) { builder.create<pyir::PopIter>(loc); }
+void popIterCodegen(mlir::OpBuilder& builder, const mlir::Location& loc) { pyir::PopIter::create(builder, loc); }

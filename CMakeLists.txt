@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 add_compile_options(-Wall -Wextra -pedantic)
-include_directories(include)
 
 # ================
 # Configure Dependencies
@@ -32,5 +31,8 @@ include(TableGen)
 include(AddMLIR)
 include(AddLLVM)
 
-add_subdirectory(src)
+include(cmake/Version.cmake)
+
+add_subdirectory(pycompile)
+add_subdirectory(pystd)
 add_subdirectory(test)

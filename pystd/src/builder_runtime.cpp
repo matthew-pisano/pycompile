@@ -1,0 +1,80 @@
+//
+// Created by matthew on 3/24/26.
+//
+
+#include "builder_runtime.h"
+
+#include <stdexcept>
+
+#include "pytypes/py_dict.h"
+#include "pytypes/py_list.h"
+#include "pytypes/py_set.h"
+#include "pytypes/py_str.h"
+
+
+PyObj* pyir_buildString(PyObj** parts, const int64_t count) {
+    std::string result;
+    for (int64_t i = 0; i < count; i++) {
+        const PyStr* pyStr = dynamic_cast<PyStr*>(parts[i]);
+        if (!pyStr)
+            throw std::runtime_error("BUILD_STRING: expected string part");
+        result += pyStr->data();
+        (void) parts[i]->decref();
+    }
+    return new PyStr(result);
+}
+
+
+PyObj* pyir_buildList(PyObj** parts, const int64_t count) {
+    PyListData result;
+    for (int64_t i = 0; i < count; i++)
+        result.push_back(parts[i]);
+    return new PyList(result);
+}
+
+
+void pyir_listExtend(PyObj* list, PyObj* items) {
+    PyList::extend(list, &items, 1);
+    (void) items->decref();
+}
+
+
+void pyir_listAppend(PyObj* list, PyObj* item) {
+    PyList::append(list, &item, 1);
+    (void) item->decref();
+}
+
+
+PyObj* pyir_buildSet(PyObj** parts, const int64_t count) {
+    PySetData result;
+    for (int64_t i = 0; i < count; i++)
+        result.insert(parts[i]);
+    return new PySet(result);
+}
+
+
+void pyir_setUpdate(PyObj* set, PyObj* items) {
+    PySet::update(set, &items, 1);
+    (void) items->decref();
+}
+
+
+void pyir_setAdd(PyObj* set, PyObj* item) {
+    PySet::add(set, &item, 1);
+    (void) item->decref();
+}
+
+
+PyObj* pyir_buildMap(PyObj** parts, const int64_t count) {
+    PyDictData result;
+    for (int64_t i = count - 1; i > 0; i -= 2)
+        result.insert({parts[i - 1], parts[i]});
+    return new PyDict(result);
+}
+
+
+void pyir_mapAdd(PyObj* dict, PyObj* key, PyObj* value) {
+    PyObj* args[2] = {key, value};
+    PyDict::add(dict, args, 2);
+    (void) key->decref();
+}

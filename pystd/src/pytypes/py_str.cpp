@@ -1,0 +1,76 @@
+//
+// Created by matthew on 3/29/26.
+//
+
+#include "py_str.h"
+
+#include <stdexcept>
+
+#include "py_bool.h"
+#include "py_int.h"
+#include "runtime_errors.h"
+
+size_t PyStr::hash() const {
+    constexpr std::hash<std::string> hasher;
+    return hasher(raw);
+}
+
+PyInt* PyStr::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
+
+PyBool* PyStr::contains(const PyObj* obj) const {
+    if (const PyStr* str = dynamic_cast<const PyStr*>(obj))
+        return raw.contains(str->data()) ? PyBool::True : PyBool::False;
+    throw PyTypeError("str objects can only contain other str objects");
+}
+
+PyObj* PyStr::idx(const PyObj* idx) const {
+    if (const PyInt* idxVal = dynamic_cast<const PyInt*>(idx)) {
+        int64_t index = idxVal->data();
+        if (index < 0)
+            index += static_cast<int64_t>(raw.size());
+        if (index < 0 || index >= static_cast<int64_t>(raw.size()))
+            throw PyIndexError("str index out of range");
+        return new PyStr(raw[index]);
+    }
+    throw PyTypeError("str indices must be integers");
+}
+
+std::string PyStr::toString() const { return raw; }
+
+std::string PyStr::typeName() const { return "str"; }
+
+bool PyStr::isTruthy() const { return !raw.empty(); }
+
+std::string PyStr::data() const { return raw; }
+
+std::partial_ordering PyStr::operator<=>(const PyObj& other) const noexcept {
+    if (const PyStr* s = dynamic_cast<const PyStr*>(&other))
+        return raw <=> s->data();
+    return std::partial_ordering::unordered;
+}
+
+bool PyStr::operator==(const PyObj& other) const noexcept {
+    return *this <=> other == std::partial_ordering::equivalent;
+}
+
+PyStrIter::~PyStrIter() { (void) str->decref(); }
+
+PyObj* PyStrIter::next(PyObj* self, PyObj**, const int64_t argc) {
+    if (argc != 0)
+        throw PyTypeError("next() takes no arguments");
+    PyStrIter* selfIter = dynamic_cast<PyStrIter*>(self);
+    if (!selfIter)
+        throw PyTypeError("Can only get the next value of iterator types");
+    if (selfIter->it == selfIter->end)
+        throw PyStopIteration();
+
+    const char c = *selfIter->it;
+    ++selfIter->it;
+    return new PyStr(c);
+}
+
+std::partial_ordering PyStrIter::operator<=>(const PyObj& other) const noexcept {
+    if (const PyStrIter* iter = dynamic_cast<const PyStrIter*>(&other))
+        return it <=> iter->it;
+    return std::partial_ordering::unordered;
+}

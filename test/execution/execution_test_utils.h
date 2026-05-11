@@ -10,11 +10,11 @@
 #include <llvm/ExecutionEngine/Orc/ThreadSafeModule.h>
 #include <llvm/Support/TargetSelect.h>
 
-#include "conversion/pyir_codegen.h"
-#include "lowering/llvm_export.h"
-#include "lowering/pyir_lowering.h"
+#include "../../pycompile/include/builder_runtime.h"
+#include "../../pycompile/src/conversion/pyir_codegen.h"
+#include "../../pycompile/src/lowering/llvm_export.h"
+#include "../../pycompile/src/lowering/pyir_lowering.h"
 #include "pyir_run_module.h"
-#include "pyruntime/builder_runtime.h"
 #include "pyruntime/builtin_runtime.h"
 #include "pyruntime/control_flow_runtime.h"
 #include "pyruntime/function_runtime.h"

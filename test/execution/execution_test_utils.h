@@ -125,6 +125,10 @@ struct JITFixture {
         return translateToLLVMIR(llvmCtx, mlirModule);
     }
 
+    /**
+     * Registers the runtime symbols needed to run the JIT tests.
+     * @param jit The LLVM JIT for registering the symbols with
+     */
     static void registerRuntimeSymbols(llvm::Expected<std::unique_ptr<llvm::orc::LLJIT>>& jit) {
         // Expose runtime symbols so the JIT can resolve pyir_* calls
         llvm::orc::JITDylib& dylib = (*jit)->getMainJITDylib();

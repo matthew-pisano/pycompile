@@ -52,37 +52,15 @@ mlir::LogicalResult CallLowering::matchAndRewrite(mlir::Operation* op, const mli
 }
 
 
-mlir::LogicalResult PushScopeLowering::matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
+mlir::LogicalResult PushScopeLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                        mlir::ConversionPatternRewriter& rewriter) const {
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern void pyir_pushScope()
-    const mlir::LLVM::LLVMFunctionType fnType =
-            mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_pushScope", fnType);
-
-    mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{});
-    rewriter.eraseOp(op);
-    return mlir::success();
+    return insertRuntimeFunc("pyir_pushScope", op, operands, rewriter, false);
 }
 
 
-mlir::LogicalResult PopScopeLowering::matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
+mlir::LogicalResult PopScopeLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                       mlir::ConversionPatternRewriter& rewriter) const {
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern void pyir_popScope()
-    const mlir::LLVM::LLVMFunctionType fnType =
-            mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_popScope", fnType);
-
-    mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{});
-    rewriter.eraseOp(op);
-    return mlir::success();
+    return insertRuntimeFunc("pyir_popScope", op, operands, rewriter, false);
 }
 
 

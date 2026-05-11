@@ -114,7 +114,7 @@ struct JITFixture {
     llvm::LLVMContext llvmCtx;
 
     /**
-     * Compiles the given python source code to an LLVM module.
+     * Compiles the given Python source code to an LLVM module.
      * @param source The source code to compile.
      * @return An LLVM module containing the compiled code.
      */
@@ -125,27 +125,7 @@ struct JITFixture {
         return translateToLLVMIR(llvmCtx, mlirModule);
     }
 
-    /**
-     * JIT compile and run the module, returning the exit code from main().
-     * @param source The source code to run.
-     * @return The exit code from running the module.
-     */
-    int run(const std::string& source) {
-        std::unique_ptr<llvm::Module> llvmModule = compile(source);
-
-        // Initialize native target (only needs to happen once, but is idempotent)
-        llvm::InitializeNativeTarget();
-        llvm::InitializeNativeTargetAsmPrinter();
-
-        // Build the JIT
-        auto jit = llvm::orc::LLJITBuilder().create();
-        REQUIRE(jit);
-
-        // Add the module
-        auto tsm = llvm::orc::ThreadSafeModule(std::move(llvmModule), std::make_unique<llvm::LLVMContext>());
-        llvm::Error err = (*jit)->addIRModule(std::move(tsm));
-        REQUIRE(!err);
-
+    static void registerRuntimeSymbols(llvm::Expected<std::unique_ptr<llvm::orc::LLJIT>>& jit) {
         // Expose runtime symbols so the JIT can resolve pyir_* calls
         llvm::orc::JITDylib& dylib = (*jit)->getMainJITDylib();
         llvm::orc::SymbolMap symbols;
@@ -222,6 +202,30 @@ struct JITFixture {
 
         llvm::Error defineErr = dylib.define(llvm::orc::absoluteSymbols(symbols));
         REQUIRE(!defineErr);
+    }
+
+    /**
+     * JIT compile and run the module, returning the exit code from main().
+     * @param source The source code to run.
+     * @return The exit code from running the module.
+     */
+    void run(const std::string& source) {
+        std::unique_ptr<llvm::Module> llvmModule = compile(source);
+
+        // Initialize native target (only needs to happen once, but is idempotent)
+        llvm::InitializeNativeTarget();
+        llvm::InitializeNativeTargetAsmPrinter();
+
+        // Build the JIT
+        auto jit = llvm::orc::LLJITBuilder().create();
+        REQUIRE(jit);
+
+        // Add the module
+        auto tsm = llvm::orc::ThreadSafeModule(std::move(llvmModule), std::make_unique<llvm::LLVMContext>());
+        llvm::Error err = (*jit)->addIRModule(std::move(tsm));
+        REQUIRE(!err);
+
+        registerRuntimeSymbols(jit);
 
         // Look up and call the module function directly, wrapping in try-catch
         llvm::Expected<llvm::orc::ExecutorAddr> moduleSym = (*jit)->lookup("__pymodule");
@@ -235,7 +239,6 @@ struct JITFixture {
             pyir_clearDanglingScope();
             throw std::runtime_error(pyir_getLastError());
         }
-        return result;
     }
 
     /**

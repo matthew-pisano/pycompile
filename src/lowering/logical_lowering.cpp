@@ -29,27 +29,27 @@ mlir::LogicalResult IsTruthyLowering::matchAndRewrite(mlir::Operation* op, const
 
 mlir::LogicalResult ToBoolLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                     mlir::ConversionPatternRewriter& rewriter) const {
-    return linkOpToRuntimeFunc("pyir_toBool", op, operands, rewriter, 1);
+    return insertRuntimeFunc("pyir_toBool", op, operands, rewriter);
 }
 
 
 mlir::LogicalResult UnaryInvertLowering::matchAndRewrite(mlir::Operation* op,
                                                          const mlir::ArrayRef<mlir::Value> operands,
                                                          mlir::ConversionPatternRewriter& rewriter) const {
-    return linkOpToRuntimeFunc("pyir_unaryInvert", op, operands, rewriter, 1);
+    return insertRuntimeFunc("pyir_unaryInvert", op, operands, rewriter);
 }
 
 
 mlir::LogicalResult UnaryNegativeLowering::matchAndRewrite(mlir::Operation* op,
                                                            const mlir::ArrayRef<mlir::Value> operands,
                                                            mlir::ConversionPatternRewriter& rewriter) const {
-    return linkOpToRuntimeFunc("pyir_unaryNegative", op, operands, rewriter, 1);
+    return insertRuntimeFunc("pyir_unaryNegative", op, operands, rewriter);
 }
 
 
 mlir::LogicalResult UnaryNotLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                       mlir::ConversionPatternRewriter& rewriter) const {
-    return linkOpToRuntimeFunc("pyir_unaryNot", op, operands, rewriter, 1);
+    return insertRuntimeFunc("pyir_unaryNot", op, operands, rewriter);
 }
 
 
@@ -71,7 +71,7 @@ mlir::LogicalResult BinaryOpLowering::matchAndRewrite(mlir::Operation* op, const
     if (it == opToFn.end())
         return mlir::failure();
 
-    return linkOpToRuntimeFunc(it->second, op, operands, rewriter, 2);
+    return insertRuntimeFunc(it->second, op, operands, rewriter);
 }
 
 
@@ -94,7 +94,7 @@ mlir::LogicalResult CompareOpLowering::matchAndRewrite(mlir::Operation* op, cons
     if (it == opToFn.end())
         return mlir::failure();
 
-    return linkOpToRuntimeFunc(it->second, op, operands, rewriter, 2);
+    return insertRuntimeFunc(it->second, op, operands, rewriter);
 }
 
 
@@ -110,12 +110,12 @@ mlir::LogicalResult ContainsOpLowering::matchAndRewrite(mlir::Operation* op, con
     if (it == opToFn.end())
         return mlir::failure();
 
-    return linkOpToRuntimeFunc(it->second, op, operands, rewriter, 2);
+    return insertRuntimeFunc(it->second, op, operands, rewriter);
 }
 
 
 mlir::LogicalResult FormatSimpleLowering::matchAndRewrite(mlir::Operation* op,
                                                           const mlir::ArrayRef<mlir::Value> operands,
                                                           mlir::ConversionPatternRewriter& rewriter) const {
-    return linkOpToRuntimeFunc("pyir_formatSimple", op, operands, rewriter, 1);
+    return insertRuntimeFunc("pyir_formatSimple", op, operands, rewriter);
 }

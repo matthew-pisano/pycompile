@@ -9,9 +9,11 @@
  * This abstracts the common logic of allocating an array, storing operands, and calling the runtime function with the
  * array pointer and count.
  */
-mlir::LogicalResult buildArrayType(mlir::MLIRContext* ctx, mlir::Operation* op,
-                                   const mlir::ArrayRef<mlir::Value> operands, const mlir::LLVM::LLVMFuncOp& fn,
-                                   mlir::ConversionPatternRewriter& rewriter, const mlir::Location& loc) {
+mlir::LogicalResult buildArrayType(const std::string& func, mlir::Operation* op,
+                                   const mlir::ArrayRef<mlir::Value> operands,
+                                   mlir::ConversionPatternRewriter& rewriter) {
+    mlir::MLIRContext* ctx = op->getContext();
+    const mlir::Location loc = op->getLoc();
     const int64_t count = static_cast<int64_t>(operands.size());
 
     // Allocate a stack array of PyObj* to hold all parts: PyObj*[count]
@@ -33,6 +35,11 @@ mlir::LogicalResult buildArrayType(mlir::MLIRContext* ctx, mlir::Operation* op,
         mlir::LLVM::StoreOp::create(rewriter, loc, operands[i], gep);
     }
 
+    const mlir::LLVM::LLVMFunctionType fnType =
+            mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), i64Type(ctx)});
+    const mlir::ModuleOp module = op->getParentOfType<mlir::ModuleOp>();
+    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, func, fnType);
+
     // Pass the array pointer and count to the called function
     mlir::LLVM::ConstantOp countVal =
             mlir::LLVM::ConstantOp::create(rewriter, loc, i64Type(ctx), rewriter.getI64IntegerAttr(count));
@@ -45,145 +52,53 @@ mlir::LogicalResult buildArrayType(mlir::MLIRContext* ctx, mlir::Operation* op,
 mlir::LogicalResult BuildStringLowering::matchAndRewrite(mlir::Operation* op,
                                                          const mlir::ArrayRef<mlir::Value> operands,
                                                          mlir::ConversionPatternRewriter& rewriter) const {
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern PyObj* pyir_buildString(Value** parts, int64_t count)
-    const mlir::LLVM::LLVMFunctionType fnType =
-            mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), i64Type(ctx)});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_buildString", fnType);
-    return buildArrayType(ctx, op, operands, fn, rewriter, loc);
+    return buildArrayType("pyir_buildString", op, operands, rewriter);
 }
 
 
 mlir::LogicalResult BuildListLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                        mlir::ConversionPatternRewriter& rewriter) const {
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern PyObj* pyir_buildList(Value** parts, int64_t count)
-    const mlir::LLVM::LLVMFunctionType fnType =
-            mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), i64Type(ctx)});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_buildList", fnType);
-    return buildArrayType(ctx, op, operands, fn, rewriter, loc);
+    return buildArrayType("pyir_buildList", op, operands, rewriter);
 }
 
 
 mlir::LogicalResult ListExtendLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                         mlir::ConversionPatternRewriter& rewriter) const {
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern void pyir_listExtend(PyObj* list, PyObj* items)
-    const mlir::LLVM::LLVMFunctionType fnType =
-            mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_listExtend", fnType);
-
-    // operands[0] = list, operands[1] = items
-    mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{operands[0], operands[1]});
-    rewriter.eraseOp(op);
-    return mlir::success();
+    return insertRuntimeFunc("pyir_listExtend", op, operands, rewriter, false);
 }
 
 
 mlir::LogicalResult ListAppendLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                         mlir::ConversionPatternRewriter& rewriter) const {
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern void pyir_listAppend(PyObj* list, PyObj* item)
-    const mlir::LLVM::LLVMFunctionType fnType =
-            mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_listAppend", fnType);
-
-    // operands[0] = list, operands[1] = item
-    mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{operands[0], operands[1]});
-    rewriter.eraseOp(op);
-    return mlir::success();
+    return insertRuntimeFunc("pyir_listAppend", op, operands, rewriter, false);
 }
 
 
 mlir::LogicalResult BuildSetLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                       mlir::ConversionPatternRewriter& rewriter) const {
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern PyObj* pyir_buildSet(Value** parts, int64_t count)
-    const mlir::LLVM::LLVMFunctionType fnType =
-            mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), i64Type(ctx)});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_buildSet", fnType);
-    return buildArrayType(ctx, op, operands, fn, rewriter, loc);
+    return buildArrayType("pyir_buildSet", op, operands, rewriter);
 }
 
 
 mlir::LogicalResult SetUpdateLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                        mlir::ConversionPatternRewriter& rewriter) const {
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern void pyir_setUpdate(PyObj* set, PyObj* items)
-    const mlir::LLVM::LLVMFunctionType fnType =
-            mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_setUpdate", fnType);
-
-    // operands[0] = set, operands[1] = items
-    mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{operands[0], operands[1]});
-    rewriter.eraseOp(op);
-    return mlir::success();
+    return insertRuntimeFunc("pyir_setUpdate", op, operands, rewriter, false);
 }
 
 
 mlir::LogicalResult SetAddLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                     mlir::ConversionPatternRewriter& rewriter) const {
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern void pyir_setAdd(PyObj* set, PyObj* item)
-    const mlir::LLVM::LLVMFunctionType fnType =
-            mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_setAdd", fnType);
-
-    // operands[0] = set, operands[1] = item
-    mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{operands[0], operands[1]});
-    rewriter.eraseOp(op);
-    return mlir::success();
+    return insertRuntimeFunc("pyir_setAdd", op, operands, rewriter, false);
 }
 
 
 mlir::LogicalResult BuildMapLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                       mlir::ConversionPatternRewriter& rewriter) const {
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern PyObj* pyir_buildMap(Value** parts, int64_t count)
-    const mlir::LLVM::LLVMFunctionType fnType =
-            mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), i64Type(ctx)});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_buildMap", fnType);
-    return buildArrayType(ctx, op, operands, fn, rewriter, loc);
+    return buildArrayType("pyir_buildMap", op, operands, rewriter);
 }
 
 
 mlir::LogicalResult MapAddLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                     mlir::ConversionPatternRewriter& rewriter) const {
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern void pyir_mapAdd(PyObj* dict, PyObj* key, PyObj* value)
-    const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(
-            mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx), ptrType(ctx)});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_mapAdd", fnType);
-
-    // operands[0] = map, operands[1] = key, operands[2] = value
-    mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{operands[0], operands[1], operands[2]});
-    rewriter.eraseOp(op);
-    return mlir::success();
+    return insertRuntimeFunc("pyir_mapAdd", op, operands, rewriter, false);
 }

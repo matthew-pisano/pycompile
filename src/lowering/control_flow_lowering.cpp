@@ -14,23 +14,13 @@ mlir::LogicalResult PushNullLowering::matchAndRewrite(mlir::Operation* op, mlir:
 
 mlir::LogicalResult PopTopLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                     mlir::ConversionPatternRewriter& rewriter) const {
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    const mlir::LLVM::LLVMFunctionType fnType =
-            mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx)});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_decref", fnType);
-
-    mlir::LLVM::CallOp::create(rewriter, loc, fn, operands[0]);
-    rewriter.eraseOp(op);
-    return mlir::success();
+    return insertRuntimeFunc("pyir_decref", op, operands, rewriter, false);
 }
 
 
 mlir::LogicalResult GetIterLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                      mlir::ConversionPatternRewriter& rewriter) const {
-    return linkOpToRuntimeFunc("pyir_getIter", op, operands, rewriter, 1);
+    return insertRuntimeFunc("pyir_getIter", op, operands, rewriter);
 }
 
 
@@ -75,18 +65,7 @@ mlir::LogicalResult ForIterLowering::matchAndRewrite(mlir::Operation* op, const 
 }
 
 
-mlir::LogicalResult PopIterLowering::matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
+mlir::LogicalResult PopIterLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                      mlir::ConversionPatternRewriter& rewriter) const {
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern void pyir_popIter()
-    const mlir::LLVM::LLVMFunctionType fnType =
-            mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_popIter", fnType);
-
-    mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{});
-    rewriter.eraseOp(op);
-    return mlir::success();
+    return insertRuntimeFunc("pyir_popIter", op, operands, rewriter, false);
 }

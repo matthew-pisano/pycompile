@@ -93,12 +93,12 @@ struct PyIROpConversion : mlir::ConversionPattern {
      * @param op The operation to be linked
      * @param operands The operands for the function
      * @param rewriter The MLIR rewriter
-     * @param argc The number of arguments the op takes (e.g. binary or unary)
+     * @param hasReturn Whether the linked runtime function has a return value
      * @return The status result
      */
-    static mlir::LogicalResult linkOpToRuntimeFunc(const std::string& func, mlir::Operation* op,
-                                                   mlir::ArrayRef<mlir::Value> operands,
-                                                   mlir::ConversionPatternRewriter& rewriter, size_t argc);
+    static mlir::LogicalResult insertRuntimeFunc(const std::string& func, mlir::Operation* op,
+                                                 mlir::ArrayRef<mlir::Value> operands,
+                                                 mlir::ConversionPatternRewriter& rewriter, bool hasReturn = true);
 };
 
 #endif // PYCOMPILE_PYIR_CONVERSION_UTILS_H

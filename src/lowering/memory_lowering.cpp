@@ -6,6 +6,40 @@
 #include "pyir/pyir_attrs.h"
 
 
+mlir::LogicalResult insertLoadRuntimeFunc(const std::string& func, const llvm::StringRef& varName, mlir::Operation* op,
+                                          mlir::ConversionPatternRewriter& rewriter) {
+    mlir::MLIRContext* ctx = op->getContext();
+    const mlir::ModuleOp module = op->getParentOfType<mlir::ModuleOp>();
+
+    const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
+    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, func, fnType);
+
+    const std::string globalName = "__pyir_str_" + varName.str();
+    const mlir::Value strPtr = getOrInsertStringConstant(rewriter, module, op->getLoc(), globalName, varName);
+    mlir::LLVM::CallOp call = mlir::LLVM::CallOp::create(rewriter, op->getLoc(), fn, mlir::ValueRange{strPtr});
+    rewriter.replaceOp(op, call.getResult());
+    return mlir::success();
+}
+
+
+mlir::LogicalResult insertStoreRuntimeFunc(const std::string& func, const llvm::StringRef& varName,
+                                           const mlir::Value& value, mlir::Operation* op,
+                                           mlir::ConversionPatternRewriter& rewriter) {
+    mlir::MLIRContext* ctx = op->getContext();
+    const mlir::ModuleOp module = op->getParentOfType<mlir::ModuleOp>();
+
+    const mlir::LLVM::LLVMFunctionType fnType =
+            mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
+    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, func, fnType);
+
+    const std::string globalName = "__pyir_str_" + varName.str();
+    const mlir::Value strPtr = getOrInsertStringConstant(rewriter, module, op->getLoc(), globalName, varName);
+    mlir::LLVM::CallOp::create(rewriter, op->getLoc(), fn, mlir::ValueRange{strPtr, value});
+    rewriter.eraseOp(op);
+    return mlir::success();
+}
+
+
 mlir::LogicalResult InitModuleLowering::matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                                         mlir::ConversionPatternRewriter& rewriter) const {
     pyir::InitModule initModule = mlir::cast<pyir::InitModule>(op);
@@ -28,118 +62,45 @@ mlir::LogicalResult InitModuleLowering::matchAndRewrite(mlir::Operation* op, mli
 }
 
 
-mlir::LogicalResult DestroyModuleLowering::matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
+mlir::LogicalResult DestroyModuleLowering::matchAndRewrite(mlir::Operation* op,
+                                                           const mlir::ArrayRef<mlir::Value> operands,
                                                            mlir::ConversionPatternRewriter& rewriter) const {
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern void pyir_destroyModule()
-    const mlir::LLVM::LLVMFunctionType fnType =
-            mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_destroyModule", fnType);
-
-    mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{});
-    rewriter.eraseOp(op);
-    return mlir::success();
+    return insertRuntimeFunc("pyir_destroyModule", op, operands, rewriter, false);
 }
 
 
 mlir::LogicalResult LoadFastLowering::matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                                       mlir::ConversionPatternRewriter& rewriter) const {
     pyir::LoadFast loadFast = mlir::cast<pyir::LoadFast>(op);
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern PyObj* pyir_loadFast(const char* name)
-    const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_loadFast", fnType);
-
-    const std::string globalName = "__pyir_str_" + loadFast.getVarName().str();
-    const mlir::Value strPtr = getOrInsertStringConstant(rewriter, module, loc, globalName, loadFast.getVarName());
-    mlir::LLVM::CallOp call = mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{strPtr});
-    rewriter.replaceOp(op, call.getResult());
-    return mlir::success();
+    return insertLoadRuntimeFunc("pyir_loadFast", loadFast.getVarName(), op, rewriter);
 }
 
 
 mlir::LogicalResult LoadFastAndClearLowering::matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                                               mlir::ConversionPatternRewriter& rewriter) const {
     pyir::LoadFastAndClear loadFastAndClear = mlir::cast<pyir::LoadFastAndClear>(op);
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern PyObj* pyir_loadFastAndClear(const char* name)
-    const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_loadFastAndClear", fnType);
-
-    const std::string globalName = "__pyir_str_" + loadFastAndClear.getVarName().str();
-    const mlir::Value strPtr =
-            getOrInsertStringConstant(rewriter, module, loc, globalName, loadFastAndClear.getVarName());
-    mlir::LLVM::CallOp call = mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{strPtr});
-    rewriter.replaceOp(op, call.getResult());
-    return mlir::success();
+    return insertLoadRuntimeFunc("pyir_loadFastAndClear", loadFastAndClear.getVarName(), op, rewriter);
 }
 
 
 mlir::LogicalResult StoreFastLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                        mlir::ConversionPatternRewriter& rewriter) const {
     pyir::StoreFast storeFast = mlir::cast<pyir::StoreFast>(op);
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern void pyir_storeFast(const char* name, PyObj* val)
-    const mlir::LLVM::LLVMFunctionType fnType =
-            mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_storeFast", fnType);
-
-    const std::string globalName = "__pyir_str_" + storeFast.getVarName().str();
-    const mlir::Value strPtr = getOrInsertStringConstant(rewriter, module, loc, globalName, storeFast.getVarName());
-    mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{strPtr, operands[0]});
-    rewriter.eraseOp(op);
-    return mlir::success();
+    return insertStoreRuntimeFunc("pyir_storeFast", storeFast.getVarName(), operands[0], op, rewriter);
 }
 
 
 mlir::LogicalResult LoadNameLowering::matchAndRewrite(mlir::Operation* op, mlir::ArrayRef<mlir::Value>,
                                                       mlir::ConversionPatternRewriter& rewriter) const {
     pyir::LoadName loadName = mlir::cast<pyir::LoadName>(op);
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern PyObj* pyir_loadName(const char* name)
-    const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_loadName", fnType);
-
-    const std::string globalName = "__pyir_str_" + loadName.getVarName().str();
-    const mlir::Value strPtr = getOrInsertStringConstant(rewriter, module, loc, globalName, loadName.getVarName());
-    mlir::LLVM::CallOp call = mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{strPtr});
-    rewriter.replaceOp(op, call.getResult());
-    return mlir::success();
+    return insertLoadRuntimeFunc("pyir_loadName", loadName.getVarName(), op, rewriter);
 }
 
 
 mlir::LogicalResult StoreNameLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,
                                                        mlir::ConversionPatternRewriter& rewriter) const {
     pyir::StoreName storeName = mlir::cast<pyir::StoreName>(op);
-    mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
-
-    // declare: extern void pyir_storeName(const char* name, PyObj* val)
-    const mlir::LLVM::LLVMFunctionType fnType =
-            mlir::LLVM::LLVMFunctionType::get(mlir::LLVM::LLVMVoidType::get(ctx), {ptrType(ctx), ptrType(ctx)});
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, "pyir_storeName", fnType);
-
-    const std::string globalName = "__pyir_str_" + storeName.getVarName().str();
-    const mlir::Value strPtr = getOrInsertStringConstant(rewriter, module, loc, globalName, storeName.getVarName());
-    mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{strPtr, operands[0]});
-    rewriter.eraseOp(op);
-    return mlir::success();
+    return insertStoreRuntimeFunc("pyir_storeName", storeName.getVarName(), operands[0], op, rewriter);
 }
 
 

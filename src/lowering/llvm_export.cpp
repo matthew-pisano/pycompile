@@ -92,8 +92,8 @@ static std::unique_ptr<llvm::TargetMachine> createTargetMachine(const LLVMExport
  * @return An owning pointer to the translated llvm::Module.
  * @throws std::runtime_error if translation fails.
  */
-static std::unique_ptr<llvm::Module> translateToLLVM(const mlir::OwningOpRef<mlir::ModuleOp>& mlirModule,
-                                                     llvm::LLVMContext& llvmCtx) {
+static std::unique_ptr<llvm::Module> createLLVMModule(const mlir::OwningOpRef<mlir::ModuleOp>& mlirModule,
+                                                      llvm::LLVMContext& llvmCtx) {
     mlir::MLIRContext* ctx = mlirModule.get().getContext();
     mlir::registerLLVMDialectTranslation(*ctx);
     mlir::registerBuiltinDialectTranslation(*ctx);
@@ -151,7 +151,7 @@ static void optimizeLLVMModule(llvm::Module& llvmModule, llvm::TargetMachine& tm
 std::unique_ptr<llvm::Module> translateToLLVMIR(llvm::LLVMContext& llvmCtx,
                                                 const mlir::OwningOpRef<mlir::ModuleOp>& module,
                                                 const LLVMExportOptions& options) {
-    std::unique_ptr<llvm::Module> llvmModule = translateToLLVM(module, llvmCtx);
+    std::unique_ptr<llvm::Module> llvmModule = createLLVMModule(module, llvmCtx);
     if (!options.debugInfo)
         llvm::StripDebugInfo(*llvmModule);
 

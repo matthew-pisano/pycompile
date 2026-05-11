@@ -50,32 +50,24 @@ mlir::Value getOrInsertStringConstant(mlir::ConversionPatternRewriter& rewriter,
 }
 
 
-mlir::LogicalResult PyIROpConversion::linkOpToRuntimeFunc(const std::string& func, mlir::Operation* op,
-                                                          const mlir::ArrayRef<mlir::Value> operands,
-                                                          mlir::ConversionPatternRewriter& rewriter,
-                                                          const size_t argc) {
+mlir::LogicalResult PyIROpConversion::insertRuntimeFunc(const std::string& func, mlir::Operation* op,
+                                                        const mlir::ArrayRef<mlir::Value> operands,
+                                                        mlir::ConversionPatternRewriter& rewriter,
+                                                        const bool hasReturn) {
     mlir::MLIRContext* ctx = op->getContext();
-    const mlir::ModuleOp module = getModule(op);
-    const mlir::Location loc = op->getLoc();
 
-    // Choose correct function prototype based on arguments
-    mlir::LLVM::LLVMFunctionType fnType;
-    if (argc == 1)
-        fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx)});
-    else if (argc == 2)
-        fnType = mlir::LLVM::LLVMFunctionType::get(ptrType(ctx), {ptrType(ctx), ptrType(ctx)});
+    // Build argument type list: N copies of ptrType, one per operand
+    const llvm::SmallVector<mlir::Type> argTypes(operands.size(), ptrType(ctx));
+    const mlir::Type retType = hasReturn ? ptrType(ctx) : mlir::Type(mlir::LLVM::LLVMVoidType::get(ctx));
+    const mlir::LLVM::LLVMFunctionType fnType = mlir::LLVM::LLVMFunctionType::get(retType, argTypes);
+
+    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, getModule(op), func, fnType);
+    mlir::LLVM::CallOp call = mlir::LLVM::CallOp::create(rewriter, op->getLoc(), fn, mlir::ValueRange(operands));
+
+    if (hasReturn)
+        rewriter.replaceOp(op, call.getResult());
     else
-        throw std::runtime_error("Unsupported number of args in runtime function link");
+        rewriter.eraseOp(op);
 
-    const mlir::LLVM::LLVMFuncOp fn = getOrInsertRuntimeFn(rewriter, module, func, fnType);
-
-    // Choose correct call operation based on arguments
-    mlir::LLVM::CallOp call;
-    if (argc == 1)
-        call = mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{operands[0]});
-    else
-        call = mlir::LLVM::CallOp::create(rewriter, loc, fn, mlir::ValueRange{operands[0], operands[1]});
-
-    rewriter.replaceOp(op, call.getResult());
     return mlir::success();
 }

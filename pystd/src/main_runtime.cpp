@@ -6,9 +6,9 @@
 #include <ranges>
 
 #include "builtin_runtime.h"
-#include "pytypes/py_bool.h"
-#include "pytypes/py_none.h"
-#include "pytypes/py_str.h"
+#include "pytypes/primitives/py_bool.h"
+#include "pytypes/primitives/py_none.h"
+#include "pytypes/primitives/py_str.h"
 
 extern "C" void __pymodule(); // Provided by the translated MLIR module
 

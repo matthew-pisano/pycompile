@@ -7,15 +7,15 @@
 #include <cmath>
 #include <iostream>
 
-#include "pytypes/py_bool.h"
-#include "pytypes/py_dict.h"
-#include "pytypes/py_float.h"
-#include "pytypes/py_int.h"
-#include "pytypes/py_list.h"
+#include "pytypes/iterables/py_dict.h"
+#include "pytypes/iterables/py_set.h"
+#include "pytypes/primitives/py_bool.h"
+#include "pytypes/primitives/py_float.h"
+#include "pytypes/primitives/py_int.h"
+#include "pytypes/primitives/py_str.h"
+#include "pytypes/iterables/py_list.h"
 #include "pytypes/py_object.h"
-#include "pytypes/py_set.h"
-#include "pytypes/py_str.h"
-#include "pytypes/py_tuple.h"
+#include "pytypes/iterables/py_tuple.h"
 #include "runtime_errors.h"
 #include "runtime_util.h"
 

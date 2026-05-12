@@ -8,12 +8,12 @@
 #include <stdexcept>
 #include <unordered_map>
 
-#include "pytypes/py_bool.h"
-#include "pytypes/py_float.h"
-#include "pytypes/py_int.h"
-#include "pytypes/py_none.h"
-#include "pytypes/py_str.h"
-#include "pytypes/py_tuple.h"
+#include "pytypes/iterables/py_tuple.h"
+#include "pytypes/primitives/py_bool.h"
+#include "pytypes/primitives/py_float.h"
+#include "pytypes/primitives/py_int.h"
+#include "pytypes/primitives/py_none.h"
+#include "pytypes/primitives/py_str.h"
 #include "runtime_errors.h"
 #include "runtime_state.h"
 

@@ -6,13 +6,13 @@
 
 #include <format>
 
+#include "pytypes/iterables/py_list.h"
+#include "pytypes/iterables/py_tuple.h"
+#include "pytypes/primitives/py_float.h"
+#include "pytypes/primitives/py_int.h"
+#include "pytypes/primitives/py_str.h"
+#include "pytypes/iterables/py_set.h"
 #include "runtime_errors.h"
-#include "pytypes/py_float.h"
-#include "pytypes/py_int.h"
-#include "pytypes/py_list.h"
-#include "pytypes/py_set.h"
-#include "pytypes/py_str.h"
-#include "pytypes/py_tuple.h"
 
 
 void decrefArgs(PyObj** args, const int64_t argc) {

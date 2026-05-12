@@ -6,12 +6,12 @@
 
 #include <format>
 
-#include "pytypes/py_bool.h"
-#include "pytypes/py_int.h"
-#include "pytypes/py_list.h"
+#include "pytypes/iterables/py_list.h"
+#include "pytypes/iterables/py_tuple.h"
+#include "pytypes/primitives/py_bool.h"
+#include "pytypes/primitives/py_int.h"
+#include "pytypes/primitives/py_none.h"
 #include "pytypes/py_method.h"
-#include "pytypes/py_none.h"
-#include "pytypes/py_tuple.h"
 #include "runtime_errors.h"
 #include "runtime_util.h"
 

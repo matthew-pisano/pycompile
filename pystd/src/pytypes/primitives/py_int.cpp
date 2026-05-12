@@ -4,8 +4,8 @@
 
 #include "py_int.h"
 
-#include "pytypes/py_bool.h"
-#include "pytypes/py_float.h"
+#include "pytypes/primitives/py_bool.h"
+#include "pytypes/primitives/py_float.h"
 
 size_t PyInt::hash() const { return static_cast<size_t>(raw); }
 

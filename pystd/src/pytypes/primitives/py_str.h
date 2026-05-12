@@ -6,7 +6,7 @@
 #define PYCOMPILE_PY_STR_H
 #include <utility>
 
-#include "pytypes/py_iter.h"
+#include "pytypes/iterables/py_iter.h"
 #include "pytypes/py_object.h"
 
 /**

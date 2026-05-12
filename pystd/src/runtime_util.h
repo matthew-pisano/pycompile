@@ -7,9 +7,9 @@
 #include <cmath>
 #include <string>
 
-#include "pytypes/py_list.h"
+#include "pytypes/iterables/py_list.h"
+#include "pytypes/iterables/py_set.h"
 #include "pytypes/py_object.h"
-#include "pytypes/py_set.h"
 
 /**
  * Utility function to decref an array of PyObj* arguments, used by built-in functions to clean up their arguments.

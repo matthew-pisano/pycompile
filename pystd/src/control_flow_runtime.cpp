@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "builtin_runtime.h"
-#include "pytypes/py_none.h"
+#include "pytypes/primitives/py_none.h"
 #include "pytypes/py_object.h"
 #include "runtime_errors.h"
 

@@ -27,6 +27,10 @@ add_executable(pycompile-tests
 )
 target_link_libraries(pycompile-tests PRIVATE ${PYCOMPILE_LIBS} pystd Catch2::Catch2WithMain)
 target_include_directories(pycompile-tests SYSTEM PRIVATE
+        ${CMAKE_SOURCE_DIR}
+        ${CMAKE_SOURCE_DIR}/pycompile/src
+        ${CMAKE_SOURCE_DIR}/pystd/src
+        ${CMAKE_SOURCE_DIR}/pystd/include
         ${CMAKE_CURRENT_BINARY_DIR}
         ${MLIR_INCLUDE_DIRS}
         ${LLVM_INCLUDE_DIRS}

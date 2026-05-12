@@ -9,10 +9,10 @@
 #include <mlir/Dialect/LLVMIR/LLVMDialect.h>
 
 
-#include "../../pycompile/src/bytecode/bytecode.h"
-#include "../../pycompile/src/conversion/pyir_codegen.h"
-#include "../../pycompile/src/lowering/llvm_export.h"
-#include "../../pycompile/src/lowering/pyir_lowering.h"
+#include "pycompile/src/bytecode/bytecode.h"
+#include "pycompile/src/conversion/pyir_codegen.h"
+#include "pycompile/src/lowering/llvm_export.h"
+#include "pycompile/src/lowering/pyir_lowering.h"
 
 
 /**

@@ -9,7 +9,7 @@
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/OwningOpRef.h>
 
-#include "../../pycompile/src/conversion/pyir_codegen.h"
+#include "pycompile/src/conversion/pyir_codegen.h"
 
 
 /**

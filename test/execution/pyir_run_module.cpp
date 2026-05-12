@@ -2,7 +2,7 @@
 // Created by matthew on 4/8/26.
 //
 
-#include "pyir_run_module.h"
+#include "test/execution/pyir_run_module.h"
 
 #include <stdexcept>
 

@@ -9,19 +9,19 @@
 #include <iostream>
 #include <ranges>
 
-#include "pytypes/iterables/py_dict.h"
-#include "pytypes/iterables/py_list.h"
-#include "pytypes/iterables/py_set.h"
-#include "pytypes/iterables/py_tuple.h"
-#include "pytypes/primitives/py_bool.h"
-#include "pytypes/primitives/py_float.h"
-#include "pytypes/primitives/py_int.h"
-#include "pytypes/primitives/py_none.h"
-#include "pytypes/primitives/py_str.h"
-#include "pytypes/py_function.h"
-#include "runtime_errors.h"
-#include "runtime_state.h"
-#include "runtime_util.h"
+#include "pytypes/iterables/py_dict.hpp"
+#include "pytypes/iterables/py_list.hpp"
+#include "pytypes/iterables/py_set.hpp"
+#include "pytypes/iterables/py_tuple.hpp"
+#include "pytypes/primitives/py_bool.hpp"
+#include "pytypes/primitives/py_float.hpp"
+#include "pytypes/primitives/py_int.hpp"
+#include "pytypes/primitives/py_none.hpp"
+#include "pytypes/primitives/py_str.hpp"
+#include "pytypes/py_function.hpp"
+#include "runtime_errors.hpp"
+#include "runtime_state.hpp"
+#include "runtime_util.hpp"
 
 
 /// The name of the original model file being executed, used for error reporting and the __file__ builtin variable.

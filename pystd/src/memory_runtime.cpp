@@ -8,14 +8,14 @@
 #include <stdexcept>
 #include <unordered_map>
 
-#include "pytypes/iterables/py_tuple.h"
-#include "pytypes/primitives/py_bool.h"
-#include "pytypes/primitives/py_float.h"
-#include "pytypes/primitives/py_int.h"
-#include "pytypes/primitives/py_none.h"
-#include "pytypes/primitives/py_str.h"
-#include "runtime_errors.h"
-#include "runtime_state.h"
+#include "pytypes/iterables/py_tuple.hpp"
+#include "pytypes/primitives/py_bool.hpp"
+#include "pytypes/primitives/py_float.hpp"
+#include "pytypes/primitives/py_int.hpp"
+#include "pytypes/primitives/py_none.hpp"
+#include "pytypes/primitives/py_str.hpp"
+#include "runtime_errors.hpp"
+#include "runtime_state.hpp"
 
 
 PyObj* pyir_loadFast(const char* name) {

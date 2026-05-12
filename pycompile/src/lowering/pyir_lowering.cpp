@@ -2,12 +2,12 @@
 // Created by matthew on 3/9/26.
 //
 
-#include "pyir_lowering.h"
+#include "pyir_lowering.hpp"
 
 #include <filesystem>
 
-#include "pyir/pyir_attrs.h"
-#include "pyir/pyir_types.h"
+#include "pyir/pyir_attrs.hpp"
+#include "pyir/pyir_types.hpp"
 
 #include <mlir/Conversion/ArithToLLVM/ArithToLLVM.h>
 #include <mlir/Conversion/ControlFlowToLLVM/ControlFlowToLLVM.h>
@@ -23,13 +23,13 @@
 
 #include <mlir/Transforms/Passes.h>
 
-#include "lowering/builder_lowering.h"
-#include "lowering/control_flow_lowering.h"
-#include "lowering/function_lowering.h"
-#include "lowering/logical_lowering.h"
-#include "lowering/memory_lowering.h"
-#include "lowering/pyir_conversion_utils.h"
-#include "utils.h"
+#include "lowering/builder_lowering.hpp"
+#include "lowering/control_flow_lowering.hpp"
+#include "lowering/function_lowering.hpp"
+#include "lowering/logical_lowering.hpp"
+#include "lowering/memory_lowering.hpp"
+#include "lowering/pyir_conversion_utils.hpp"
+#include "utils.hpp"
 
 
 /**

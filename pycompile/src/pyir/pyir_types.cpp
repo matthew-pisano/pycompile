@@ -2,7 +2,7 @@
 // Created by matthew on 3/5/26.
 //
 
-#include "pyir_types.h"
+#include "pyir_types.hpp"
 
 #define GET_TYPEDEF_CLASSES
 #pragma GCC diagnostic ignored "-Wunused-parameter"

@@ -2,11 +2,11 @@
 // Created by matthew on 3/5/26.
 //
 
-#include "pyir.h"
+#include "pyir.hpp"
 
-#include "pyir_attrs.h"
-#include "pyir_ops.h"
-#include "pyir_types.h"
+#include "pyir_attrs.hpp"
+#include "pyir_ops.hpp"
+#include "pyir_types.hpp"
 
 #include "pyir.cpp.inc"
 

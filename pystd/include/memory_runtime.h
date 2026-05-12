@@ -5,6 +5,7 @@
 #ifndef PYCOMPILE_MEMORY_RUNTIME_H
 #define PYCOMPILE_MEMORY_RUNTIME_H
 #include <cmath>
+#include <cstdint>
 
 extern "C" {
 

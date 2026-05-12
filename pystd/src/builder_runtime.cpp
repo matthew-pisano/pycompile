@@ -6,10 +6,10 @@
 
 #include <stdexcept>
 
-#include "pytypes/iterables/py_dict.h"
-#include "pytypes/iterables/py_list.h"
-#include "pytypes/iterables/py_set.h"
-#include "pytypes/primitives/py_str.h"
+#include "pytypes/iterables/py_dict.hpp"
+#include "pytypes/iterables/py_list.hpp"
+#include "pytypes/iterables/py_set.hpp"
+#include "pytypes/primitives/py_str.hpp"
 
 
 PyObj* pyir_buildString(PyObj** parts, const int64_t count) {

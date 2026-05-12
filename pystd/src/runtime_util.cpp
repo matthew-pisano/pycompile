@@ -2,17 +2,17 @@
 // Created by matthew on 3/24/26.
 //
 
-#include "runtime_util.h"
+#include "runtime_util.hpp"
 
 #include <format>
 
-#include "pytypes/iterables/py_list.h"
-#include "pytypes/iterables/py_tuple.h"
-#include "pytypes/primitives/py_float.h"
-#include "pytypes/primitives/py_int.h"
-#include "pytypes/primitives/py_str.h"
-#include "pytypes/iterables/py_set.h"
-#include "runtime_errors.h"
+#include "pytypes/iterables/py_list.hpp"
+#include "pytypes/iterables/py_set.hpp"
+#include "pytypes/iterables/py_tuple.hpp"
+#include "pytypes/primitives/py_float.hpp"
+#include "pytypes/primitives/py_int.hpp"
+#include "pytypes/primitives/py_str.hpp"
+#include "runtime_errors.hpp"
 
 
 void decrefArgs(PyObj** args, const int64_t argc) {

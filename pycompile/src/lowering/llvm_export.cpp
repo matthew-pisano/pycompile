@@ -2,7 +2,7 @@
 // Created by matthew on 3/9/26.
 //
 
-#include "llvm_export.h"
+#include "llvm_export.hpp"
 
 #include <mlir/Target/LLVMIR/Dialect/Builtin/BuiltinToLLVMIRTranslation.h>
 #include <mlir/Target/LLVMIR/Dialect/LLVMIR/LLVMToLLVMIRTranslation.h>
@@ -23,7 +23,7 @@
 
 #include <stdexcept>
 
-#include "utils.h"
+#include "utils.hpp"
 
 // Helper methods that return the macro if defined or fail with an error if not
 std::string pyRuntimeLib() {

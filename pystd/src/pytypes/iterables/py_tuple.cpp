@@ -2,12 +2,12 @@
 // Created by matthew on 3/29/26.
 //
 
-#include "py_tuple.h"
+#include "py_tuple.hpp"
 
-#include "pytypes/primitives/py_bool.h"
-#include "pytypes/primitives/py_int.h"
-#include "runtime_errors.h"
-#include "runtime_util.h"
+#include "pytypes/primitives/py_bool.hpp"
+#include "pytypes/primitives/py_int.hpp"
+#include "runtime_errors.hpp"
+#include "runtime_util.hpp"
 
 PyTuple::~PyTuple() {
     for (PyObj* elem : raw)

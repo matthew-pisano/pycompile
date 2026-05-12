@@ -2,13 +2,13 @@
 // Created by matthew on 3/29/26.
 //
 
-#include "py_object.h"
+#include "py_object.hpp"
 
 #include <format>
 #include <stdexcept>
 
-#include "pytypes/primitives/py_str.h"
-#include "runtime_errors.h"
+#include "pytypes/primitives/py_str.hpp"
+#include "runtime_errors.hpp"
 
 void PyObj::incref() { refcount.fetch_add(1, std::memory_order_relaxed); }
 

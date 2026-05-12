@@ -2,13 +2,13 @@
 // Created by matthew on 3/23/26.
 //
 
-#include "control_flow_codegen.h"
+#include "control_flow_codegen.hpp"
 
 #include <mlir/Dialect/ControlFlow/IR/ControlFlowOps.h>
 #include <variant>
 
-#include "pyir/pyir_ops.h"
-#include "utils.h"
+#include "pyir/pyir_ops.hpp"
+#include "utils.hpp"
 
 
 void jumpForwardCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const ByteCodeInstruction& instr,

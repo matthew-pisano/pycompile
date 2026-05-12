@@ -5,12 +5,12 @@
 #include <llvm/IR/Module.h>
 #include <mlir/IR/OwningOpRef.h>
 
-#include "bytecode/bytecode.h"
-#include "bytecode/serialize_bytecode.h"
-#include "conversion/pyir_codegen.h"
-#include "lowering/llvm_export.h"
-#include "lowering/pyir_lowering.h"
-#include "utils.h"
+#include "bytecode/bytecode.hpp"
+#include "bytecode/serialize_bytecode.hpp"
+#include "conversion/pyir_codegen.hpp"
+#include "lowering/llvm_export.hpp"
+#include "lowering/pyir_lowering.hpp"
+#include "utils.hpp"
 #include "version.h"
 
 

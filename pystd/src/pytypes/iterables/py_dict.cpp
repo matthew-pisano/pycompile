@@ -2,19 +2,19 @@
 // Created by matthew on 4/4/26.
 //
 
-#include "py_dict.h"
+#include "py_dict.hpp"
 
 #include <format>
 #include <ranges>
 
-#include "pytypes/iterables/py_list.h"
-#include "pytypes/iterables/py_tuple.h"
-#include "pytypes/primitives/py_bool.h"
-#include "pytypes/primitives/py_int.h"
-#include "pytypes/primitives/py_none.h"
-#include "pytypes/py_method.h"
-#include "runtime_errors.h"
-#include "runtime_util.h"
+#include "pytypes/iterables/py_list.hpp"
+#include "pytypes/iterables/py_tuple.hpp"
+#include "pytypes/primitives/py_bool.hpp"
+#include "pytypes/primitives/py_int.hpp"
+#include "pytypes/primitives/py_none.hpp"
+#include "pytypes/py_method.hpp"
+#include "runtime_errors.hpp"
+#include "runtime_util.hpp"
 
 
 PyDict::~PyDict() {

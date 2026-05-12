@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "builtin_runtime.h"
-#include "pytypes/primitives/py_none.h"
-#include "pytypes/py_object.h"
-#include "runtime_errors.h"
+#include "pytypes/primitives/py_none.hpp"
+#include "pytypes/py_object.hpp"
+#include "runtime_errors.hpp"
 
 static std::vector<PyObj*> iterStack = {};
 

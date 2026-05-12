@@ -2,14 +2,14 @@
 // Created by matthew on 3/23/26.
 //
 
-#include "function_codegen.h"
+#include "function_codegen.hpp"
 
 #include <mlir/IR/Value.h>
 #include <string>
 #include <variant>
 
-#include "pyir/pyir_ops.h"
-#include "utils.h"
+#include "pyir/pyir_ops.hpp"
+#include "utils.hpp"
 
 
 void makeFunctionCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,

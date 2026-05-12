@@ -2,7 +2,7 @@
 // Created by matthew on 3/3/26.
 //
 
-#include "bytecode/python_opcodes.h"
+#include "bytecode/python_opcodes.hpp"
 
 #include <stdexcept>
 #include <unordered_map>

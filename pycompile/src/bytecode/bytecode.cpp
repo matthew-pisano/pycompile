@@ -5,14 +5,14 @@
 
 #include <stdexcept>
 
-#include "bytecode/bytecode.h"
+#include "bytecode/bytecode.hpp"
 
 #include <filesystem>
 #include <iostream>
 
-#include "bytecode/python_error.h"
-#include "bytecode/python_raii.h"
-#include "utils.h"
+#include "bytecode/python_error.hpp"
+#include "bytecode/python_raii.hpp"
+#include "utils.hpp"
 
 
 /**

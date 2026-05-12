@@ -2,9 +2,9 @@
 // Created by matthew on 3/23/26.
 //
 
-#include "builder_codegen.h"
+#include "builder_codegen.hpp"
 
-#include "pyir/pyir_ops.h"
+#include "pyir/pyir_ops.hpp"
 
 
 void buildStringCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,

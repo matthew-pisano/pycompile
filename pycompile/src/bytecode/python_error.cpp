@@ -2,7 +2,7 @@
 // Created by matthew on 3/5/26.
 //
 
-#include "bytecode/python_error.h"
+#include "bytecode/python_error.hpp"
 
 #include <Python.h>
 #include <stdexcept>

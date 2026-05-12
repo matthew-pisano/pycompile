@@ -2,12 +2,12 @@
 // Created by matthew on 3/29/26.
 //
 
-#include "py_float.h"
+#include "py_float.hpp"
 
 #include <format>
 
-#include "pytypes/primitives/py_bool.h"
-#include "pytypes/primitives/py_int.h"
+#include "pytypes/primitives/py_bool.hpp"
+#include "pytypes/primitives/py_int.hpp"
 
 size_t PyFloat::hash() const { return std::bit_cast<size_t>(raw); }
 

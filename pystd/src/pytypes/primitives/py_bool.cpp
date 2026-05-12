@@ -2,10 +2,10 @@
 // Created by matthew on 3/29/26.
 //
 
-#include "py_bool.h"
+#include "py_bool.hpp"
 
-#include "pytypes/primitives/py_float.h"
-#include "pytypes/primitives/py_int.h"
+#include "pytypes/primitives/py_float.hpp"
+#include "pytypes/primitives/py_int.hpp"
 
 PyBool* PyBool::True = new PyBool(true);
 PyBool* PyBool::False = new PyBool(false);

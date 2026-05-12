@@ -2,11 +2,11 @@
 // Created by matthew on 3/29/26.
 //
 
-#include "py_method.h"
+#include "py_method.hpp"
 
 #include <format>
 
-#include "runtime_errors.h"
+#include "runtime_errors.hpp"
 
 PyMethod::~PyMethod() {
     if (self->decref())

@@ -6,7 +6,6 @@
 #define PYCOMPILE_BUILDER_RUNTIME_H
 #include <cstdint>
 
-
 extern "C" {
 
 struct PyObj;

@@ -4,9 +4,9 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "pycompile/src/pyir/pyir_attrs.h"
-#include "pycompile/src/pyir/pyir_ops.h"
-#include "test/conversion/codegen_test_utils.h"
+#include "pycompile/src/pyir/pyir_attrs.hpp"
+#include "pycompile/src/pyir/pyir_ops.hpp"
+#include "test/conversion/codegen_test_utils.hpp"
 
 
 TEST_CASE_METHOD(MLIRFixture, "Test F String Format MLIR") {

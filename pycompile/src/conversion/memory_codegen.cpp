@@ -2,16 +2,16 @@
 // Created by matthew on 3/23/26.
 //
 
-#include "memory_codegen.h"
+#include "memory_codegen.hpp"
 
 #include <filesystem>
 #include <string>
 #include <variant>
 
-#include "pyir/pyir_attrs.h"
-#include "pyir/pyir_ops.h"
-#include "conversion/pyir_codegen.h"
-#include "utils.h"
+#include "conversion/pyir_codegen.hpp"
+#include "pyir/pyir_attrs.hpp"
+#include "pyir/pyir_ops.hpp"
+#include "utils.hpp"
 
 
 /// Global counter to build unique function names

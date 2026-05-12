@@ -7,10 +7,10 @@
 #include <format>
 #include <stdexcept>
 
-#include "pytypes/py_method.h"
-#include "runtime_errors.h"
-#include "runtime_state.h"
-#include "runtime_util.h"
+#include "pytypes/py_method.hpp"
+#include "runtime_errors.hpp"
+#include "runtime_state.hpp"
+#include "runtime_util.hpp"
 
 void pyir_pushScope() {
     // Init new scope with global symbols from the module scope

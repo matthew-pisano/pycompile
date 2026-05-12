@@ -4,7 +4,7 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "test/execution/execution_test_utils.h"
+#include "test/execution/execution_test_utils.hpp"
 
 
 TEST_CASE_METHOD(JITFixture, "Test JIT Build List") {

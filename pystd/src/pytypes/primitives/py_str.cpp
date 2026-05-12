@@ -2,11 +2,11 @@
 // Created by matthew on 3/29/26.
 //
 
-#include "py_str.h"
+#include "py_str.hpp"
 
-#include "pytypes/primitives/py_bool.h"
-#include "pytypes/primitives/py_int.h"
-#include "runtime_errors.h"
+#include "pytypes/primitives/py_bool.hpp"
+#include "pytypes/primitives/py_int.hpp"
+#include "runtime_errors.hpp"
 
 size_t PyStr::hash() const {
     constexpr std::hash<std::string> hasher;

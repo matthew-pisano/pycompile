@@ -2,11 +2,11 @@
 // Created by matthew on 3/29/26.
 //
 
-#include "py_function.h"
+#include "py_function.hpp"
 
 #include <format>
 
-#include "runtime_errors.h"
+#include "runtime_errors.hpp"
 
 size_t PyFunction::hash() const { throw PyTypeError("Unhashable type " + typeName()); }
 

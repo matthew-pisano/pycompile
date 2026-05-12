@@ -7,17 +7,17 @@
 #include <cmath>
 #include <iostream>
 
-#include "pytypes/iterables/py_dict.h"
-#include "pytypes/iterables/py_set.h"
-#include "pytypes/primitives/py_bool.h"
-#include "pytypes/primitives/py_float.h"
-#include "pytypes/primitives/py_int.h"
-#include "pytypes/primitives/py_str.h"
-#include "pytypes/iterables/py_list.h"
-#include "pytypes/py_object.h"
-#include "pytypes/iterables/py_tuple.h"
-#include "runtime_errors.h"
-#include "runtime_util.h"
+#include "pytypes/iterables/py_dict.hpp"
+#include "pytypes/iterables/py_list.hpp"
+#include "pytypes/iterables/py_set.hpp"
+#include "pytypes/iterables/py_tuple.hpp"
+#include "pytypes/primitives/py_bool.hpp"
+#include "pytypes/primitives/py_float.hpp"
+#include "pytypes/primitives/py_int.hpp"
+#include "pytypes/primitives/py_str.hpp"
+#include "pytypes/py_object.hpp"
+#include "runtime_errors.hpp"
+#include "runtime_util.hpp"
 
 
 /// Format an unsupported operands error.

@@ -2,7 +2,7 @@
 // Created by matthew on 3/24/26.
 //
 
-#include "logical_lowering.h"
+#include "logical_lowering.hpp"
 
 
 mlir::LogicalResult IsTruthyLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,

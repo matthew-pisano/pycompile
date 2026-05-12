@@ -3,7 +3,7 @@
 //
 
 
-#include "pyir_conversion_utils.h"
+#include "pyir_conversion_utils.hpp"
 
 
 mlir::LLVM::LLVMPointerType ptrType(mlir::MLIRContext* ctx) { return mlir::LLVM::LLVMPointerType::get(ctx); }

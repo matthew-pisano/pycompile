@@ -2,7 +2,7 @@
 // Created by matthew on 3/24/26.
 //
 
-#include "builder_lowering.h"
+#include "builder_lowering.hpp"
 
 /**
  * Helper function to build the array of PyObj* and call the runtime fn for building strings, lists, sets, or maps.

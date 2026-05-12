@@ -2,10 +2,10 @@
 // Created by matthew on 3/29/26.
 //
 
-#include "py_int.h"
+#include "py_int.hpp"
 
-#include "pytypes/primitives/py_bool.h"
-#include "pytypes/primitives/py_float.h"
+#include "pytypes/primitives/py_bool.hpp"
+#include "pytypes/primitives/py_float.hpp"
 
 size_t PyInt::hash() const { return static_cast<size_t>(raw); }
 

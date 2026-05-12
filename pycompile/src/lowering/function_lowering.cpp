@@ -2,7 +2,7 @@
 // Created by matthew on 3/24/26.
 //
 
-#include "function_lowering.h"
+#include "function_lowering.hpp"
 
 
 mlir::LogicalResult CallLowering::matchAndRewrite(mlir::Operation* op, const mlir::ArrayRef<mlir::Value> operands,

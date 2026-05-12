@@ -2,9 +2,9 @@
 // Created by matthew on 3/24/26.
 //
 
-#include "memory_lowering.h"
+#include "memory_lowering.hpp"
 
-#include "pyir/pyir_attrs.h"
+#include "pyir/pyir_attrs.hpp"
 
 
 mlir::LogicalResult insertLoadRuntimeFunc(const std::string& func, const llvm::StringRef& varName, mlir::Operation* op,

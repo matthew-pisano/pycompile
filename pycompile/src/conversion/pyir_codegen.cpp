@@ -2,7 +2,7 @@
 // Created by matthew on 3/6/26.
 //
 
-#include "pyir_codegen.h"
+#include "pyir_codegen.hpp"
 
 #include <filesystem>
 #include <iostream>
@@ -13,14 +13,14 @@
 #include <mlir/IR/Verifier.h>
 #include <unordered_set>
 
-#include "conversion/control_flow_codegen.h"
-#include "conversion/builder_codegen.h"
-#include "conversion/function_codegen.h"
-#include "conversion/logical_codegen.h"
-#include "conversion/memory_codegen.h"
-#include "pyir/pyir_attrs.h"
-#include "pyir/pyir_ops.h"
-#include "utils.h"
+#include "conversion/builder_codegen.hpp"
+#include "conversion/control_flow_codegen.hpp"
+#include "conversion/function_codegen.hpp"
+#include "conversion/logical_codegen.hpp"
+#include "conversion/memory_codegen.hpp"
+#include "pyir/pyir_attrs.hpp"
+#include "pyir/pyir_ops.hpp"
+#include "utils.hpp"
 
 /**
  * Gets the location of the given instruction in terms of MLIR.

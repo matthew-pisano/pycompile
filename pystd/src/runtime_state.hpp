@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "builtin_runtime.h"
-#include "pytypes/py_function.hpp"
+#include "pytypes/callables/py_function.hpp"
 
 /**
  * A mapping of built-in function names to their corresponding PyFunction objects.

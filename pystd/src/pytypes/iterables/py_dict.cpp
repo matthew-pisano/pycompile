@@ -7,12 +7,12 @@
 #include <format>
 #include <ranges>
 
+#include "pytypes/callables/py_method.hpp"
 #include "pytypes/iterables/py_list.hpp"
 #include "pytypes/iterables/py_tuple.hpp"
 #include "pytypes/primitives/py_bool.hpp"
 #include "pytypes/primitives/py_int.hpp"
 #include "pytypes/primitives/py_none.hpp"
-#include "pytypes/py_method.hpp"
 #include "runtime_errors.hpp"
 #include "runtime_util.hpp"
 

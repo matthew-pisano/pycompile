@@ -1,9 +1,9 @@
 add_library(pymain STATIC
         src/main_runtime.cpp
 )
-target_include_directories(pymain PRIVATE
-        include
-        src
+target_include_directories(pymain
+        PUBLIC include
+        PRIVATE src
 )
 set_target_properties(pymain PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
@@ -26,13 +26,13 @@ add_library(pystd STATIC
         src/pytypes/primitives/py_bool.cpp
         src/pytypes/py_object.cpp
         src/pytypes/primitives/py_none.cpp
-        src/pytypes/py_function.cpp
-        src/pytypes/py_method.cpp
+        src/pytypes/callables/py_function.cpp
+        src/pytypes/callables/py_method.cpp
         src/control_flow_runtime.cpp
 )
-target_include_directories(pystd PRIVATE
-        include
-        src
+target_include_directories(pystd
+        PUBLIC include
+        PRIVATE src
 )
 set_target_properties(pystd PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"

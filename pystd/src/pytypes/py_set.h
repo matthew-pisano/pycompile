@@ -7,9 +7,8 @@
 #include <unordered_set>
 #include <utility>
 
-#include "py_object.h"
-#include "py_iter.h"
-#include "py_method.h"
+#include "pytypes/py_iter.h"
+#include "pytypes/py_object.h"
 
 
 struct PyNone;

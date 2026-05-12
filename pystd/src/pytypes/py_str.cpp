@@ -4,10 +4,8 @@
 
 #include "py_str.h"
 
-#include <stdexcept>
-
-#include "py_bool.h"
-#include "py_int.h"
+#include "pytypes/py_bool.h"
+#include "pytypes/py_int.h"
 #include "runtime_errors.h"
 
 size_t PyStr::hash() const {

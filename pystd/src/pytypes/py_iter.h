@@ -7,8 +7,7 @@
 
 #include <stdexcept>
 
-#include "py_method.h"
-#include "py_object.h"
+#include "pytypes/py_object.h"
 
 
 struct PyNone;

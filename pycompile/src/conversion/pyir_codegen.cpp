@@ -13,14 +13,14 @@
 #include <mlir/IR/Verifier.h>
 #include <unordered_set>
 
-#include "builder_codegen.h"
-#include "control_flow_codegen.h"
-#include "function_codegen.h"
-#include "logical_codegen.h"
-#include "memory_codegen.h"
-#include "../pyir/pyir_attrs.h"
-#include "../pyir/pyir_ops.h"
-#include "../utils.h"
+#include "conversion/control_flow_codegen.h"
+#include "conversion/builder_codegen.h"
+#include "conversion/function_codegen.h"
+#include "conversion/logical_codegen.h"
+#include "conversion/memory_codegen.h"
+#include "pyir/pyir_attrs.h"
+#include "pyir/pyir_ops.h"
+#include "utils.h"
 
 /**
  * Gets the location of the given instruction in terms of MLIR.

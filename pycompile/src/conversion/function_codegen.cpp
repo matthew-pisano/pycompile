@@ -8,8 +8,8 @@
 #include <string>
 #include <variant>
 
-#include "../pyir/pyir_ops.h"
-#include "../utils.h"
+#include "pyir/pyir_ops.h"
+#include "utils.h"
 
 
 void makeFunctionCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,

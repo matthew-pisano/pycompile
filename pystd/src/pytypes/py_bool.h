@@ -4,9 +4,7 @@
 
 #ifndef PYCOMPILE_PY_BOOL_H
 #define PYCOMPILE_PY_BOOL_H
-
-#include "py_method.h"
-#include "py_object.h"
+#include "pytypes/py_object.h"
 
 /**
  * PyBool represents the bool type in Python. It is a doubleton type, with only two instances: True and False.

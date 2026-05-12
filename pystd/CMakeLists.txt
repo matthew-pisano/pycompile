@@ -1,7 +1,10 @@
 add_library(pymain STATIC
         src/main_runtime.cpp
 )
-target_include_directories(pymain PRIVATE include)
+target_include_directories(pymain PRIVATE
+        include
+        src
+)
 set_target_properties(pymain PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
 )
@@ -27,7 +30,10 @@ add_library(pystd STATIC
         src/pytypes/py_method.cpp
         src/control_flow_runtime.cpp
 )
-target_include_directories(pystd PRIVATE include)
+target_include_directories(pystd PRIVATE
+        include
+        src
+)
 set_target_properties(pystd PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
 )

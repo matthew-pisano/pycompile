@@ -8,7 +8,7 @@
 #include <mlir/IR/BuiltinOps.h>
 #include <mlir/IR/MLIRContext.h>
 
-#include "../bytecode/bytecode.h"
+#include "bytecode/bytecode.h"
 
 
 /**

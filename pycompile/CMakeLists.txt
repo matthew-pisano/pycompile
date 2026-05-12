@@ -46,6 +46,7 @@ set(PYCOMPILE_LIBS "${PYCOMPILE_LIBS}" PARENT_SCOPE)
 add_executable(pycompile src/main.cpp ${PYCOMPILE_SOURCES})
 target_link_libraries(pycompile PRIVATE ${PYCOMPILE_LIBS} CLI11::CLI11)
 target_include_directories(pycompile SYSTEM PRIVATE
+        src
         ${CMAKE_BINARY_DIR}
         ${MLIR_INCLUDE_DIRS}
         ${LLVM_INCLUDE_DIRS}

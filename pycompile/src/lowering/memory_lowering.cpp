@@ -3,7 +3,8 @@
 //
 
 #include "memory_lowering.h"
-#include "../pyir/pyir_attrs.h"
+
+#include "pyir/pyir_attrs.h"
 
 
 mlir::LogicalResult insertLoadRuntimeFunc(const std::string& func, const llvm::StringRef& varName, mlir::Operation* op,

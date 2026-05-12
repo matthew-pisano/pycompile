@@ -6,13 +6,14 @@
 
 #include <format>
 
-#include "py_bool.h"
-#include "py_int.h"
-#include "py_none.h"
-#include "py_set.h"
-#include "py_tuple.h"
+#include "pytypes/py_bool.h"
+#include "pytypes/py_int.h"
+#include "pytypes/py_method.h"
+#include "pytypes/py_none.h"
+#include "pytypes/py_set.h"
+#include "pytypes/py_tuple.h"
 #include "runtime_errors.h"
-#include "../runtime_util.h"
+#include "runtime_util.h"
 
 PyList::~PyList() {
     for (PyObj* elem : raw)

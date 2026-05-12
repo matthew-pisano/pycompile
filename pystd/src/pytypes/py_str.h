@@ -6,9 +6,8 @@
 #define PYCOMPILE_PY_STR_H
 #include <utility>
 
-#include "py_iter.h"
-#include "py_method.h"
-#include "py_object.h"
+#include "pytypes/py_iter.h"
+#include "pytypes/py_object.h"
 
 /**
  * PyStr represents the str type in Python. It is an immutable sequence of characters.

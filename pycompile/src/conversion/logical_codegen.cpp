@@ -4,8 +4,8 @@
 
 #include "logical_codegen.h"
 
-#include "../pyir/pyir_ops.h"
-#include "../utils.h"
+#include "pyir/pyir_ops.h"
+#include "utils.h"
 
 
 void binaryOpCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,

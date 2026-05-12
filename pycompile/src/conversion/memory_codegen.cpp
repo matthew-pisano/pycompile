@@ -8,10 +8,10 @@
 #include <string>
 #include <variant>
 
-#include "../pyir/pyir_attrs.h"
-#include "../pyir/pyir_ops.h"
-#include "../utils.h"
-#include "pyir_codegen.h"
+#include "pyir/pyir_attrs.h"
+#include "pyir/pyir_ops.h"
+#include "conversion/pyir_codegen.h"
+#include "utils.h"
 
 
 /// Global counter to build unique function names

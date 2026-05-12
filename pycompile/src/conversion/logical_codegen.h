@@ -5,8 +5,8 @@
 #ifndef PYCOMPILE_LOGICAL_CODEGEN_H
 #define PYCOMPILE_LOGICAL_CODEGEN_H
 
-#include "../bytecode/bytecode.h"
-#include "pyir_codegen.h"
+#include "bytecode/bytecode.h"
+#include "conversion/pyir_codegen.h"
 
 
 /**

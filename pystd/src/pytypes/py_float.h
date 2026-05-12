@@ -6,8 +6,7 @@
 #define PYCOMPILE_PY_FLOAT_H
 #include <cmath>
 
-#include "py_method.h"
-#include "py_object.h"
+#include "pytypes/py_object.h"
 
 /**
  * PyFloat represents the float type in Python. It represents a double-precision floating point number.

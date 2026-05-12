@@ -6,8 +6,7 @@
 #define PYCOMPILE_PY_FUNCTION_H
 #include <utility>
 
-#include "py_method.h"
-#include "py_object.h"
+#include "pytypes/py_object.h"
 
 using PyFunctionData = PyObj* (*) (PyObj**, int64_t);
 

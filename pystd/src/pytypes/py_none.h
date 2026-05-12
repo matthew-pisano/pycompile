@@ -4,8 +4,7 @@
 
 #ifndef PYCOMPILE_PY_NONE_H
 #define PYCOMPILE_PY_NONE_H
-#include "py_object.h"
-#include "py_method.h"
+#include "pytypes/py_object.h"
 
 /**
  * PyNone represents the None type in Python. It is a singleton type, with only one instance: None.

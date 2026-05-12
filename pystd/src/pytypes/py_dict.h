@@ -7,9 +7,8 @@
 #include <map>
 #include <utility>
 
-#include "py_iter.h"
-#include "py_method.h"
-#include "py_object.h"
+#include "pytypes/py_iter.h"
+#include "pytypes/py_object.h"
 
 
 struct PyNone;

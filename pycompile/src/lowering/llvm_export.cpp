@@ -23,7 +23,7 @@
 
 #include <stdexcept>
 
-#include "../utils.h"
+#include "utils.h"
 
 // Helper methods that return the macro if defined or fail with an error if not
 std::string pyRuntimeLib() {

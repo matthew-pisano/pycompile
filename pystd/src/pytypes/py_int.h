@@ -4,8 +4,7 @@
 
 #ifndef PYCOMPILE_PY_INT_H
 #define PYCOMPILE_PY_INT_H
-#include "py_method.h"
-#include "py_object.h"
+#include "pytypes/py_object.h"
 
 /**
  * PyInt represents the int type in Python. It represents a 64-bit signed integer.

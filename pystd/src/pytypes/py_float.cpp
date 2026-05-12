@@ -6,8 +6,8 @@
 
 #include <format>
 
-#include "py_bool.h"
-#include "py_int.h"
+#include "pytypes/py_bool.h"
+#include "pytypes/py_int.h"
 
 size_t PyFloat::hash() const { return std::bit_cast<size_t>(raw); }
 

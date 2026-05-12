@@ -1,6 +1,6 @@
-include "mlir/IR/../../../../../../../usr/include/mlir/IR/OpBase.td"
-include "mlir/IR/../../../../../../../usr/include/mlir/IR/AttrTypeBase.td"
-include "mlir/Interfaces/../../../../../../../usr/include/mlir/Interfaces/SideEffectInterfaces.td"
+include "mlir/IR//OpBase.td"
+include "mlir/IR/AttrTypeBase.td"
+include "mlir/Interfaces/SideEffectInterfaces.td"
 
 
 def PyIR_Dialect : Dialect {

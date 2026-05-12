@@ -4,12 +4,10 @@
 
 #include "py_tuple.h"
 
-#include <stdexcept>
-
-#include "py_bool.h"
-#include "py_int.h"
+#include "pytypes/py_bool.h"
+#include "pytypes/py_int.h"
 #include "runtime_errors.h"
-#include "../runtime_util.h"
+#include "runtime_util.h"
 
 PyTuple::~PyTuple() {
     for (PyObj* elem : raw)

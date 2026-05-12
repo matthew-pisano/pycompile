@@ -6,8 +6,8 @@
 
 #include <filesystem>
 
-#include "../pyir/pyir_attrs.h"
-#include "../pyir/pyir_types.h"
+#include "pyir/pyir_attrs.h"
+#include "pyir/pyir_types.h"
 
 #include <mlir/Conversion/ArithToLLVM/ArithToLLVM.h>
 #include <mlir/Conversion/ControlFlowToLLVM/ControlFlowToLLVM.h>
@@ -23,13 +23,13 @@
 
 #include <mlir/Transforms/Passes.h>
 
-#include "builder_lowering.h"
-#include "control_flow_lowering.h"
-#include "function_lowering.h"
-#include "logical_lowering.h"
-#include "memory_lowering.h"
-#include "pyir_conversion_utils.h"
-#include "../utils.h"
+#include "lowering/builder_lowering.h"
+#include "lowering/control_flow_lowering.h"
+#include "lowering/function_lowering.h"
+#include "lowering/logical_lowering.h"
+#include "lowering/memory_lowering.h"
+#include "lowering/pyir_conversion_utils.h"
+#include "utils.h"
 
 
 /**

@@ -7,6 +7,7 @@
 #include <format>
 #include <stdexcept>
 
+#include "pytypes/py_method.h"
 #include "runtime_errors.h"
 #include "runtime_state.h"
 #include "runtime_util.h"

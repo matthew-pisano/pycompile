@@ -5,8 +5,8 @@
 #ifndef PYCOMPILE_BUILDER_CODEGEN_H
 #define PYCOMPILE_BUILDER_CODEGEN_H
 
-#include "pyir_codegen.h"
-#include "../bytecode/bytecode.h"
+#include "conversion/pyir_codegen.h"
+#include "bytecode/bytecode.h"
 
 
 /**

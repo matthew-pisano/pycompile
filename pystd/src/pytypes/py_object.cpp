@@ -7,7 +7,7 @@
 #include <format>
 #include <stdexcept>
 
-#include "py_str.h"
+#include "pytypes/py_str.h"
 #include "runtime_errors.h"
 
 void PyObj::incref() { refcount.fetch_add(1, std::memory_order_relaxed); }

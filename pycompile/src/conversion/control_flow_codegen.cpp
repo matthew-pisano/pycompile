@@ -7,8 +7,8 @@
 #include <mlir/Dialect/ControlFlow/IR/ControlFlowOps.h>
 #include <variant>
 
-#include "../pyir/pyir_ops.h"
-#include "../utils.h"
+#include "pyir/pyir_ops.h"
+#include "utils.h"
 
 
 void jumpForwardCodegen(mlir::OpBuilder& builder, const mlir::Location& loc, const ByteCodeInstruction& instr,

@@ -6,8 +6,7 @@
 #define PYCOMPILE_PY_METHOD_H
 #include <utility>
 
-
-#include "py_object.h"
+#include "pytypes/py_object.h"
 
 using PyMethodData = PyObj* (*) (PyObj*, PyObj**, int64_t);
 

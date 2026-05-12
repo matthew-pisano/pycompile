@@ -13,7 +13,7 @@
 #include <variant>
 #include <vector>
 
-#include "python_opcodes.h"
+#include "bytecode/python_opcodes.h"
 
 /**
  * Python 3.11+ uses an exception table to determine which exception handler to jump to when an

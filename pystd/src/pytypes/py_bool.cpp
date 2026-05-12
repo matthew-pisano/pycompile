@@ -4,8 +4,8 @@
 
 #include "py_bool.h"
 
-#include "py_float.h"
-#include "py_int.h"
+#include "pytypes/py_float.h"
+#include "pytypes/py_int.h"
 
 PyBool* PyBool::True = new PyBool(true);
 PyBool* PyBool::False = new PyBool(false);

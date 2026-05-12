@@ -5,8 +5,8 @@
 #ifndef PYCOMPILE_BUILDER_LOWERING_H
 #define PYCOMPILE_BUILDER_LOWERING_H
 
-#include "../pyir/pyir_ops.h"
-#include "pyir_conversion_utils.h"
+#include "pyir/pyir_ops.h"
+#include "lowering/pyir_conversion_utils.h"
 
 
 /**

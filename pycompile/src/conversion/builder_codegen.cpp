@@ -3,7 +3,8 @@
 //
 
 #include "builder_codegen.h"
-#include "../pyir/pyir_ops.h"
+
+#include "pyir/pyir_ops.h"
 
 
 void buildStringCodegen(mlir::OpBuilder& builder, mlir::MLIRContext& ctx, const mlir::Location& loc,

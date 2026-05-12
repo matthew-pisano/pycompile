@@ -4,7 +4,7 @@
 
 #ifndef SERIALIZE_BYTECODE_H
 #define SERIALIZE_BYTECODE_H
-#include "bytecode.h"
+#include "bytecode/bytecode.h"
 
 /**
  * Helper function to print the bytecode module in a human-readable format, including metadata and instructions.

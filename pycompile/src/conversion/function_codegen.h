@@ -6,8 +6,8 @@
 #define PYCOMPILE_FUNCTION_CODEGEN_H
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 
-#include "pyir_codegen.h"
-#include "../bytecode/bytecode.h"
+#include "conversion/pyir_codegen.h"
+#include "bytecode/bytecode.h"
 
 
 /**

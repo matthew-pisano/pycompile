@@ -1,7 +1,3 @@
-# ================
-# Add Source Files
-# ================
-
 add_subdirectory(src/bytecode)
 add_subdirectory(src/conversion)
 add_subdirectory(src/lowering)
@@ -38,10 +34,6 @@ set(PYCOMPILE_LIBS
         LLVM
 )
 set(PYCOMPILE_LIBS "${PYCOMPILE_LIBS}" PARENT_SCOPE)
-
-# ================
-# Pycompile
-# ================
 
 add_executable(pycompile src/main.cpp ${PYCOMPILE_SOURCES})
 target_link_libraries(pycompile PRIVATE ${PYCOMPILE_LIBS} CLI11::CLI11)

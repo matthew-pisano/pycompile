@@ -1,7 +1,7 @@
 set(PYCOMPILE_BYTECODE_SOURCES
         bytecode.cpp
-        python_opcodes.cpp
         python_error.cpp
+        python_opcodes.cpp
         serialize_bytecode.cpp
 )
 list(TRANSFORM PYCOMPILE_BYTECODE_SOURCES PREPEND "${CMAKE_CURRENT_SOURCE_DIR}/")

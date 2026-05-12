@@ -8,32 +8,34 @@ FetchContent_MakeAvailable(Catch2)
 add_executable(pycompile-tests
         ${PYCOMPILE_SOURCES}
         bytecode/test_bytecode.cpp
-        conversion/test_pyir_codegen.cpp
-        lowering/test_llvm_ir_generation.cpp
-        execution/test_code_execution.cpp
-        conversion/test_logical_codegen.cpp
-        conversion/test_function_codegen.cpp
-        conversion/test_control_flow_codegen.cpp
         conversion/test_builder_codegen.cpp
-        execution/test_str_execution.cpp
+        conversion/test_control_flow_codegen.cpp
+        conversion/test_function_codegen.cpp
+        conversion/test_logical_codegen.cpp
+        conversion/test_pyir_codegen.cpp
+        execution/pyir_run_module.cpp
+        execution/test_builtin_execution.cpp
+        execution/test_code_execution.cpp
+        execution/test_dict_execution.cpp
+        execution/test_error_execution.cpp
+        execution/test_iter_execution.cpp
         execution/test_list_execution.cpp
         execution/test_set_execution.cpp
+        execution/test_str_execution.cpp
         execution/test_tuple_execution.cpp
-        execution/test_dict_execution.cpp
-        execution/test_iter_execution.cpp
-        execution/test_builtin_execution.cpp
-        execution/test_error_execution.cpp
-        execution/pyir_run_module.cpp
+        lowering/test_llvm_ir_generation.cpp
 )
 target_link_libraries(pycompile-tests PRIVATE ${PYCOMPILE_LIBS} pystd Catch2::Catch2WithMain)
 target_include_directories(pycompile-tests SYSTEM PRIVATE
-        ${CMAKE_SOURCE_DIR}
-        ${CMAKE_SOURCE_DIR}/pycompile/src
-        ${CMAKE_SOURCE_DIR}/pystd/src
-        ${CMAKE_SOURCE_DIR}/pystd/include
         ${CMAKE_CURRENT_BINARY_DIR}
         ${MLIR_INCLUDE_DIRS}
         ${LLVM_INCLUDE_DIRS}
+        # For importing each module pycompile/pystd/test by name
+        ${CMAKE_SOURCE_DIR}
+        # For resolving imports of imports within those modules
+        ${CMAKE_SOURCE_DIR}/pycompile/src
+        ${CMAKE_SOURCE_DIR}/pystd/src
+        ${CMAKE_SOURCE_DIR}/pystd/include
 )
 set_target_properties(pycompile-tests PROPERTIES
         COMPILE_WARNING_AS_ERROR ON

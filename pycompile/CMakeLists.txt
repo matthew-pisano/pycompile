@@ -1,7 +1,7 @@
 add_subdirectory(src/bytecode)
 add_subdirectory(src/conversion)
 add_subdirectory(src/lowering)
-add_subdirectory(src/pyir)
+add_subdirectory(src/pyir EXCLUDE_FROM_ALL) # Ensures that the library is not automatically installed
 
 set(PYCOMPILE_SOURCES
         src/utils.cpp

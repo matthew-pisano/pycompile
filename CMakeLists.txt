@@ -34,9 +34,16 @@ add_subdirectory(pycompile)
 add_subdirectory(pystd)
 add_subdirectory(test)
 
+include(cmake/Package.cmake)
+
 # Add installation paths for targets
 install(TARGETS pycompile pystd pymain
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+install(FILES "${CMAKE_SOURCE_DIR}/LICENSE"
+        DESTINATION share/licenses/pycompile
+        COMPONENT license
 )

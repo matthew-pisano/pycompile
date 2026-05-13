@@ -5,8 +5,8 @@
 #include <catch2/catch_all.hpp>
 #include <mlir/Dialect/ControlFlow/IR/ControlFlowOps.h>
 
-#include "codegen_test_utils.h"
-#include "pyir/pyir_ops.h"
+#include "pycompile/src/pyir/pyir_ops.hpp"
+#include "test/conversion/codegen_test_utils.hpp"
 
 
 TEST_CASE_METHOD(MLIRFixture, "Test Operation Order MLIR") {

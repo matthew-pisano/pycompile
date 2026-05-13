@@ -37,7 +37,7 @@ jobs:
       - name: Run Clang Format
         run: |
           sed -i '/InsertNewlineAtEOF: true/d' .clang-format
-          ./run-clang-format/run-clang-format.py -r src include test
+          ./run-clang-format/run-clang-format.py -r pycompile pystd test
 
   build:
     runs-on: ubuntu-latest

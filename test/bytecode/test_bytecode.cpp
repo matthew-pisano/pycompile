@@ -5,7 +5,7 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "bytecode/bytecode.h"
+#include "pycompile/src/bytecode/bytecode.hpp"
 
 /**
  * Extracts a vector of opcodes from a given vector of instruction.

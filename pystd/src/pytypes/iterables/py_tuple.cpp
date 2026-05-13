@@ -1,0 +1,106 @@
+//
+// Created by matthew on 3/29/26.
+//
+
+#include "py_tuple.hpp"
+
+#include "pytypes/primitives/py_bool.hpp"
+#include "pytypes/primitives/py_int.hpp"
+#include "runtime_errors.hpp"
+#include "runtime_util.hpp"
+
+PyTuple::~PyTuple() {
+    for (PyObj* elem : raw)
+        (void) elem->decref();
+}
+
+PyInt* PyTuple::len() const { return new PyInt(static_cast<int64_t>(raw.size())); }
+
+PyBool* PyTuple::contains(const PyObj* obj) const {
+    for (const PyObj* elem : raw)
+        if (*elem == *obj)
+            return PyBool::True;
+    return PyBool::False;
+}
+
+PyObj* PyTuple::idx(const PyObj* idx) const {
+    if (const PyInt* idxVal = dynamic_cast<const PyInt*>(idx)) {
+        int64_t index = idxVal->data();
+        if (index < 0)
+            index += static_cast<int64_t>(raw.size());
+        if (index < 0 || index >= static_cast<int64_t>(raw.size()))
+            throw PyIndexError("tuple index out of range");
+        raw[index]->incref(); // Return a new reference to the indexed value
+        return raw[index];
+    }
+    throw PyTypeError("tuple indices must be integers");
+}
+
+size_t PyTuple::hash() const {
+    size_t hash = 0;
+    for (const PyObj* obj : raw)
+        hash ^= obj->hash();
+    return hash;
+}
+
+std::string PyTuple::toString() const {
+    if (raw.empty())
+        return "()";
+
+    std::string result = "(";
+    for (const PyObj* elem : raw)
+        result += valueToString(elem, true) + ", ";
+    result.pop_back();
+    // Only remove last comma if more than a 1-tuple
+    if (raw.size() > 1)
+        result.pop_back();
+    result += ")";
+    return result;
+}
+
+std::string PyTuple::typeName() const { return "tuple"; }
+
+bool PyTuple::isTruthy() const { return !raw.empty(); }
+
+PyListData PyTuple::data() const { return raw; }
+
+std::partial_ordering PyTuple::operator<=>(const PyObj& other) const noexcept {
+    if (const PyTuple* t = dynamic_cast<const PyTuple*>(&other)) {
+        // Ensure that both tuples have the same elements in the same order or compare the sizes if sizes are unequal
+        if (raw.size() != t->raw.size())
+            return raw.size() <=> t->raw.size();
+
+        for (size_t i = 0; i < raw.size(); i++)
+            if (*raw[i] != *t->raw[i])
+                return std::partial_ordering::unordered;
+        return std::partial_ordering::equivalent;
+    }
+    return std::partial_ordering::unordered;
+}
+
+bool PyTuple::operator==(const PyObj& other) const noexcept {
+    return *this <=> other == std::partial_ordering::equivalent;
+}
+
+PyTupleIter::~PyTupleIter() { (void) tuple->decref(); }
+
+PyObj* PyTupleIter::next(PyObj* self, PyObj**, const int64_t argc) {
+    if (argc != 0)
+        throw PyTypeError("next() takes no arguments");
+    PyTupleIter* selfIter = dynamic_cast<PyTupleIter*>(self);
+    if (!selfIter)
+        throw PyTypeError("Can only get the next value of iterator types");
+    if (selfIter->it == selfIter->end)
+        throw PyStopIteration();
+
+    PyObj* obj = *selfIter->it;
+    obj->incref();
+    ++selfIter->it;
+    return obj;
+}
+
+std::partial_ordering PyTupleIter::operator<=>(const PyObj& other) const noexcept {
+    if (const PyTupleIter* iter = dynamic_cast<const PyTupleIter*>(&other))
+        return it <=> iter->it;
+    return std::partial_ordering::unordered;
+}

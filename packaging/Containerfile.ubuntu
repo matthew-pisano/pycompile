@@ -1,0 +1,8 @@
+FROM ubuntu:26.04
+RUN apt-get update && apt-get install -y git cmake g++ ninja-build llvm-dev mlir-21-tools libmlir-21-dev python3-dev
+WORKDIR /build
+COPY . .
+RUN cmake -B build -DCMAKE_BUILD_TYPE=Release -DMLIR_DIR=/usr/lib/llvm-21/lib/cmake/mlir -G Ninja && \
+    cmake --build build --target pycompile -j 6 && \
+    cd build && \
+    cpack -G DEB

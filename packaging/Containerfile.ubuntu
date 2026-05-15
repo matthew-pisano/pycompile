@@ -5,4 +5,4 @@ COPY . .
 RUN cmake -B build -DCMAKE_BUILD_TYPE=Release -DMLIR_DIR=/usr/lib/llvm-21/lib/cmake/mlir -G Ninja && \
     cmake --build build --target pycompile -j 6 && \
     cd build && \
-    cpack -G DEB
+    cpack -G "DEB"

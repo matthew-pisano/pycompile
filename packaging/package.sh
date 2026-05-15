@@ -12,8 +12,13 @@ for DISTRO in fedora ubuntu; do
   # Instantiate the built image
   CONTAINER=$(podman create pycompile-build-${DISTRO})
   # Get the exact path of the built package
-  RPM_PATH=$(podman run --rm pycompile-build-${DISTRO} find /build/build -maxdepth 1 -name "pycompile-*")
+  PKG_PATH=$(podman run --rm pycompile-build-${DISTRO} find /build/build -maxdepth 1 -regextype posix-extended -regex '.*pycompile-.*(rpm|deb)')
+  podman cp "${CONTAINER}:${PKG_PATH}" dist
 
-  podman cp "${CONTAINER}:${RPM_PATH}" dist
+  TAR_PATH=$(podman run --rm pycompile-build-${DISTRO} find /build/build -maxdepth 1 -regextype posix-extended -regex '.*pycompile-.*tar\.gz')
+  if [[ -n "${TAR_PATH}" ]]; then
+    podman cp "${CONTAINER}:${TAR_PATH}" dist
+  fi
+
   podman rm "${CONTAINER}"
 done

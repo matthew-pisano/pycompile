@@ -5,4 +5,4 @@ COPY . .
 RUN cmake -B build -DCMAKE_BUILD_TYPE=Release -G Ninja && \
     cmake --build build --target pycompile -j 6 && \
     cd build && \
-    cpack -G RPM
+    cpack -G "RPM;TGZ"

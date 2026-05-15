@@ -44,11 +44,11 @@ install(TARGETS pycompile pystd pymain
 )
 
 install(FILES "${CMAKE_SOURCE_DIR}/LICENSE"
-        DESTINATION share/licenses/pycompile
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/${CMAKE_PROJECT_NAME}
         COMPONENT license
 )
 
 install(FILES "${CMAKE_SOURCE_DIR}/README.md"
-        DESTINATION share/doc/pycompile
+        DESTINATION ${CMAKE_INSTALL_DOCDIR}
         COMPONENT documentation
 )

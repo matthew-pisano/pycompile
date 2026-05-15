@@ -4,7 +4,7 @@ set(CPACK_PACKAGE_VENDOR "Matthew Pisano")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A Python compiler")
 set(CPACK_PACKAGE_DESCRIPTION "The pycompile Python compiler and standard library.")
 set(CUSTOM_PACKAGE_URL "https://github.com/matthew-pisano/pycompile")
-set(CPACK_GENERATOR "RPM;DEB")
+set(CPACK_GENERATOR "RPM;DEB;TGZ")
 
 # === RPM Package Generation === #
 

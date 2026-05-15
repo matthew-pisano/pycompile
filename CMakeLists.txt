@@ -26,9 +26,29 @@ list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
 include(TableGen)
 include(AddMLIR)
 include(AddLLVM)
+include(GNUInstallDirs)
 
 include(cmake/Version.cmake)
 
 add_subdirectory(pycompile)
 add_subdirectory(pystd)
 add_subdirectory(test)
+
+include(cmake/Package.cmake)
+
+# Add installation paths for targets
+install(TARGETS pycompile pystd pymain
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+install(FILES "${CMAKE_SOURCE_DIR}/LICENSE"
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/${CMAKE_PROJECT_NAME}
+        COMPONENT license
+)
+
+install(FILES "${CMAKE_SOURCE_DIR}/README.md"
+        DESTINATION ${CMAKE_INSTALL_DOCDIR}
+        COMPONENT documentation
+)

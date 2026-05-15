@@ -7,6 +7,7 @@ target_include_directories(pymain
 )
 set_target_properties(pymain PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        POSITION_INDEPENDENT_CODE ON
 )
 
 add_subdirectory(src/pytypes)
@@ -27,4 +28,5 @@ target_include_directories(pystd
 )
 set_target_properties(pystd PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+        POSITION_INDEPENDENT_CODE ON
 )

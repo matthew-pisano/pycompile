@@ -198,7 +198,7 @@ void linkObjectFile(const std::filesystem::path& obj, const std::filesystem::pat
     if (!cppCompiler)
         cppCompiler = llvm::sys::findProgramByName("clang++");
     if (!cppCompiler)
-        throw std::runtime_error("Unable to find a suitable compiler in PATH");
+        throw std::runtime_error("Unable to find a suitable C++ compiler in PATH");
 
     const std::string objStr = obj.string();
     const std::string outStr = output.string();

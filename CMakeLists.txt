@@ -47,3 +47,8 @@ install(FILES "${CMAKE_SOURCE_DIR}/LICENSE"
         DESTINATION share/licenses/pycompile
         COMPONENT license
 )
+
+install(FILES "${CMAKE_SOURCE_DIR}/README.md"
+        DESTINATION share/doc/pycompile
+        COMPONENT documentation
+)
